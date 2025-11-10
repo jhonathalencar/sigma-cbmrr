@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SIGMA - Conferência de Materiais (CB)</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f9;
+            color: #333;
+            min-height: 100vh; 
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding-bottom: 70px;
+        }
+
+        .container {
+            background-color: #fff;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 450px;
+            margin-top: auto; 
+            margin-bottom: auto;
+            text-align: center;
+        }
+
+        .logo {
+            width: 100px;
+            height: auto;
+            margin-bottom: 15px;
+            display: block;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        h1 {
+            color: #d90f23;
+            text-align: center;
+            margin-bottom: 5px; /* Ajustado para dar espaço ao subtítulo */
+            font-size: 1.8em;
+            padding-bottom: 0;
+            border-bottom: none;
+        }
+        
+        /* Estilo para o Subtítulo SIGMA */
+        .subtitulo {
+            font-size: 0.9em;
+            color: #666;
+            margin-bottom: 15px;
+            font-weight: 600;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+            text-align: left;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+            color: #555;
+        }
+
+        select, button {
+            width: 100%;
+            padding: 12px;
+            border-radius: 6px;
+            border: 1px solid #ccc;
+            box-sizing: border-box;
+            font-size: 1em;
+            background-color: #fff;
+            cursor: pointer;
+        }
+        
+        /* NOVO ESTILO: Aplica a fonte Trebuchet MS nas caixas suspensas */
+        select {
+            font-family: 'Trebuchet MS', Helvetica, sans-serif; 
+        }
+
+        select:focus, button:focus {
+            border-color: #d90f23;
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(217, 15, 35, 0.2);
+        }
+
+        button {
+            background-color: #d90f23;
+            color: white;
+            font-weight: bold;
+            border: none;
+            transition: background-color 0.3s ease;
+            margin-top: 20px;
+        }
+
+        button:hover:not(:disabled) {
+            background-color: #a30b1c;
+        }
+
+        button:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+        }
+
+        /* Rodapé de Autoria (Canto Direito) */
+        .footer-right {
+            position: fixed; 
+            right: 10px; 
+            bottom: 5px; 
+            color: #888;
+            font-size: 0.75em;
+            z-index: 100; 
+        }
+
+        /* Rodapé Centralizado */
+        .footer-central {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            text-align: center;
+            padding: 5px 0;
+            background-color: #f4f4f9;
+            color: #555;
+            font-size: 0.7em;
+            line-height: 1.4;
+            z-index: 99;
+            font-style: normal; 
+            font-weight: normal;
+        }
+        
+        /* Ajuste para o texto em itálico/negrito no rodapé */
+        .footer-central em {
+            font-style: italic;
+        }
+        .footer-central strong {
+            font-weight: bold;
+        }
+
+    </style>
+</head>
+<body>
+
+<div class="container">
+    
+    <img src="logo_sigma.png" alt="Logo do Sistema SIGMA" class="logo">
+    
+    <h1>SIGMA</h1>
+    
+    <p>Conferência de Materiais no Serviço Operacional</p> 
+    
+    <div class="form-group">
+        <label for="posto-servico">Escolha o Posto de Serviço</label>
+        <select id="posto-servico">
+            <option value="" disabled selected>-- Selecione um Posto --</option>
+            <option value="ALFA">ALFA</option>
+            <option value="BRAVO">BRAVO</option>
+            <option value="CHARLIE">CHARLIE</option>
+            <option value="CARACARAÍ">CARACARAÍ</option>
+            <option value="RORAINÓPOLIS">RORAINÓPOLIS</option>
+            <option value="PACARAIMA">PACARAIMA</option>
+        </select>
+    </div>
+
+    <div class="form-group" id="local-group" style="display: none;">
+        <label for="local">Escolha o Local</label>
+        <select id="local">
+            <option value="" disabled selected>-- Selecione um Local --</option>
+        </select>
+    </div>
+
+    <button id="btn-ir" disabled>INICIAR CONFERÊNCIA</button>
+
+</div>
+
+<div class="footer-central">
+    <strong>GOVERNO DE RORAIMA</strong><br>
+    <strong>CORPO DE BOMBEIROS MILITAR DE RORAIMA</strong><br>
+    <em>“Amazônia: patrimônio dos brasileiros”</em>
+</div>
+
+<div class="footer-right">
+    Criado por 3º SGT QPCBM JHONATH
+</div>
+
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const postoSelect = document.getElementById('posto-servico');
+        const localGroup = document.getElementById('local-group');
+        const localSelect = document.getElementById('local');
+        const btnIr = document.getElementById('btn-ir');
+
+        const formsMap = {
+            'ALFA': {
+                'ABT-17': 'https://docs.google.com/forms/d/e/1FAIpQLScaIN4xEGq0FP_5s4cyMUP-OSqLyh9QZiUUAj1v2nMzymXfwg/viewform',
+                'RESGATE': 'https://docs.google.com/forms/d/e/1FAIpQLSe2CuhwbeVTt5OCm6nqWdM-kB0Xv-rChzmkA8byBqil7kHRdg/viewform',
+                'VTR CMD SOS': 'https://docs.google.com/forms/d/e/1FAIpQLSdGEdJBqe9Qadvv5TT5QfZ3Zc2KqJcbGcqwGUut0q796TJnXg/viewform',
+                'PERMANÊNCIA': 'https://docs.google.com/forms/d/e/1FAIpQLSckUGLpBsCIM_nFFS-BCPhAKbrI4CU5p6zo0juwy0Orcu0nTg/viewform',
+                'RESGATE EXTRA': 'https://docs.google.com/forms/d/e/1FAIpQLSf5TJ8w6_6DWTr1oxXgZFPIOuC0_jvpcJMF4ciqRJloaSk5WQ/viewform'
+            },
+            'BRAVO': {
+                'ABT-18': 'https://docs.google.com/forms/d/e/1FAIpQLSctaCjNUB2gDdNDXn3h4RiGOoch94CvAC5sj15D8YgzPT8Z9w/viewform',
+                'PERMANÊNCIA': 'https://docs.google.com/forms/d/e/1FAIpQLSd4paOCzbr3mjS3DEoFOBwmVTjVOrvk6NfspYJ-p1XcNtD7bg/viewform'
+            },
+            'CHARLIE': {
+                'VTR SALVAMENTO': 'https://docs.google.com/forms/d/e/1FAIpQLSfzEdboDDlJJ24oYcr3uIgWxemDzbBfIn8YqQBMJag7A-eqWA/viewform',
+                'PERMANÊNCIA': 'https://docs.google.com/forms/d/e/1FAIpQLSdEpX-ak7Lv3VQSXNkw0JeMGndJfc97Ac_3PhO95M67UHJ3Dw/viewform'
+            },
+            'CARACARAÍ': {
+                'ABT-16': 'https://docs.google.com/forms/d/e/1FAIpQLScuEX-onfOntuiCrccAj5IcPHmgijyL6bTTgFxRDH6c4VPjDg/viewform',
+                'UR 13-23': 'https://docs.google.com/forms/d/e/1FAIpQLSdPS0HfYfTcQ1w-Wd2a8r1PGsd4U3DplCA1fCf6bPNNDrogUQ/viewform',
+                'ATPS 31-21 (GBS)': 'https://docs.google.com/forms/d/e/1FAIpQLSchXqGfiGeTDC2hIpnxgxIGLkxKZziYE5go7pVcYYHGnpj9ow/viewform',
+                'ATF 01-21 (GCIF)': 'https://docs.google.com/forms/d/e/1FAIpQLSdWgjlqDH6Dt2DwM7qRgMAeC2SOSIPShCDVBZXX-T5peyu8TA/viewform',
+                'PERMANÊNCIA': 'https://docs.google.com/forms/d/e/1FAIpQLScW4_vbkqZVKtNM02BBFMkMdpZStX-FF9OIEQkhrPS0ThVVgg/viewform'
+            },
+            'RORAINÓPOLIS': {
+                'POSTO RORAINÓPOLIS': 'LINK_DO_FORMS_RORAINOPOLIS'
+            },
+            'PACARAIMA': {
+                'POSTO PACARAIMA': 'LINK_DO_FORMS_PACARAIMA'
+            }
+        };
+
+        function updateLocalOptions() {
+            const selectedPosto = postoSelect.value;
+            localSelect.innerHTML = '<option value="" disabled selected>-- Selecione um Local --</option>'; 
+            
+            if (selectedPosto && formsMap[selectedPosto]) {
+                const locais = formsMap[selectedPosto];
+                
+                for (const localName in locais) {
+                    const option = document.createElement('option');
+                    option.value = locais[localName];
+                    option.textContent = localName;
+                    localSelect.appendChild(option);
+                }
+
+                localGroup.style.display = 'block';
+            } else {
+                localGroup.style.display = 'none';
+            }
+
+            localSelect.value = "";
+            btnIr.disabled = true;
+        }
+
+        postoSelect.addEventListener('change', updateLocalOptions);
+
+        localSelect.addEventListener('change', function() {
+            btnIr.disabled = !localSelect.value;
+        });
+
+        btnIr.addEventListener('click', function() {
+            const formsLink = localSelect.value;
+            if (formsLink && formsLink.startsWith('http')) {
+                window.open(formsLink, '_blank');
+            } else if (formsLink.includes('LINK_DO_FORMS')) {
+                alert('Atenção: O link para ' + localSelect.options[localSelect.selectedIndex].text + ' ainda não foi configurado. Por favor, ajuste o código!');
+            }
+        });
+
+        updateLocalOptions();
+    });
+</script>
+
+</body>
+</html>
