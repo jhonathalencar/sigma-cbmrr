@@ -244,11 +244,11 @@
             }
         };
 
-        // Função para iniciar a navegação
+        // Função para iniciar a navegação (só chamada pelo botão agora)
         function navigateToForms() {
             const formsLink = localSelect.value;
             if (formsLink && formsLink.startsWith('http')) {
-                // [CORREÇÃO] Remove o foco do segundo seletor antes de abrir o novo link
+                // Remove o foco do seletor Local (garante fechamento no mobile)
                 localSelect.blur(); 
                 window.open(formsLink, '_blank');
             } else if (formsLink.includes('LINK_DO_FORMS')) {
@@ -261,7 +261,7 @@
             const selectedPosto = postoSelect.value;
             localSelect.innerHTML = '<option value="" disabled selected>-- Selecione um Local --</option>'; 
             
-            // [CORREÇÃO] Remove o foco do primeiro seletor após a seleção
+            // Remove o foco do primeiro seletor (garante fechamento no mobile)
             postoSelect.blur(); 
 
             if (selectedPosto && formsMap[selectedPosto]) {
@@ -283,20 +283,19 @@
             btnIr.disabled = true;
         }
 
-        // Listener para o menu 'Posto de Serviço'
+        // 1. Listener para o menu 'Posto de Serviço' (fecha e atualiza o 2º menu)
         postoSelect.addEventListener('change', updateLocalOptions);
 
-        // Listener para o menu 'Local'
+        // 2. Listener para o menu 'Local' (apenas fecha o menu e habilita o botão)
         localSelect.addEventListener('change', function() {
             btnIr.disabled = !localSelect.value;
             
-            // Dispara a navegação imediatamente após a seleção (melhor fluxo mobile).
-            if (!btnIr.disabled) {
-                navigateToForms();
-            }
+            // Apenas remove o foco do seletor Local para fechar o menu nativo do celular
+            // A navegação só ocorrerá no clique do botão.
+            localSelect.blur(); 
         });
         
-        // Listener para o botão (mantido como alternativa)
+        // 3. Listener para o botão (ÚNICO ponto que chama a navegação)
         btnIr.addEventListener('click', navigateToForms);
 
         updateLocalOptions();
