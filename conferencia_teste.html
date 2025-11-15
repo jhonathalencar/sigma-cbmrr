@@ -1032,6 +1032,7 @@
                         styles: { ...baseStyles, theme: 'striped' },
                         columnStyles: columnStyles,
                         didParseCell: (data) => {
+                            // Aplica cor APENAS na coluna Status (índice 1)
                             if (data.row.section === 'body' && data.column.index === 1) {
                                 if (data.row.raw[1] === 'C/A') {
                                     data.cell.styles.fillColor = amareloClaro;
@@ -1504,9 +1505,7 @@
         doc.setFont("helvetica", "normal");
         doc.setFontSize(9);
         
-        // Formato: POSTO QUADRO NOME
         doc.text(`${userInfo.postoGraduacao} ${userInfo.quadro} ${userInfo.nomeGuerra}`, marginX, yOffset);
-        // Data e Hora
         doc.text(`DATA/HORA: ${dataHora}`, docWidth / 2, yOffset);
         yOffset += 8;
         
@@ -1590,34 +1589,28 @@
                         styles: { ...baseStyles, theme: 'striped' },
                         columnStyles: columnStyles,
                         didParseCell: (data) => {
+                            // Aplica cor APENAS na coluna Status (índice 1)
                             if (data.row.section === 'body' && data.column.index === 1) {
                                 if (data.row.raw[1] === 'C/A') {
                                     data.cell.styles.fillColor = amareloClaro;
                                 } else if (data.row.raw[1] === 'S/A') {
                                     data.cell.styles.fillColor = verdeClaro;
                                 }
+                                // Adiciona borda preta à célula de status
+                                data.cell.styles.lineWidth = 0.3; 
+                                data.cell.styles.lineColor = [0, 0, 0];
                             }
                         }
                     });
                     yOffset = doc.autoTable.previous.finalY;
                 }
                 
-                // 4.1 Cabeçalho do Setor (Vinho) - Título simples (SOLUÇÃO DE ALINHAMENTO)
+                // 4.1 Cabeçalho do Setor (Vinho)
                 doc.autoTable({
                     startY: yOffset + 2,
                     head: [
                         [
-                            // Apenas o nome do Setor (mesclado nas 3 colunas)
-                            { 
-                                content: `${setor}`, 
-                                colSpan: 3, 
-                                styles: { 
-                                    fontStyle: 'bold', 
-                                    halign: 'center', // Centralizado
-                                    fillColor: vinhoColor, 
-                                    textColor: 255 
-                                } 
-                            }
+                            { content: `${setor}`, colSpan: 1, styles: { fontStyle: 'bold', halign: 'center', fillColor: vinhoColor, textColor: 255 } } 
                         ]
                     ],
                     styles: baseStyles,
