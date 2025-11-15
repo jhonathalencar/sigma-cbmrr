@@ -241,7 +241,6 @@
             margin-right: 10px;
         }
 
-        .status-icon.ok { background-color: #1b8a3e; }
         .status-icon.ok:after {
             content: '✓';
             font-size: 12px;
@@ -575,7 +574,7 @@
     // ------------------------------------------
     function getBase64Image(imgUrl) {
         return new Promise((resolve, reject) => {
-            // Se a biblioteca não estiver carregada, falha (mas o generatePDF trata isso)
+            // Verifica se a biblioteca necessária está carregada
             if (typeof html2canvas === 'undefined') {
                  reject(new Error('html2canvas não carregado.'));
                  return;
@@ -667,6 +666,1088 @@
     // ------------------------------------------
     // FUNÇÕES DE MANIPULAÇÃO VISUAL E UX
     // ------------------------------------------
+
+    function toggleSetor(contentId) {
+        const content = document.getElementById(contentId);
+        content.classList.toggle('expanded');
+    }
+
+    function updateItemVisual(itemName, status, statusText, description = '') {
+        const itemContainer = document.getElementById('item-' + itemName); 
+        const statusIcon = document.getElementById('status-' + itemName);
+        const descriptionInline = document.getElementById(itemName + '-descricao-inline');
+        const descriptionText = document.getElementById(itemName + '-texto-ca');
+        
+        const saButton = document.getElementById(`btn-${itemName}-sa`);
+        const caButton = document.getElementById(`btn-${itemName}-ca`);
+        
+        saButton.classList.remove('active');
+        caButton.classList.remove('active');
+        
+        itemContainer.classList.remove('status-ok', 'status-alert');
+        statusIcon.classList.remove('ok', 'alert', 'pending');
+        
+        statusIcon.textContent = (status === 'alert' || status === 'pending') ? statusText : '';
+        statusIcon.classList.add(status);
+        
+        if (status === 'ok') {
+            itemContainer.classList.add('status-ok');
+            descriptionInline.style.display = 'none';
+            saButton.classList.add('active');
+        } else if (status === 'alert') {
+            itemContainer.classList.add('status-alert');
+            descriptionText.textContent = description;
+            descriptionInline.style.display = 'block';
+            caButton.classList.add('active');
+        } else {
+             descriptionInline.style.display = 'none';
+        }
+    }
+    
+    function updateSetorStatus(setorName) {
+        const setorStatusElement = document.getElementById(`status-setor-${setorName}`);
+        if (!setorStatusElement) return;
+
+        let totalItems = parseInt(setorStatusElement.getAttribute('data-total-items'));
+        let itemsConferidos = 0;
+        let itemsAlterados = 0;
+
+        for (const itemName in itemStatus) {
+            if (itemToSetor[itemName] === setorName) {
+                itemsConferidos++;
+                if (itemStatus[itemName].status === 'C/A') {
+                    itemsAlterados++;
+                }
+            }
+        }
+        
+        setorStatusElement.setAttribute('data-items-conferidos', itemsConferidos);
+        setorStatusElement.setAttribute('data-items-alterados', itemsAlterados);
+
+        if (itemsAlterados > 0) {
+            setorStatusElement.textContent = `${itemsAlterados} C/A`;
+            setorStatusElement.classList.remove('ok');
+        } else {
+            setorStatusElement.textContent = `S/A`;
+            if (itemsConferidos === totalItems) {
+                setorStatusElement.classList.add('ok');
+            } else {
+                setorStatusElement.classList.remove('ok');
+            }
+        }
+        
+        if (itemsConferidos < totalItems) {
+            setorStatusElement.textContent += ` (${itemsConferidos}/${totalItems})`;
+        }
+    }
+
+    function showAlteracao(itemName) {
+        const alteracaoDiv = document.getElementById(itemName + '-alteracao');
+        
+        updateItemVisual(itemName, 'pending', '...', '');
+        
+        document.getElementById(`btn-${itemName}-ca`).classList.add('active');
+        document.getElementById(`btn-${itemName}-sa`).classList.remove('active');
+
+        alteracaoDiv.style.display = 'block';
+        document.getElementById(itemName + '-descricao').focus();
+    }
+
+    function markItem(itemName, status, setorName) {
+        const alteracaoDiv = document.getElementById(itemName + '-alteracao');
+        
+        alteracaoDiv.style.display = 'none';
+        document.getElementById(itemName + '-descricao').value = '';
+
+        itemStatus[itemName] = { status: 'S/A', descricao: '' };
+        updateItemVisual(itemName, 'ok', '✓', '');
+        updateSetorStatus(setorName);
+
+        checkSetorCompletion(itemName, setorName);
+    }
+
+    function salvarItem(itemName, status, setorName) {
+        const alteracaoDiv = document.getElementById(itemName + '-alteracao');
+        const descricao = document.getElementById(itemName + '-descricao').value;
+        
+        if (descricao.trim() === "") {
+            alert("Por favor, descreva a alteração antes de salvar.");
+            document.getElementById(itemName + '-descricao').focus();
+            return;
+        }
+
+        alteracaoDiv.style.display = 'none';
+        
+        itemStatus[itemName] = { status: 'C/A', descricao: descricao };
+        updateItemVisual(itemName, 'alert', 'C/A', descricao);
+        updateSetorStatus(setorName);
+
+        checkSetorCompletion(itemName, setorName);
+    }
+    
+    function checkSetorCompletion(currentItemName, setorName) {
+        const currentItemElement = document.getElementById('item-' + currentItemName);
+        let nextItemElement = currentItemElement.nextElementSibling;
+        
+        while (nextItemElement && !nextItemElement.classList.contains('item-conferencia')) {
+            nextItemElement = nextItemElement.nextElementSibling;
+        }
+
+        if (nextItemElement && nextItemElement.classList.contains('item-conferencia')) {
+            nextItemElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            return;
+        }
+        
+        const itemsInSetor = Array.from(document.getElementById(setorContentMap[setorName]).querySelectorAll('.item-conferencia'));
+        const isLastItem = itemsInSetor.length > 0 && itemsInSetor[itemsInSetor.length - 1].id === currentItemElement.id;
+
+        if (isLastItem) {
+            autoAdvanceSetor(setorName);
+        }
+    }
+    
+    function autoAdvanceSetor(currentSetorName) {
+        const currentIndex = setorIds.indexOf(currentSetorName);
+        const nextIndex = currentIndex + 1;
+
+        const currentSetorContentId = setorContentMap[currentSetorName];
+        document.getElementById(currentSetorContentId).classList.remove('expanded');
+
+        if (nextIndex < setorIds.length) {
+            const nextSetorName = setorIds[nextIndex];
+            const nextSetorContentId = setorContentMap[nextSetorName];
+            
+            const nextSetorContent = document.getElementById(nextSetorContentId);
+            nextSetorContent.classList.add('expanded');
+            
+            nextSetorContent.previousElementSibling.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            
+            const firstItemInNextSetor = nextSetorContent.querySelector('.item-conferencia');
+            if (firstItemInNextSetor) {
+                firstItemInNextSetor.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+        } else {
+            document.getElementById('btn-finalizar').scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+    }
+
+
+    // ------------------------------------------
+    // FUNÇÃO DE GERAÇÃO DE PDF (CORRIGIDA)
+    // ------------------------------------------
+
+    async function generatePDF() {
+        // CORREÇÃO: Acessa jsPDF de forma segura, garantindo que o objeto exista.
+        if (typeof window.jspdf === 'undefined' || typeof window.jspdf.jsPDF === 'undefined') {
+            alert("Erro fatal: As bibliotecas de PDF não foram carregadas. Tente recarregar a página.");
+            return;
+        }
+        
+        const { jsPDF } = window.jspdf;
+
+        const doc = new jsPDF('p', 'mm', 'a4');
+        
+        if (typeof doc.autoTable === 'undefined') {
+            alert("Erro: O plugin jsPDF-autotable não foi carregado. Verifique os links CDN.");
+            return;
+        }
+        
+        const docWidth = doc.internal.pageSize.getWidth();
+        const docHeight = doc.internal.pageSize.getHeight();
+        let yOffset = 15; 
+        const marginX = 10;
+        const logoWidth = 20;
+        const logoHeight = 20;
+        const logoX = docWidth / 2 - logoWidth / 2;
+        const logoRodapeWidth = 10; 
+        const logoRodapeHeight = 10;
+        
+        const defaultTextColor = [51, 51, 51]; 
+        const vinhoColor = [128, 0, 32];
+        const cinzaClaro = [85, 85, 85];
+        const verdeClaro = [224, 255, 224]; 
+        const amareloClaro = [255, 255, 224]; 
+
+        const dataHora = new Date().toLocaleString('pt-BR');
+        
+        let roraimaDataUrl = '';
+        let sigmaDataUrl = '';
+        
+        try {
+            roraimaDataUrl = await getBase64Image('roraima.png');
+        } catch (error) {
+            console.warn("Aviso: Falha ao carregar roraima.png. Continuando sem imagem.");
+        }
+        try {
+            sigmaDataUrl = await getBase64Image('logo_sigma.png');
+        } catch (error) {
+            console.warn("Aviso: Falha ao carregar logo_sigma.png. Continuando sem imagem no rodapé.");
+        }
+
+
+        // --- 1. Imagem e Cabeçalho Centralizado ---
+        
+        // 1.1 Adicionar Imagem Roraima
+        if (roraimaDataUrl) {
+            doc.addImage(roraimaDataUrl, 'PNG', logoX, yOffset, logoWidth, logoHeight); 
+            yOffset += logoHeight; 
+        } else {
+            yOffset += 5; 
+        }
+        yOffset += 8; 
+
+        // 1.2 Textos do Cabeçalho
+        
+        doc.setTextColor(defaultTextColor[0], defaultTextColor[1], defaultTextColor[2]);
+        doc.setFont("helvetica", "normal");
+        doc.setFontSize(10);
+        doc.text("GOVERNO DO ESTADO DE RORAIMA", docWidth / 2, yOffset, { align: 'center' });
+        yOffset += 5;
+        
+        doc.setTextColor(vinhoColor[0], vinhoColor[1], vinhoColor[2]);
+        doc.setFontSize(11);
+        doc.text("CORPO DE BOMBEIROS MILITAR DE RORAIMA", docWidth / 2, yOffset, { align: 'center' });
+        yOffset += 5;
+        
+        doc.setTextColor(cinzaClaro[0], cinzaClaro[1], cinzaClaro[2]);
+        doc.setFontSize(8);
+        doc.setFont("helvetica", "italic"); 
+        doc.text("\"Amazônia: patrimônio dos brasileiros\"", docWidth / 2, yOffset, { align: 'center' });
+        doc.setFont("helvetica", "normal"); 
+        yOffset += 5;
+        
+        // 2. Linha e Título Principal
+        doc.setDrawColor(204, 204, 204); 
+        doc.setLineWidth(0.5);
+        yOffset += 1; 
+        doc.line(marginX, yOffset, docWidth - marginX, yOffset);
+        yOffset += 4; 
+        
+        doc.setTextColor(vinhoColor[0], vinhoColor[1], vinhoColor[2]);
+        doc.setFontSize(12);
+        doc.setFont("helvetica", "bold");
+        doc.text("CONFERÊNCIA DE MATERIAIS", docWidth / 2, yOffset, { align: 'center' });
+        yOffset += 5;
+        
+        doc.setTextColor(defaultTextColor[0], defaultTextColor[1], defaultTextColor[2]);
+        doc.setFontSize(10);
+        doc.text("LOCAL TESTE - Posto BRAVO", docWidth / 2, yOffset, { align: 'center' });
+        yOffset += 10;
+        
+        // --- 3. MILITAR RESPONSÁVEL ---
+        
+        doc.setLineWidth(0.2);
+        doc.line(marginX, yOffset, docWidth - marginX, yOffset);
+        yOffset += 5; 
+        
+        doc.setTextColor(defaultTextColor[0], defaultTextColor[1], defaultTextColor[2]);
+        doc.setFontSize(10);
+        doc.setFont("helvetica", "bold");
+        doc.text("MILITAR RESPONSÁVEL PELA CONFERÊNCIA", marginX, yOffset);
+        yOffset += 5;
+        
+        doc.setFont("helvetica", "normal");
+        doc.setFontSize(9);
+        
+        doc.text(`${userInfo.postoGraduacao} ${userInfo.quadro} ${userInfo.nomeGuerra}`, marginX, yOffset);
+        doc.text(`Data/Hora: ${dataHora}`, docWidth / 2, yOffset);
+        yOffset += 8;
+        
+        doc.setLineWidth(0.2);
+        doc.line(marginX, yOffset, docWidth - marginX, yOffset);
+        yOffset += 3;
+
+        // --- 4. Tabela de Conferência (Estrutura ajustada para Setores) ---
+        
+        const itemsList = ['lanterna', 'kit', 'radio', 'cordas', 'colete'];
+        let currentSetor = '';
+        
+        // Configuração de largura de colunas (CRÍTICO para alinhamento)
+        const columnStyles = {
+            0: { cellWidth: 70 },
+            1: { cellWidth: 20, halign: 'center' },
+            2: { cellWidth: 100 }
+        };
+        const baseStyles = { fontSize: 8, cellPadding: 2, overflow: 'linebreak', theme: 'plain' };
+
+        // Rodapé Fixo no final da página 
+        doc.autoTable.didDrawPage = function(data) {
+            const docWidth = doc.internal.pageSize.getWidth();
+            const finalY = docHeight - 15;
+            const centroX = docWidth / 2;
+            
+            doc.setTextColor(vinhoColor[0], vinhoColor[1], vinhoColor[2]);
+            doc.setFontSize(9);
+            
+            // Variáveis para centralização
+            const SIGMA_TEXT = "SIGMA";
+            const DETAIL_TEXT = "- Sistema Integrado de Gestão de Materiais";
+            const SIGMA_WIDTH = doc.getStringUnitWidth(SIGMA_TEXT) * 9 * 0.35;
+            const DETAIL_WIDTH = doc.getStringUnitWidth(DETAIL_TEXT) * 9 * 0.35;
+            const LOGO_SPACE = logoRodapeWidth + 2; 
+            const SPACING = 2;
+            
+            const totalBlockWidth = LOGO_SPACE + SIGMA_WIDTH + SPACING + DETAIL_WIDTH;
+            const blockStartX = centroX - (totalBlockWidth / 2);
+
+            let currentX = blockStartX;
+
+            // 5.1 Logo SIGMA
+            if (sigmaDataUrl) {
+                doc.addImage(sigmaDataUrl, 'PNG', currentX, finalY - 3, logoRodapeWidth, logoRodapeHeight);
+                currentX += LOGO_SPACE; 
+            }
+            
+            // 5.2 Texto "SIGMA" (Negrito)
+            doc.setFont("helvetica", "bold");
+            doc.text(SIGMA_TEXT, currentX, finalY); 
+            currentX += SIGMA_WIDTH + SPACING;
+
+            // 5.3 Texto " - Sistema Integrado de Gestão de Materiais" (Normal)
+            doc.setFont("helvetica", "normal");
+            doc.text(DETAIL_TEXT, currentX, finalY);
+            finalY += 4;
+            
+            // 5.4 Rodapé Linha 2: CORPO DE BOMBEIROS MILITAR DE RORAIMA
+            doc.setFont("helvetica", "normal");
+            doc.setFontSize(8);
+            doc.text("CORPO DE BOMBEIROS MILITAR DE RORAIMA", centroX, finalY, { align: 'center' });
+        };
+        
+        let tableData = []; 
+        
+        // Loop que processa os dados por setor
+        itemsList.forEach((itemName, index) => {
+            const statusData = itemStatus[itemName] || { status: 'PENDENTE', descricao: 'ITEM NÃO CONFERIDO' };
+            const itemLabel = document.getElementById('item-' + itemName).querySelector('.item-label').textContent;
+            const setor = itemToSetor[itemName].toUpperCase();
+            
+            // --- Ação no início de cada novo setor ---
+            if (setor !== currentSetor) {
+                // Se não for o primeiro setor, gera a tabela de dados do setor anterior
+                if (currentSetor !== '') {
+                    doc.autoTable({
+                        startY: yOffset,
+                        body: tableData,
+                        margin: { top: 0, right: marginX, bottom: 0, left: marginX },
+                        styles: { ...baseStyles, theme: 'striped' },
+                        columnStyles: columnStyles,
+                        didParseCell: (data) => {
+                            if (data.row.section === 'body' && data.column.index === 1) {
+                                if (data.row.raw[1] === 'C/A') {
+                                    data.cell.styles.fillColor = amareloClaro;
+                                } else if (data.row.raw[1] === 'S/A') {
+                                    data.cell.styles.fillColor = verdeClaro;
+                                }
+                            }
+                        }
+                    });
+                    yOffset = doc.autoTable.previous.finalY;
+                }
+                
+                // 4.1 Cabeçalho do Setor (Vinho) - Estrutura simplificada
+                doc.autoTable({
+                    startY: yOffset + 2,
+                    head: [
+                        [
+                            // Apenas o nome do Setor (mesclado nas 3 colunas)
+                            { 
+                                content: `${setor}`, 
+                                colSpan: 3, 
+                                styles: { 
+                                    fontStyle: 'bold', 
+                                    halign: 'left', 
+                                    fillColor: vinhoColor, 
+                                    textColor: 255 
+                                } 
+                            }
+                        ]
+                    ],
+                    styles: { ...baseStyles, cellPadding: 1 },
+                    margin: { top: 0, right: marginX, bottom: 0, left: marginX },
+                    columnStyles: { 0: { cellWidth: 190 } } // Uma única coluna larga para o nome
+                });
+
+                // Cabeçalho dos Itens (Material, Status, Observação)
+                doc.autoTable({
+                    startY: doc.autoTable.previous.finalY,
+                    head: [
+                        [
+                            { content: `Material`, colSpan: 1, styles: { fontStyle: 'bold', halign: 'left', fillColor: [204, 204, 204], textColor: 0 } }, 
+                            { content: `Status`, colSpan: 1, styles: { fontStyle: 'bold', halign: 'center', fillColor: [204, 204, 204], textColor: 0 } },
+                            { content: `Observação`, colSpan: 1, styles: { fontStyle: 'bold', halign: 'left', fillColor: [204, 204, 204], textColor: 0 } }
+                        ]
+                    ],
+                    styles: { ...baseStyles, theme: 'plain' },
+                    margin: { top: 0, right: marginX, bottom: 0, left: marginX },
+                    columnStyles: columnStyles // Usa as larguras corretas para alinhar
+                });
+                
+                yOffset = doc.autoTable.previous.finalY; // Define o Y para o início dos dados
+                currentSetor = setor;
+                tableData = []; // Zera os dados para a nova seção
+            }
+
+            const statusText = statusData.status;
+            const obsText = statusData.status === 'C/A' ? statusData.descricao : ''; 
+            
+            tableData.push([
+                itemLabel, 
+                statusText, 
+                obsText
+            ]);
+            
+            // Se for o último item geral, garante que a última tabela de dados seja gerada
+            if (index === itemsList.length - 1) {
+                doc.autoTable({
+                    startY: yOffset,
+                    body: tableData,
+                    margin: { top: 0, right: marginX, bottom: 10, left: marginX },
+                    styles: { ...baseStyles, theme: 'striped' },
+                    columnStyles: columnStyles,
+                    didParseCell: (data) => {
+                        if (data.row.section === 'body' && data.column.index === 1) {
+                            if (data.row.raw[1] === 'C/A') {
+                                data.cell.styles.fillColor = amareloClaro;
+                            } else if (data.row.raw[1] === 'S/A') {
+                                data.cell.styles.fillColor = verdeClaro;
+                            }
+                        }
+                    }
+                });
+            }
+        });
+        
+        // --- 6. Finalizar e Salvar ---
+        
+        const filename = `CONFERENCIA_${userInfo.nomeGuerra}_${dataHora.split(' ')[0].replace(/\//g, '-')}.pdf`;
+        
+        doc.save(filename);
+    }
+
+
+    // ------------------------------------------
+    // FUNÇÃO FINALIZAR
+    // ------------------------------------------
+
+    document.getElementById('form-conferencia').addEventListener('submit', async function(event) {
+        event.preventDefault();
+        
+        if (!validateAndSaveUserInfo()) {
+            return;
+        }
+
+        const todosItens = ['lanterna', 'kit', 'radio', 'cordas', 'colete'];
+        let pendente = false;
+        
+        todosItens.forEach(itemName => {
+            if (!itemStatus[itemName]) {
+                pendente = true;
+            }
+        });
+
+        if (pendente) {
+             alert('ATENÇÃO: Existem itens pendentes de conferência. Por favor, verifique todos os itens antes de finalizar.');
+        } else {
+             await generatePDF();
+        }
+    });
+
+    // ------------------------------------------
+    // FUNÇÕES RESTANTES (MANTIDAS)
+    // ------------------------------------------
+    function updateQuadroOptions() {
+        const postoSelect = document.getElementById('posto-graduacao');
+        const quadroSelect = document.getElementById('quadro');
+        const selectedPosto = postoSelect.value;
+        
+        quadroSelect.innerHTML = '<option value="" disabled selected>-- Selecione um Quadro --</option>';
+        
+        let quadroGroup = null;
+        if (oficiasPatentes.includes(selectedPosto)) {
+            quadroGroup = 'OFICIAIS';
+        } else if (selectedPosto) {
+            quadroGroup = 'PRACAS';
+        }
+
+        if (quadroGroup && quadrosMap[quadroGroup]) {
+            quadrosMap[quadroGroup].forEach(quadro => {
+                const option = document.createElement('option');
+                option.value = quadro;
+                option.textContent = quadro;
+                quadroSelect.appendChild(option);
+            });
+        }
+    }
+
+    function validateAndSaveUserInfo() {
+        const postoSelect = document.getElementById('posto-graduacao');
+        const quadroSelect = document.getElementById('quadro');
+        const nomeGuerraInput = document.getElementById('nome-guerra');
+        
+        let isValid = true;
+        
+        if (!postoSelect.value) {
+            postoSelect.classList.add('input-error');
+            isValid = false;
+        } else {
+            postoSelect.classList.remove('input-error');
+        }
+
+        if (!quadroSelect.value) {
+            quadroSelect.classList.add('input-error');
+            isValid = false;
+        } else {
+            quadroSelect.classList.remove('input-error');
+        }
+
+        if (nomeGuerraInput.value.trim() === "") {
+            nomeGuerraInput.classList.add('input-error');
+            isValid = false;
+        } else {
+            nomeGuerraInput.classList.remove('input-error');
+        }
+        
+        if (!isValid) {
+            return false;
+        }
+        
+        userInfo.postoGraduacao = postoSelect.value;
+        userInfo.quadro = quadroSelect.value;
+        userInfo.nomeGuerra = nomeGuerraInput.value.toUpperCase().trim();
+        
+        return true;
+    }
+
+    function toggleSetor(contentId) {
+        const content = document.getElementById(contentId);
+        content.classList.toggle('expanded');
+    }
+
+    function updateItemVisual(itemName, status, statusText, description = '') {
+        const itemContainer = document.getElementById('item-' + itemName); 
+        const statusIcon = document.getElementById('status-' + itemName);
+        const descriptionInline = document.getElementById(itemName + '-descricao-inline');
+        const descriptionText = document.getElementById(itemName + '-texto-ca');
+        
+        const saButton = document.getElementById(`btn-${itemName}-sa`);
+        const caButton = document.getElementById(`btn-${itemName}-ca`);
+        
+        saButton.classList.remove('active');
+        caButton.classList.remove('active');
+        
+        itemContainer.classList.remove('status-ok', 'status-alert');
+        statusIcon.classList.remove('ok', 'alert', 'pending');
+        
+        statusIcon.textContent = (status === 'alert' || status === 'pending') ? statusText : '';
+        statusIcon.classList.add(status);
+        
+        if (status === 'ok') {
+            itemContainer.classList.add('status-ok');
+            descriptionInline.style.display = 'none';
+            saButton.classList.add('active');
+        } else if (status === 'alert') {
+            itemContainer.classList.add('status-alert');
+            descriptionText.textContent = description;
+            descriptionInline.style.display = 'block';
+            caButton.classList.add('active');
+        } else {
+             descriptionInline.style.display = 'none';
+        }
+    }
+    
+    function updateSetorStatus(setorName) {
+        const setorStatusElement = document.getElementById(`status-setor-${setorName}`);
+        if (!setorStatusElement) return;
+
+        let totalItems = parseInt(setorStatusElement.getAttribute('data-total-items'));
+        let itemsConferidos = 0;
+        let itemsAlterados = 0;
+
+        for (const itemName in itemStatus) {
+            if (itemToSetor[itemName] === setorName) {
+                itemsConferidos++;
+                if (itemStatus[itemName].status === 'C/A') {
+                    itemsAlterados++;
+                }
+            }
+        }
+        
+        setorStatusElement.setAttribute('data-items-conferidos', itemsConferidos);
+        setorStatusElement.setAttribute('data-items-alterados', itemsAlterados);
+
+        if (itemsAlterados > 0) {
+            setorStatusElement.textContent = `${itemsAlterados} C/A`;
+            setorStatusElement.classList.remove('ok');
+        } else {
+            setorStatusElement.textContent = `S/A`;
+            if (itemsConferidos === totalItems) {
+                setorStatusElement.classList.add('ok');
+            } else {
+                setorStatusElement.classList.remove('ok');
+            }
+        }
+        
+        if (itemsConferidos < totalItems) {
+            setorStatusElement.textContent += ` (${itemsConferidos}/${totalItems})`;
+        }
+    }
+
+    function showAlteracao(itemName) {
+        const alteracaoDiv = document.getElementById(itemName + '-alteracao');
+        
+        updateItemVisual(itemName, 'pending', '...', '');
+        
+        document.getElementById(`btn-${itemName}-ca`).classList.add('active');
+        document.getElementById(`btn-${itemName}-sa`).classList.remove('active');
+
+        alteracaoDiv.style.display = 'block';
+        document.getElementById(itemName + '-descricao').focus();
+    }
+
+    function markItem(itemName, status, setorName) {
+        const alteracaoDiv = document.getElementById(itemName + '-alteracao');
+        
+        alteracaoDiv.style.display = 'none';
+        document.getElementById(itemName + '-descricao').value = '';
+
+        itemStatus[itemName] = { status: 'S/A', descricao: '' };
+        updateItemVisual(itemName, 'ok', '✓', '');
+        updateSetorStatus(setorName);
+
+        checkSetorCompletion(itemName, setorName);
+    }
+
+    function salvarItem(itemName, status, setorName) {
+        const alteracaoDiv = document.getElementById(itemName + '-alteracao');
+        const descricao = document.getElementById(itemName + '-descricao').value;
+        
+        if (descricao.trim() === "") {
+            alert("Por favor, descreva a alteração antes de salvar.");
+            document.getElementById(itemName + '-descricao').focus();
+            return;
+        }
+
+        alteracaoDiv.style.display = 'none';
+        
+        itemStatus[itemName] = { status: 'C/A', descricao: descricao };
+        updateItemVisual(itemName, 'alert', 'C/A', descricao);
+        updateSetorStatus(setorName);
+
+        checkSetorCompletion(itemName, setorName);
+    }
+    
+    function checkSetorCompletion(currentItemName, setorName) {
+        const currentItemElement = document.getElementById('item-' + currentItemName);
+        let nextItemElement = currentItemElement.nextElementSibling;
+        
+        while (nextItemElement && !nextItemElement.classList.contains('item-conferencia')) {
+            nextItemElement = nextItemElement.nextElementSibling;
+        }
+
+        if (nextItemElement && nextItemElement.classList.contains('item-conferencia')) {
+            nextItemElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            return;
+        }
+        
+        const itemsInSetor = Array.from(document.getElementById(setorContentMap[setorName]).querySelectorAll('.item-conferencia'));
+        const isLastItem = itemsInSetor.length > 0 && itemsInSetor[itemsInSetor.length - 1].id === currentItemElement.id;
+
+        if (isLastItem) {
+            autoAdvanceSetor(setorName);
+        }
+    }
+    
+    function autoAdvanceSetor(currentSetorName) {
+        const currentIndex = setorIds.indexOf(currentSetorName);
+        const nextIndex = currentIndex + 1;
+
+        const currentSetorContentId = setorContentMap[currentSetorName];
+        document.getElementById(currentSetorContentId).classList.remove('expanded');
+
+        if (nextIndex < setorIds.length) {
+            const nextSetorName = setorIds[nextIndex];
+            const nextSetorContentId = setorContentMap[nextSetorName];
+            
+            const nextSetorContent = document.getElementById(nextSetorContentId);
+            nextSetorContent.classList.add('expanded');
+            
+            nextSetorContent.previousElementSibling.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            
+            const firstItemInNextSetor = nextSetorContent.querySelector('.item-conferencia');
+            if (firstItemInNextSetor) {
+                firstItemInNextSetor.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+        } else {
+            document.getElementById('btn-finalizar').scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+    }
+
+
+    // ------------------------------------------
+    // FUNÇÃO DE GERAÇÃO DE PDF (CORRIGIDA)
+    // ------------------------------------------
+
+    async function generatePDF() {
+        // CORREÇÃO: Acessa jsPDF de forma segura, garantindo que o objeto exista.
+        if (typeof window.jspdf === 'undefined' || typeof window.jspdf.jsPDF === 'undefined') {
+            alert("Erro fatal: As bibliotecas de PDF não foram carregadas. Tente recarregar a página.");
+            return;
+        }
+        
+        const { jsPDF } = window.jspdf;
+
+        const doc = new jsPDF('p', 'mm', 'a4');
+        
+        if (typeof doc.autoTable === 'undefined') {
+            alert("Erro: O plugin jsPDF-autotable não foi carregado. Verifique os links CDN.");
+            return;
+        }
+        
+        const docWidth = doc.internal.pageSize.getWidth();
+        const docHeight = doc.internal.pageSize.getHeight();
+        let yOffset = 15; 
+        const marginX = 10;
+        const logoWidth = 20;
+        const logoHeight = 20;
+        const logoX = docWidth / 2 - logoWidth / 2;
+        const logoRodapeWidth = 10; 
+        const logoRodapeHeight = 10;
+        
+        const defaultTextColor = [51, 51, 51]; 
+        const vinhoColor = [128, 0, 32];
+        const cinzaClaro = [85, 85, 85];
+        const verdeClaro = [224, 255, 224]; 
+        const amareloClaro = [255, 255, 224]; 
+
+        const dataHora = new Date().toLocaleString('pt-BR');
+        
+        let roraimaDataUrl = '';
+        let sigmaDataUrl = '';
+        
+        try {
+            roraimaDataUrl = await getBase64Image('roraima.png');
+        } catch (error) {
+            console.warn("Aviso: Falha ao carregar roraima.png. Continuando sem imagem.");
+        }
+        try {
+            sigmaDataUrl = await getBase64Image('logo_sigma.png');
+        } catch (error) {
+            console.warn("Aviso: Falha ao carregar logo_sigma.png. Continuando sem imagem no rodapé.");
+        }
+
+
+        // --- 1. Imagem e Cabeçalho Centralizado ---
+        
+        // 1.1 Adicionar Imagem Roraima
+        if (roraimaDataUrl) {
+            doc.addImage(roraimaDataUrl, 'PNG', logoX, yOffset, logoWidth, logoHeight); 
+            yOffset += logoHeight; 
+        } else {
+            yOffset += 5; 
+        }
+        yOffset += 8; 
+
+        // 1.2 Textos do Cabeçalho
+        
+        doc.setTextColor(defaultTextColor[0], defaultTextColor[1], defaultTextColor[2]);
+        doc.setFont("helvetica", "normal");
+        doc.setFontSize(10);
+        doc.text("GOVERNO DO ESTADO DE RORAIMA", docWidth / 2, yOffset, { align: 'center' });
+        yOffset += 5;
+        
+        doc.setTextColor(vinhoColor[0], vinhoColor[1], vinhoColor[2]);
+        doc.setFontSize(11);
+        doc.text("CORPO DE BOMBEIROS MILITAR DE RORAIMA", docWidth / 2, yOffset, { align: 'center' });
+        yOffset += 5;
+        
+        doc.setTextColor(cinzaClaro[0], cinzaClaro[1], cinzaClaro[2]);
+        doc.setFontSize(8);
+        doc.setFont("helvetica", "italic"); 
+        doc.text("\"Amazônia: patrimônio dos brasileiros\"", docWidth / 2, yOffset, { align: 'center' });
+        doc.setFont("helvetica", "normal"); 
+        yOffset += 5;
+        
+        // 2. Linha e Título Principal
+        doc.setDrawColor(204, 204, 204); 
+        doc.setLineWidth(0.5);
+        yOffset += 1; 
+        doc.line(marginX, yOffset, docWidth - marginX, yOffset);
+        yOffset += 4; 
+        
+        doc.setTextColor(vinhoColor[0], vinhoColor[1], vinhoColor[2]);
+        doc.setFontSize(12);
+        doc.setFont("helvetica", "bold");
+        doc.text("CONFERÊNCIA DE MATERIAIS", docWidth / 2, yOffset, { align: 'center' });
+        yOffset += 5;
+        
+        doc.setTextColor(defaultTextColor[0], defaultTextColor[1], defaultTextColor[2]);
+        doc.setFontSize(10);
+        doc.text("LOCAL TESTE - Posto BRAVO", docWidth / 2, yOffset, { align: 'center' });
+        yOffset += 10;
+        
+        // --- 3. MILITAR RESPONSÁVEL ---
+        
+        doc.setLineWidth(0.2);
+        doc.line(marginX, yOffset, docWidth - marginX, yOffset);
+        yOffset += 5; 
+        
+        doc.setTextColor(defaultTextColor[0], defaultTextColor[1], defaultTextColor[2]);
+        doc.setFontSize(10);
+        doc.setFont("helvetica", "bold");
+        doc.text("MILITAR RESPONSÁVEL PELA CONFERÊNCIA", marginX, yOffset);
+        yOffset += 5;
+        
+        doc.setFont("helvetica", "normal");
+        doc.setFontSize(9);
+        
+        doc.text(`${userInfo.postoGraduacao} ${userInfo.quadro} ${userInfo.nomeGuerra}`, marginX, yOffset);
+        doc.text(`Data/Hora: ${dataHora}`, docWidth / 2, yOffset);
+        yOffset += 8;
+        
+        doc.setLineWidth(0.2);
+        doc.line(marginX, yOffset, docWidth - marginX, yOffset);
+        yOffset += 3;
+
+        // --- 4. Tabela de Conferência (Estrutura ajustada para Setores) ---
+        
+        const itemsList = ['lanterna', 'kit', 'radio', 'cordas', 'colete'];
+        let currentSetor = '';
+        
+        // Configuração de largura de colunas (CRÍTICO para alinhamento)
+        const columnStyles = {
+            0: { cellWidth: 70 },
+            1: { cellWidth: 20, halign: 'center' },
+            2: { cellWidth: 100 }
+        };
+        const baseStyles = { fontSize: 8, cellPadding: 2, overflow: 'linebreak', theme: 'plain' };
+
+        // Rodapé Fixo no final da página 
+        doc.autoTable.didDrawPage = function(data) {
+            const docWidth = doc.internal.pageSize.getWidth();
+            const finalY = docHeight - 15;
+            const centroX = docWidth / 2;
+            
+            doc.setTextColor(vinhoColor[0], vinhoColor[1], vinhoColor[2]);
+            doc.setFontSize(9);
+            
+            // Variáveis para centralização
+            const SIGMA_TEXT = "SIGMA";
+            const DETAIL_TEXT = "- Sistema Integrado de Gestão de Materiais";
+            const SIGMA_WIDTH = doc.getStringUnitWidth(SIGMA_TEXT) * 9 * 0.35;
+            const DETAIL_WIDTH = doc.getStringUnitWidth(DETAIL_TEXT) * 9 * 0.35;
+            const LOGO_SPACE = logoRodapeWidth + 2; 
+            const SPACING = 2;
+            
+            const totalBlockWidth = LOGO_SPACE + SIGMA_WIDTH + SPACING + DETAIL_WIDTH;
+            const blockStartX = centroX - (totalBlockWidth / 2);
+
+            let currentX = blockStartX;
+
+            // 5.1 Logo SIGMA
+            if (sigmaDataUrl) {
+                doc.addImage(sigmaDataUrl, 'PNG', currentX, finalY - 3, logoRodapeWidth, logoRodapeHeight);
+                currentX += LOGO_SPACE; 
+            }
+            
+            // 5.2 Texto "SIGMA" (Negrito)
+            doc.setFont("helvetica", "bold");
+            doc.text(SIGMA_TEXT, currentX, finalY); 
+            currentX += SIGMA_WIDTH + SPACING;
+
+            // 5.3 Texto " - Sistema Integrado de Gestão de Materiais" (Normal)
+            doc.setFont("helvetica", "normal");
+            doc.text(DETAIL_TEXT, currentX, finalY);
+            finalY += 4;
+            
+            // 5.4 Rodapé Linha 2: CORPO DE BOMBEIROS MILITAR DE RORAIMA
+            doc.setFont("helvetica", "normal");
+            doc.setFontSize(8);
+            doc.text("CORPO DE BOMBEIROS MILITAR DE RORAIMA", centroX, finalY, { align: 'center' });
+        };
+        
+        let tableData = []; 
+        
+        // Loop que processa os dados por setor
+        itemsList.forEach((itemName, index) => {
+            const statusData = itemStatus[itemName] || { status: 'PENDENTE', descricao: 'ITEM NÃO CONFERIDO' };
+            const itemLabel = document.getElementById('item-' + itemName).querySelector('.item-label').textContent;
+            const setor = itemToSetor[itemName].toUpperCase();
+            
+            // --- Ação no início de cada novo setor ---
+            if (setor !== currentSetor) {
+                // Se não for o primeiro setor, gera a tabela de dados do setor anterior
+                if (currentSetor !== '') {
+                    doc.autoTable({
+                        startY: yOffset,
+                        body: tableData,
+                        margin: { top: 0, right: marginX, bottom: 0, left: marginX },
+                        styles: { ...baseStyles, theme: 'striped' },
+                        columnStyles: columnStyles,
+                        didParseCell: (data) => {
+                            if (data.row.section === 'body' && data.column.index === 1) {
+                                if (data.row.raw[1] === 'C/A') {
+                                    data.cell.styles.fillColor = amareloClaro;
+                                } else if (data.row.raw[1] === 'S/A') {
+                                    data.cell.styles.fillColor = verdeClaro;
+                                }
+                            }
+                        }
+                    });
+                    yOffset = doc.autoTable.previous.finalY;
+                }
+                
+                // 4.1 Cabeçalho do Setor (Vinho)
+                doc.autoTable({
+                    startY: yOffset + 2,
+                    head: [
+                        [
+                            { content: `${setor}`, colSpan: 1, styles: { fontStyle: 'bold', halign: 'left', fillColor: vinhoColor, textColor: 255 } }, 
+                            { content: `STATUS`, colSpan: 1, styles: { fontStyle: 'bold', halign: 'center', fillColor: vinhoColor, textColor: 255 } },
+                            { content: `OBSERVAÇÃO`, colSpan: 1, styles: { fontStyle: 'bold', halign: 'left', fillColor: vinhoColor, textColor: 255 } }
+                        ]
+                    ],
+                    styles: baseStyles,
+                    margin: { top: 0, right: marginX, bottom: 0, left: marginX },
+                    columnStyles: columnStyles 
+                });
+                
+                yOffset = doc.autoTable.previous.finalY; // Define o Y para o início dos dados
+                currentSetor = setor;
+                tableData = []; // Zera os dados para a nova seção
+            }
+
+            const statusText = statusData.status;
+            // CORREÇÃO: Observação deve ser vazia se S/A
+            const obsText = statusData.status === 'C/A' ? statusData.descricao : ''; 
+            
+            tableData.push([
+                itemLabel, 
+                statusText, 
+                obsText
+            ]);
+            
+            // Se for o último item geral, garante que a última tabela de dados seja gerada
+            if (index === itemsList.length - 1) {
+                doc.autoTable({
+                    startY: yOffset,
+                    body: tableData,
+                    margin: { top: 0, right: marginX, bottom: 10, left: marginX },
+                    styles: { ...baseStyles, theme: 'striped' },
+                    columnStyles: columnStyles,
+                    didParseCell: (data) => {
+                        if (data.row.section === 'body' && data.column.index === 1) {
+                            if (data.row.raw[1] === 'C/A') {
+                                data.cell.styles.fillColor = amareloClaro;
+                            } else if (data.row.raw[1] === 'S/A') {
+                                data.cell.styles.fillColor = verdeClaro;
+                            }
+                        }
+                    }
+                });
+            }
+        });
+        
+        // --- 6. Finalizar e Salvar ---
+        
+        const filename = `CONFERENCIA_${userInfo.nomeGuerra}_${dataHora.split(' ')[0].replace(/\//g, '-')}.pdf`;
+        
+        doc.save(filename);
+    }
+
+
+    // ------------------------------------------
+    // FUNÇÃO FINALIZAR
+    // ------------------------------------------
+
+    document.getElementById('form-conferencia').addEventListener('submit', async function(event) {
+        event.preventDefault();
+        
+        if (!validateAndSaveUserInfo()) {
+            return;
+        }
+
+        const todosItens = ['lanterna', 'kit', 'radio', 'cordas', 'colete'];
+        let pendente = false;
+        
+        todosItens.forEach(itemName => {
+            if (!itemStatus[itemName]) {
+                pendente = true;
+            }
+        });
+
+        if (pendente) {
+             alert('ATENÇÃO: Existem itens pendentes de conferência. Por favor, verifique todos os itens antes de finalizar.');
+        } else {
+             await generatePDF();
+        }
+    });
+
+    // ------------------------------------------
+    // FUNÇÕES RESTANTES (MANTIDAS)
+    // ------------------------------------------
+    function updateQuadroOptions() {
+        const postoSelect = document.getElementById('posto-graduacao');
+        const quadroSelect = document.getElementById('quadro');
+        const selectedPosto = postoSelect.value;
+        
+        quadroSelect.innerHTML = '<option value="" disabled selected>-- Selecione um Quadro --</option>';
+        
+        let quadroGroup = null;
+        if (oficiasPatentes.includes(selectedPosto)) {
+            quadroGroup = 'OFICIAIS';
+        } else if (selectedPosto) {
+            quadroGroup = 'PRACAS';
+        }
+
+        if (quadroGroup && quadrosMap[quadroGroup]) {
+            quadrosMap[quadroGroup].forEach(quadro => {
+                const option = document.createElement('option');
+                option.value = quadro;
+                option.textContent = quadro;
+                quadroSelect.appendChild(option);
+            });
+        }
+    }
+
+    function validateAndSaveUserInfo() {
+        const postoSelect = document.getElementById('posto-graduacao');
+        const quadroSelect = document.getElementById('quadro');
+        const nomeGuerraInput = document.getElementById('nome-guerra');
+        
+        let isValid = true;
+        
+        if (!postoSelect.value) {
+            postoSelect.classList.add('input-error');
+            isValid = false;
+        } else {
+            postoSelect.classList.remove('input-error');
+        }
+
+        if (!quadroSelect.value) {
+            quadroSelect.classList.add('input-error');
+            isValid = false;
+        } else {
+            quadroSelect.classList.remove('input-error');
+        }
+
+        if (nomeGuerraInput.value.trim() === "") {
+            nomeGuerraInput.classList.add('input-error');
+            isValid = false;
+        } else {
+            nomeGuerraInput.classList.remove('input-error');
+        }
+        
+        if (!isValid) {
+            return false;
+        }
+        
+        userInfo.postoGraduacao = postoSelect.value;
+        userInfo.quadro = quadroSelect.value;
+        userInfo.nomeGuerra = nomeGuerraInput.value.toUpperCase().trim();
+        
+        return true;
+    }
 
     function toggleSetor(contentId) {
         const content = document.getElementById(contentId);
