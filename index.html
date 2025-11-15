@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="icon" type="image/png" href="logo_sigma.png"> 
+    <link rel="icon" type="image/png" href="logo_sigma.png" onerror="this.href='https://placehold.co/16x16/800020/ffffff?text=S'">
     <title>SIGMA - Conferência de Materiais</title>
     <style>
         /* BASE & RESET */
@@ -18,9 +18,68 @@
             align-items: center;
             justify-content: flex-start;
             padding-bottom: 90px; 
-            padding-top: 20px;
+            padding-top: 60px; /* Ajuste para compensar o header fixo */
             box-sizing: border-box;
         }
+
+        /* NOVO ESTILO: Cabeçalho com tarja vinho */
+        .main-header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 50px; /* Altura da tarja */
+            background-color: #800020; /* Cor Vinho */
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+            z-index: 100; /* Garante que fique acima de outros elementos */
+            display: flex;
+            align-items: center; /* Alinha verticalmente o ícone e o texto */
+            padding: 0 15px; /* Espaçamento interno */
+            box-sizing: border-box;
+            gap: 10px; /* Espaço entre o ícone e o texto */
+        }
+        
+        .header-icon {
+            height: 40px; /* Tamanho do ícone */
+            width: auto;
+        }
+
+        /* Estilos para o texto do cabeçalho */
+        .header-title-desktop, .header-title-mobile {
+            font-weight: bold;
+            font-size: 1.1em;
+            line-height: 1.2;
+        }
+        
+        .text-white {
+            color: white;
+        }
+
+        /* O novo vermelho mais claro para o texto no cabeçalho */
+        .text-red { 
+            color: #FF3B3B; 
+        }
+
+        /* Regras de Visibilidade */
+        .header-title-desktop {
+            display: none; 
+        }
+        .header-title-mobile {
+            display: block; 
+        }
+        
+        @media (min-width: 768px) { 
+            .header-title-desktop {
+                display: block; 
+            }
+            .header-title-mobile {
+                display: none; 
+            }
+            .header-title-desktop {
+                font-size: 1.2em;
+            }
+        }
+        /* Fim dos estilos do cabeçalho */
 
         .container {
             background-color: #fff;
@@ -48,16 +107,96 @@
             color: #d90f23;
             margin-bottom: 3px;
             font-size: 1.6em;
-            padding-bottom: 0;
-            border-bottom: none;
+            padding-bottom: 5px; /* Espaçamento entre o texto e a linha */
+            border-bottom: 1px solid #e0e0e0; /* Linha discreta (cinza claro) */
+            margin-bottom: 10px; /* Espaçamento após a linha */
         }
         
         .subtitulo {
             font-size: 0.8em;
             color: #666;
-            margin-bottom: 20px;
+            margin-bottom: 15px;  
             font-weight: 600;
         }
+        
+        /* --- NOVOS ESTILOS PARA STEP INDICATOR (PASSO A PASSO) --- */
+        .step-indicator {
+            display: flex;
+            justify-content: center; /* Centralizado sem labels */
+            align-items: center;
+            margin: 15px 0 30px; /* Espaçamento superior e inferior */
+            padding: 0 10px;
+            position: relative;
+        }
+
+        .step-item {
+            text-align: center;
+            flex-grow: 0; /* Não cresce mais */
+            position: relative;
+            z-index: 2; /* Para o círculo ficar acima da linha */
+            margin: 0 20px; /* Espaçamento entre os círculos */
+        }
+
+        .step-circle {
+            width: 30px;
+            height: 30px;
+            line-height: 30px;
+            border-radius: 50%;
+            margin: 0 auto;
+            font-weight: bold;
+            color: #fff;
+            border: 2px solid #ccc;
+            background-color: #aaa; /* Default inactive */
+            transition: background-color 0.4s, border-color 0.4s;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            font-size: 1.1em;
+        }
+
+        /* Estilo para o passo ATIVO */
+        .step-item.active .step-circle {
+            background-color: #d90f23;
+            border-color: #d90f23;
+        }
+
+        /* Estilo para o passo CONCLUÍDO (Verde de Sucesso) */
+        .step-item.complete .step-circle {
+            background-color: #1b8a3e; /* Verde de Sucesso */
+            border-color: #1b8a3e;
+        }
+
+        /* Oculta as labels dos passos, conforme solicitado */
+        .step-label {
+            display: none;
+        }
+
+        .step-line {
+            position: absolute;
+            top: 15px; /* Metade da altura do circle */
+            left: calc(50% - 35px); /* Ajuste para centralizar a linha entre os círculos */
+            width: 70px; /* Largura fixa da linha */
+            height: 2px;
+            background-color: #ccc;
+            z-index: 1;
+        }
+        
+        /* Linha de progresso (a parte que muda de cor) */
+        .step-line::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            height: 100%;
+            width: 0%; /* Será controlado pelo JS */
+            background-color: #d90f23;
+            transition: width 0.4s ease;
+        }
+
+        /* Classe para mostrar o progresso: 1 completo e 2 completo (Linha fica verde) */
+        .step-indicator.progress-2 .step-line::after {
+            width: 100%; /* Linha cheia até o Step 2 */
+            background-color: #1b8a3e; /* Cor da linha de progresso concluído */
+        }
+        /* --- FIM DOS ESTILOS STEP INDICATOR --- */
 
         .form-group {
             margin-bottom: 15px;
@@ -115,7 +254,7 @@
             left: 0;
             width: 100%;
             text-align: center;
-            padding: 5px 0 30px; 
+            padding: 5px 0 5px; 
             background-color: #f4f4f9;
             color: #555;
             font-size: 0.65em;
@@ -128,19 +267,18 @@
             font-weight: bold;
         }
 
-        .footer-right {
-            position: fixed; 
-            right: 10px; 
-            bottom: 5px; 
+        /* Novo estilo para o separador e o texto do autor */
+        .footer-autor {
+            display: block;
+            margin-top: 10px; 
             color: #888;
-            font-size: 0.75em;
-            z-index: 100; 
+            font-size: 0.9em; 
         }
-
+        
         /* Media Query para telas maiores que 500px (desktop/tablet grande) */
         @media (min-width: 500px) {
             body {
-                padding-top: 50px;
+                padding-top: 70px;
                 padding-bottom: 90px;
             }
             .container {
@@ -165,34 +303,64 @@
 </head>
 <body>
 
+<header class="main-header">
+    <img src="cbmrr.png" alt="Ícone CBM-RR" class="header-icon" 
+            onerror="this.onerror=null; this.src='https://placehold.co/40x40/ffffff/800020/fff?text=CBM'">
+    
+    <div class="header-title-desktop">
+        <span class="text-white">CORPO DE BOMBEIROS MILITAR </span><span class="text-red">RORAIMA</span>
+    </div>
+    
+    <div class="header-title-mobile">
+        <span class="text-white">CBM</span><span class="text-red">RR</span>
+    </div>
+</header>
 <div class="container">
     
-    <img src="logo_sigma.png" alt="Logo do Sistema SIGMA" class="logo">
+    <img src="logo_sigma.png" alt="Logo do Sistema SIGMA" class="logo" 
+            onerror="this.onerror=null; this.src='https://placehold.co/80x80/d90f23/ffffff?text=SIGMA'">
     
     <h1>SIGMA</h1>
     <p class="subtitulo">Sistema Integrado de Gestão de Materiais</p>
     
-    <div class="form-group">
-        <label for="posto-servico">Escolha o Posto de Serviço</label>
-        <select id="posto-servico">
-            <option value="" disabled selected>-- Selecione um Posto --</option>
-            <option value="ALFA">ALFA</option>
-            <option value="BRAVO">BRAVO</option>
-            <option value="CHARLIE">CHARLIE</option>
-            <option value="CARACARAÍ">CARACARAÍ</option>
-            <option value="RORAINÓPOLIS">RORAINÓPOLIS</option>
-            <option value="PACARAIMA">PACARAIMA</option>
-        </select>
+    <div class="step-indicator progress-0" id="step-indicator">
+        <div class="step-item active" id="step-item-1">
+            <div class="step-circle">1</div>
+            <div class="step-label">Posto de Serviço</div> 
+        </div>
+        
+        <div class="step-line"></div>
+
+        <div class="step-item" id="step-item-2">
+            <div class="step-circle">2</div>
+            <div class="step-label">Local de Conferência</div> 
+        </div>
+    </div>
+    <div id="step-1-content">
+        <div class="form-group">
+            <label for="posto-servico">Escolha o Posto de Serviço</label>
+            <select id="posto-servico">
+                <option value="" disabled selected>-- Selecione um Posto --</option>
+                <option value="ALFA">ALFA</option>
+                <option value="BRAVO">BRAVO</option>
+                <option value="CHARLIE">CHARLIE</option>
+                <option value="CARACARAÍ">CARACARAÍ</option>
+                <option value="RORAINÓPOLIS">RORAINÓPOLIS</option>
+                <option value="PACARAIMA">PACARAIMA</option>
+            </select>
+        </div>
     </div>
 
-    <div class="form-group" id="local-group" style="display: none;">
-        <label for="local">Escolha o Local</label>
-        <select id="local">
-            <option value="" disabled selected>-- Selecione um Local --</option>
-        </select>
-    </div>
+    <div id="step-2-content" style="display: none;">
+        <div class="form-group">
+            <label for="local">Escolha o Local</label>
+            <select id="local">
+                <option value="" disabled selected>-- Selecione um Local --</option>
+            </select>
+        </div>
 
-    <button id="btn-ir" disabled>INICIAR CONFERÊNCIA</button>
+        <button id="btn-ir" disabled>INICIAR CONFERÊNCIA</button>
+    </div>
 
 </div>
 
@@ -200,20 +368,26 @@
     <strong>GOVERNO DE RORAIMA</strong><br>
     <strong>CORPO DE BOMBEIROS MILITAR DE RORAIMA</strong><br>
     <em>“Amazônia: patrimônio dos brasileiros”</em>
-</div>
-
-<div class="footer-right">
-    Criado por 3º SGT QPCBM JHONATH
+    
+    <span class="footer-autor">
+        Elaborado por: 3º SGT QPCBM JHONATH
+    </span>
 </div>
 
 
 <script>
     document.addEventListener('DOMContentLoaded', function() {
         const postoSelect = document.getElementById('posto-servico');
-        const localGroup = document.getElementById('local-group');
         const localSelect = document.getElementById('local');
         const btnIr = document.getElementById('btn-ir');
+        const step2Content = document.getElementById('step-2-content');
+        
+        // Novos elementos do passo a passo
+        const stepIndicator = document.getElementById('step-indicator');
+        const stepItem1 = document.getElementById('step-item-1');
+        const stepItem2 = document.getElementById('step-item-2');
 
+        // MAPA DE FORMULÁRIOS
         const formsMap = {
             'ALFA': {
                 'ABT-17': 'https://docs.google.com/forms/d/e/1FAIpQLScaIN4xEGq0FP_5s4cyMUP-OSqLyh9QZiUUAj1v2nMzymXfwg/viewform',
@@ -224,7 +398,9 @@
             },
             'BRAVO': {
                 'ABT-18': 'https://docs.google.com/forms/d/e/1FAIpQLSctaCjNUB2gDdNDXn3h4RiGOoch94CvAC5sj15D8YgzPT8Z9w/viewform',
-                'PERMANÊNCIA': 'https://docs.google.com/forms/d/e/1FAIpQLSd4paOCzbr3mjS3DEoFOBwmVTjVOrvk6NfspYJ-p1XcNtD7bg/viewform'
+                'PERMANÊNCIA': 'https://docs.google.com/forms/d/e/1FAIpQLSd4paOCzbr3mjS3DEoFOBwmVTjVOrvk6NfspYJ-p1XcNtD7bg/viewform',
+                // NOVO LOCAL DE TESTE: O link aponta para o novo arquivo HTML
+                'LOCAL TESTE': 'conferencia_teste.html' 
             },
             'CHARLIE': {
                 'VTR SALVAMENTO': 'https://docs.google.com/forms/d/e/1FAIpQLSfzEdboDDlJJ24oYcr3uIgWxemDzbBfIn8YqQBMJag7A-eqWA/viewform',
@@ -238,31 +414,61 @@
                 'PERMANÊNCIA': 'https://docs.google.com/forms/d/e/1FAIpQLScW4_vbkqZVKtNM02BBFMkMdpZStX-FF9OIEQkhrPS0ThVVgg/viewform'
             },
             'RORAINÓPOLIS': {
-                'POSTO RORAINÓPOLIS': 'LINK_DO_FORMS_RORAINOPOLIS'
+                'ABT-15': 'https://docs.google.com/forms/d/e/1FAIpQLSdbGEFe2CMF_56N5QyXsoNHfBWlokvYTRf5s48_T84T_srt_w/viewform',
+                'UR 09-23': 'https://docs.google.com/forms/d/e/1FAIpQLScRW_T3DEMt0OLOjBD_gGxM3gSUW_igGN0KIJPXjMYTn8C62A/viewform'
             },
             'PACARAIMA': {
                 'POSTO PACARAIMA': 'LINK_DO_FORMS_PACARAIMA'
             }
         };
 
-        // Função para iniciar a navegação (só chamada pelo botão agora)
         function navigateToForms() {
             const formsLink = localSelect.value;
             if (formsLink && formsLink.startsWith('http')) {
-                // Remove o foco do seletor Local (garante fechamento no mobile)
                 localSelect.blur(); 
                 window.open(formsLink, '_blank');
-            } else if (formsLink.includes('LINK_DO_FORMS')) {
-                alert('Atenção: O link para ' + localSelect.options[localSelect.selectedIndex].text + ' ainda não foi configurado. Por favor, ajuste o código!');
+            } else if (formsLink.includes('LINK_DO_FORMS') || formsLink.includes('conferencia_teste.html')) {
+                // Abre na mesma janela se for um arquivo local para teste
+                localSelect.blur(); 
+                window.open(formsLink, '_self');
+            } else {
+                // Mensagem de erro no console para links não configurados
+                console.error('Atenção: O link para ' + localSelect.options[localSelect.selectedIndex].text + ' ainda não foi configurado.');
             }
         }
         
-        // Função para atualizar as opções do menu 'Local'
+        // Função para atualizar o status visual dos passos
+        function updateStepIndicator(isStep1Complete, isStep2Complete) {
+            // Passo 1
+            if (isStep1Complete) {
+                stepItem1.classList.remove('active');
+                stepItem1.classList.add('complete');
+            } else {
+                stepItem1.classList.add('active');
+                stepItem1.classList.remove('complete');
+            }
+
+            // Passo 2
+            if (isStep2Complete) {
+                stepItem2.classList.add('complete');
+                stepItem2.classList.remove('active');
+                stepIndicator.classList.remove('progress-1');
+                stepIndicator.classList.add('progress-2'); // Linha fica verde
+            } else if (isStep1Complete) {
+                stepItem2.classList.add('active'); // Fica vermelho/ativo se o Passo 1 estiver completo
+                stepItem2.classList.remove('complete');
+                stepIndicator.classList.add('progress-2'); // A linha fica ativa/vermelha até aqui, mas o círculo não fica verde
+                stepIndicator.classList.remove('progress-2');
+            } else {
+                stepItem2.classList.remove('active', 'complete');
+                stepIndicator.classList.remove('progress-2');
+            }
+        }
+
         function updateLocalOptions() {
             const selectedPosto = postoSelect.value;
             localSelect.innerHTML = '<option value="" disabled selected>-- Selecione um Local --</option>'; 
             
-            // Remove o foco do primeiro seletor (garante fechamento no mobile)
             postoSelect.blur(); 
 
             if (selectedPosto && formsMap[selectedPosto]) {
@@ -275,9 +481,13 @@
                     localSelect.appendChild(option);
                 }
 
-                localGroup.style.display = 'block';
+                // MOSTRA O PASSO 2 (Local de Conferência e Botão)
+                step2Content.style.display = 'block';
+                updateStepIndicator(true, false); // Passo 1 Completo, Passo 2 Inativo
             } else {
-                localGroup.style.display = 'none';
+                // ESCONDE O PASSO 2
+                step2Content.style.display = 'none';
+                updateStepIndicator(false, false); // Passo 1 Inativo, Passo 2 Inativo
             }
 
             localSelect.value = "";
@@ -287,21 +497,25 @@
         // 1. Listener para o menu 'Posto de Serviço' (fecha e atualiza o 2º menu)
         postoSelect.addEventListener('change', updateLocalOptions);
 
-        // 2. Listener para o menu 'Local' (apenas fecha o menu e habilita o botão)
+        // 2. Listener para o menu 'Local' (habilita o botão E ATUALIZA PASSO 2)
         localSelect.addEventListener('change', function() {
-            btnIr.disabled = !localSelect.value;
-            
-            // Apenas remove o foco do seletor Local para fechar o menu nativo do celular
-            // A navegação só ocorrerá no clique do botão.
+            const isLocalSelected = !!localSelect.value;
+            btnIr.disabled = !isLocalSelected;
             localSelect.blur(); 
+
+            // Se o local for selecionado, o Passo 2 está completo
+            updateStepIndicator(true, isLocalSelected);
         });
         
         // 3. Listener para o botão (ÚNICO ponto que chama a navegação)
         btnIr.addEventListener('click', navigateToForms);
 
+        // Inicializa o estado (Passo 1 Ativo, Passo 2 Oculto)
         updateLocalOptions();
+        updateStepIndicator(false, false); // Garante que começa no passo 1
     });
 </script>
 
 </body>
+
 </html>
