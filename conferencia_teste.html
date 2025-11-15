@@ -1,15 +1,6 @@
 <script>
-    // Define a variável global do jsPDF para uso fácil
-    const { jsPDF } = window.jspdf; 
+    // AS VARIÁVEIS jsPDF, itemStatus, etc., SERÃO DEFINIDAS DENTRO DO DOMContentLoaded.
 
-    const itemStatus = {};
-    const userInfo = {};
-    const setorIds = ['deposito', 'area-externa'];
-    const setorContentMap = {
-        'deposito': 'deposito-content',
-        'area-externa': 'area-externa-content'
-    };
-    
     const itemToSetor = {};
     document.querySelectorAll('.item-conferencia').forEach(item => {
         itemToSetor[item.id.replace('item-', '')] = item.getAttribute('data-setor');
@@ -20,6 +11,15 @@
         'PRACAS': ['QPCBM', 'QPSBM', 'QEPBM']
     };
     const oficiasPatentes = ['CAP', '1º TEN', '2º TEN'];
+
+    // Variáveis que precisam ser acessíveis fora do DOMContentLoaded
+    let itemStatus = {};
+    let userInfo = {};
+    const setorIds = ['deposito', 'area-externa'];
+    const setorContentMap = {
+        'deposito': 'deposito-content',
+        'area-externa': 'area-externa-content'
+    };
 
 
     // ------------------------------------------
@@ -286,15 +286,18 @@
 
 
     // ------------------------------------------
-    // FUNÇÃO DE GERAÇÃO DE PDF (AJUSTADA)
+    // FUNÇÃO DE GERAÇÃO DE PDF (CORRIGIDA)
     // ------------------------------------------
 
     async function generatePDF() {
-        if (typeof jsPDF === 'undefined') {
-            alert("Erro: A biblioteca jsPDF não foi carregada. Verifique os links CDN.");
+        // CORREÇÃO: jsPDF é definido dentro do DOMContentLoaded, mas precisa ser checado aqui.
+        if (typeof window.jspdf === 'undefined' || typeof window.jspdf.jsPDF === 'undefined') {
+            alert("Erro: A biblioteca jsPDF não foi carregada. Tente recarregar a página.");
             return;
         }
         
+        const { jsPDF } = window.jspdf; // Acessa a variável aqui!
+
         const doc = new jsPDF('p', 'mm', 'a4');
         
         if (typeof doc.autoTable === 'undefined') {
@@ -344,24 +347,21 @@
         } else {
             yOffset += 5; 
         }
-        yOffset += 8; // Aumenta a distância entre a imagem e o texto (AJUSTE 1)
+        yOffset += 8; 
 
         // 1.2 Textos do Cabeçalho
         
-        // Governo do Estado de Roraima (MAIÚSCULAS)
         doc.setTextColor(defaultTextColor[0], defaultTextColor[1], defaultTextColor[2]);
         doc.setFont("helvetica", "normal");
         doc.setFontSize(10);
         doc.text("GOVERNO DO ESTADO DE RORAIMA", docWidth / 2, yOffset, { align: 'center' });
         yOffset += 5;
         
-        // Corpo de Bombeiros Militar de Roraima (MAIÚSCULAS)
         doc.setTextColor(vinhoColor[0], vinhoColor[1], vinhoColor[2]);
         doc.setFontSize(11);
         doc.text("CORPO DE BOMBEIROS MILITAR DE RORAIMA", docWidth / 2, yOffset, { align: 'center' });
         yOffset += 5;
         
-        // "Amazônia: patrimônio dos brasileiros" (ITÁLICO)
         doc.setTextColor(cinzaClaro[0], cinzaClaro[1], cinzaClaro[2]);
         doc.setFontSize(8);
         doc.setFont("helvetica", "italic"); 
@@ -372,7 +372,7 @@
         // 2. Linha e Título Principal
         doc.setDrawColor(204, 204, 204); 
         doc.setLineWidth(0.5);
-        yOffset += 1; // Linha acima do título 
+        yOffset += 1; 
         doc.line(marginX, yOffset, docWidth - marginX, yOffset);
         yOffset += 4; 
         
@@ -382,13 +382,12 @@
         doc.text("CONFERÊNCIA DE MATERIAIS", docWidth / 2, yOffset, { align: 'center' });
         yOffset += 5;
         
-        // Local Teste - Posto Bravo (PRETO E NEGRITO)
         doc.setTextColor(defaultTextColor[0], defaultTextColor[1], defaultTextColor[2]);
         doc.setFontSize(10);
         doc.text("LOCAL TESTE - Posto BRAVO", docWidth / 2, yOffset, { align: 'center' });
         yOffset += 10;
         
-        // --- 3. MILITAR RESPONSÁVEL (AJUSTADO) ---
+        // --- 3. MILITAR RESPONSÁVEL ---
         
         doc.setLineWidth(0.2);
         doc.line(marginX, yOffset, docWidth - marginX, yOffset);
@@ -403,13 +402,10 @@
         doc.setFont("helvetica", "normal");
         doc.setFontSize(9);
         
-        // Nome no estilo "POSTO QUADRO NOME"
         doc.text(`${userInfo.postoGraduacao} ${userInfo.quadro} ${userInfo.nomeGuerra}`, marginX, yOffset);
-        // Data e Hora
         doc.text(`Data/Hora: ${dataHora}`, docWidth / 2, yOffset);
         yOffset += 8;
         
-        // Linha de separação antes da Tabela
         doc.setLineWidth(0.2);
         doc.line(marginX, yOffset, docWidth - marginX, yOffset);
         yOffset += 3;
@@ -417,10 +413,8 @@
         // --- 4. Tabela de Conferência (Estrutura ajustada para Setores) ---
         
         const itemsList = ['lanterna', 'kit', 'radio', 'cordas', 'colete'];
-        let tableData = [];
         let currentSetor = '';
         
-        // Configuração de largura de colunas (mantida para consistência)
         const columnStyles = {
             0: { cellWidth: 70 },
             1: { cellWidth: 20, halign: 'center' },
@@ -428,9 +422,9 @@
         };
         const baseStyles = { fontSize: 8, cellPadding: 2, overflow: 'linebreak', theme: 'plain' };
 
-        // Rodapé Fixo no final da página (AJUSTADO: Variáveis movidas para dentro)
+        // Rodapé Fixo no final da página 
         doc.autoTable.didDrawPage = function(data) {
-            const docWidth = doc.internal.pageSize.getWidth(); // Recalculado
+            const docWidth = doc.internal.pageSize.getWidth();
             const finalY = docHeight - 15;
             const centroX = docWidth / 2;
             
@@ -472,6 +466,8 @@
             doc.text("CORPO DE BOMBEIROS MILITAR DE RORAIMA", centroX, finalY, { align: 'center' });
         };
         
+        let tableData = []; 
+        
         // Loop que processa os dados por setor
         itemsList.forEach((itemName, index) => {
             const statusData = itemStatus[itemName] || { status: 'PENDENTE', descricao: 'ITEM NÃO CONFERIDO' };
@@ -506,7 +502,7 @@
                     startY: yOffset + 2,
                     head: [
                         [
-                            { content: `${setor}`, colSpan: 1, styles: { fontStyle: 'bold', halign: 'left', fillColor: vinhoColor, textColor: 255 } },
+                            { content: `${setor}`, colSpan: 1, styles: { fontStyle: 'bold', halign: 'left', fillColor: vinhoColor, textColor: 255 } }, 
                             { content: `STATUS`, colSpan: 1, styles: { fontStyle: 'bold', halign: 'center', fillColor: vinhoColor, textColor: 255 } },
                             { content: `OBSERVAÇÃO`, colSpan: 1, styles: { fontStyle: 'bold', halign: 'left', fillColor: vinhoColor, textColor: 255 } }
                         ]
@@ -522,7 +518,6 @@
             }
 
             const statusText = statusData.status;
-            // Se for S/A, a observação deve ser vazia (AJUSTE 2)
             const obsText = statusData.status === 'C/A' ? statusData.descricao : ''; 
             
             tableData.push([
