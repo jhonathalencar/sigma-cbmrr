@@ -1125,6 +1125,16 @@
                                 data.cell.styles.fillColor = verdeClaro;
                             }
                         }
+                        
+                        // CORREÇÃO: Remove a borda lateral da coluna de Observação se o status for S/A
+                        if (data.row.section === 'body' && data.column.index === 2 && data.row.raw[1] === 'S/A') {
+                            // Define a cor da linha da borda direita da célula Observação para a cor do fundo da linha, escondendo-a.
+                            // O estilo 'striped' usa branco e cinza claro, então vamos tentar igualar ao fundo da linha.
+                            const rowColor = data.row.index % 2 === 0 ? 255 : [240, 240, 240]; // Baseado no theme: 'striped'
+                            
+                            // Para garantir que a borda não apareça, setamos a largura da linha como 0
+                            data.cell.styles.lineWidth = 0; 
+                        }
                     }
                 });
             }
@@ -1616,6 +1626,7 @@
                         styles: { ...baseStyles, theme: 'striped' },
                         columnStyles: columnStyles,
                         didParseCell: (data) => {
+                            // Aplica cor APENAS na coluna Status (índice 1)
                             if (data.row.section === 'body' && data.column.index === 1) {
                                 if (data.row.raw[1] === 'C/A') {
                                     data.cell.styles.fillColor = amareloClaro;
