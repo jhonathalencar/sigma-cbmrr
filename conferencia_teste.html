@@ -1,3 +1,551 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/png" href="logo_sigma.png" onerror="this.href='https://placehold.co/16x16/800020/ffffff?text=S'">
+    <title>Conferência - LOCAL TESTE</title>
+    <style>
+        /* ESTILOS BASE REUTILIZADOS */
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f9;
+            color: #333;
+            min-height: 100vh;
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+            padding-bottom: 20px;
+            padding-top: 60px; /* Ajuste para compensar o header fixo */
+            box-sizing: border-box;
+        }
+
+        .main-header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 50px;
+            background-color: #800020;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+            z-index: 100;
+            display: flex;
+            align-items: center;
+            padding: 0 15px;
+            box-sizing: border-box;
+            gap: 10px;
+        }
+
+        .header-icon {
+            height: 40px; 
+            width: auto; 
+            vertical-align: middle; 
+        }
+
+        .header-title-desktop, .header-title-mobile {
+            font-weight: bold;
+            font-size: 1.1em;
+            line-height: 1.2;
+        }
+
+        .text-white {
+            color: white;
+        }
+
+        .text-red {
+            color: #FF3B3B;
+        }
+
+        @media (min-width: 768px) {
+            .header-title-desktop { display: block; }
+            .header-title-mobile { display: none; }
+            .header-title-desktop { font-size: 1.2em; }
+        }
+
+        /* --- ESTILOS DO CONTAINER E CABEÇALHOS --- */
+        .container {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            width: 95%;
+            max-width: 600px;
+            margin-bottom: 20px;
+            text-align: center;
+            box-sizing: border-box;
+        }
+
+        h1 {
+            color: #d90f23;
+            margin-bottom: 3px;
+            font-size: 1.6em;
+            padding-bottom: 5px;
+            border-bottom: 1px solid #e0e0e0;
+            margin-bottom: 10px;
+        }
+
+        .subtitulo {
+            font-size: 0.9em;
+            color: #666;
+            margin-bottom: 20px;
+            font-weight: 600;
+        }
+        
+        /* --- ESTILO: CAMPO DE INFORMAÇÕES DO USUÁRIO --- */
+        .user-info-section {
+            border: 1px solid #800020; 
+            border-radius: 6px;
+            padding: 15px;
+            margin-bottom: 20px;
+            background-color: #fff8f8; 
+            text-align: left;
+        }
+
+        .user-info-section h2 {
+            font-size: 1.1em;
+            color: #800020;
+            margin-top: 0;
+            border-bottom: 1px solid #e0e0e0;
+            padding-bottom: 5px;
+            margin-bottom: 10px;
+        }
+        
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 6px;
+            font-weight: bold;
+            color: #555;
+            font-size: 0.9em;
+        }
+
+        select, input[type="text"] {
+            width: 100%;
+            padding: 10px;
+            border-radius: 6px;
+            border: 1px solid #ccc;
+            box-sizing: border-box;
+            font-size: 1em;
+            background-color: #fff;
+            font-family: Arial, sans-serif;
+        }
+
+        .input-error {
+            border: 2px solid #d90f23 !important;
+            box-shadow: 0 0 5px rgba(217, 15, 35, 0.5);
+        }
+        
+        /* --- ESTILOS PARA SETORES (COLLAPSIBLE) --- */
+        .setor-header {
+            background-color: #800020; 
+            color: white;
+            padding: 12px 15px;
+            margin-top: 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            text-align: left;
+            font-weight: bold;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            transition: background-color 0.3s;
+        }
+
+        .setor-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .setor-status {
+            background-color: #d90f23;
+            color: white;
+            font-size: 0.9em;
+            padding: 3px 8px;
+            border-radius: 4px;
+            min-width: 35px;
+            text-align: center;
+            transition: background-color 0.3s;
+        }
+        
+        .setor-status.ok { background-color: #1b8a3e; }
+
+        .setor-content {
+            padding: 10px 0;
+            max-height: 0; 
+            overflow: hidden;
+            transition: max-height 0.4s ease-out, padding 0.4s ease-out;
+            background-color: #fff;
+        }
+
+        .setor-content.expanded {
+            max-height: 1000px; 
+            padding-bottom: 20px;
+            border: 1px solid #e0e0e0;
+            border-top: none;
+            border-radius: 0 0 6px 6px;
+        }
+        
+        .arrow {
+            font-size: 1.2em;
+            transition: transform 0.4s;
+        }
+
+        /* --- ESTILOS DO ITEM DE CONFERÊNCIA --- */
+        .item-conferencia {
+            border: 1px solid #e0e0e0;
+            border-left: 5px solid #ccc;
+            border-radius: 6px;
+            padding: 10px;
+            margin: 10px;
+            background-color: #fafafa;
+            transition: border-left-color 0.3s ease, background-color 0.3s ease;
+        }
+
+        .item-conferencia.status-ok { border-left-color: #1b8a3e; background-color: #f0fff0; }
+        .item-conferencia.status-alert { border-left-color: #d90f23; background-color: #fff0f0; }
+        
+        .item-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0;
+            flex-wrap: nowrap;
+        }
+
+        .item-label {
+            font-weight: bold;
+            color: #333;
+            flex-grow: 1;
+            margin-right: 10px;
+            text-align: left;
+        }
+        
+        .status-icon {
+            font-weight: bold;
+            font-size: 0; 
+            padding: 0; 
+            width: 18px; 
+            height: 18px; 
+            line-height: 18px;
+            border-radius: 4px;
+            color: white;
+            min-width: 18px;
+            text-align: center;
+            margin-right: 10px;
+        }
+
+        .status-icon.ok:after {
+            content: '✓';
+            font-size: 12px;
+            line-height: 18px;
+            color: white;
+        }
+        
+        .status-icon.alert { background-color: #d90f23; }
+        .status-icon.alert:after {
+            content: 'C/A';
+            font-size: 10px;
+            line-height: 18px;
+            color: white;
+        }
+
+        .status-icon.pending {
+            background-color: transparent;
+            border: 1px dashed #aaa;
+        }
+        
+        .item-options {
+            display: flex;
+            gap: 5px;
+            margin-bottom: 0;
+        }
+        
+        .action-button {
+            padding: 5px 8px;
+            border: 2px solid #ccc;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: background-color 0.2s, border-color 0.2s;
+            font-size: 0.9em;
+            color: #555;
+            flex-shrink: 0;
+        }
+        
+        .action-button.sa-ok:hover, .action-button.sa-ok.active {
+            background-color: #e6ffe6; 
+            border-color: #1b8a3e;
+            color: #1b8a3e;
+        }
+
+        .action-button.ca-alert:hover, .action-button.ca-alert.active {
+             background-color: #ffe6e6; 
+             border-color: #d90f23;
+             color: #d90f23;
+        }
+        
+        .alteracao-container {
+            margin-top: 10px;
+            display: none; 
+            border-top: 1px solid #e0e0e0;
+            padding-top: 10px;
+        }
+
+        .alteracao-container textarea {
+            width: 100%;
+            padding: 8px;
+            border-radius: 4px;
+            border: 1px solid #d90f23;
+            box-sizing: border-box;
+            font-size: 0.9em;
+            resize: vertical;
+            min-height: 50px;
+            margin-bottom: 10px;
+        }
+        
+        .btn-salvar-alteracao {
+            background-color: #800020;
+            color: white;
+            font-weight: bold;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            width: 100%;
+        }
+
+        .descricao-inline {
+            background-color: #fee;
+            border: 1px solid #fcc;
+            border-radius: 4px;
+            padding: 8px;
+            margin-top: 10px;
+            font-size: 0.9em;
+            color: #a30b1c;
+            display: none; 
+            text-align: left;
+            font-weight: 500;
+        }
+
+        .descricao-inline strong {
+            color: #333;
+            display: block;
+            margin-bottom: 3px;
+        }
+        
+        #btn-finalizar {
+            background-color: #d90f23; 
+            color: white;
+            font-weight: bold;
+            border: none;
+            padding: 15px 10px; 
+            border-radius: 6px;
+            width: 100%;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+            margin-top: 20px;
+            font-size: 1.1em;
+            box-shadow: 0 4px 8px rgba(217, 15, 35, 0.4); 
+        }
+        
+        #btn-finalizar:hover {
+            background-color: #a30b1c; 
+        }
+    </style>
+</head>
+<body>
+
+<header class="main-header">
+    <img src="logo_sigma.png" alt="Logo do Sistema SIGMA" class="header-icon"
+            onerror="this.onerror=null; this.src='https://placehold.co/40x40/ffffff/800020/fff?text=S'">
+
+    <div class="header-title-desktop">
+        <span class="text-white">SISTEMA INTEGRADO DE GESTÃO DE</span><span class="text-red"> MATERIAIS</span>
+    </div>
+
+    <div class="header-title-mobile">
+        <span class="text-white">SIGMA</span>
+    </div>
+</header>
+<div class="container">
+
+    <h1>CONFERÊNCIA DE MATERIAL</h1>
+    <p class="subtitulo">LOCAL TESTE (Posto BRAVO)</p>
+    
+    <div class="user-info-section">
+        <h2>IDENTIFICAÇÃO DO CONFERENTE</h2>
+        
+        <div class="form-group">
+            <label for="posto-graduacao">Posto / Graduação *</label>
+            <select id="posto-graduacao" onchange="updateQuadroOptions()">
+                <option value="" disabled selected>-- Selecione --</option>
+                <option value="CAP">CAP</option>
+                <option value="1º TEN">1º TEN</option>
+                <option value="2º TEN">2º TEN</option>
+                <option value="ST">ST</option>
+                <option value="1º SGT">1º SGT</option>
+                <option value="2º SGT">2º SGT</option>
+                <option value="3º SGT">3º SGT</option>
+                <option value="CB">CB</option>
+                <option value="SD">SD</option>
+            </select>
+        </div>
+
+        <div class="form-group" id="group-quadro">
+            <label for="quadro">Quadro *</label>
+            <select id="quadro">
+                <option value="" disabled selected>-- Selecione um Quadro --</option>
+            </select>
+        </div>
+        
+        <div class="form-group">
+            <label for="nome-guerra">Nome de Guerra *</label>
+            <input type="text" id="nome-guerra" placeholder="Ex: SILVA">
+        </div>
+        
+    </div>
+    <form id="form-conferencia">
+
+        <div class="setor-header" onclick="toggleSetor('deposito-content')">
+            <div class="setor-info">
+                <span>DEPÓSITO</span>
+                <span class="setor-status ok" id="status-setor-deposito" data-total-items="3" data-items-conferidos="0" data-items-alterados="0">S/A (0/3)</span>
+            </div>
+            <span class="arrow">▼</span>
+        </div>
+        <div class="setor-content expanded" id="deposito-content" data-setor-id="deposito">
+            <div class="item-conferencia" id="item-lanterna" data-setor="deposito">
+                <div class="item-header">
+                    <span class="status-icon pending" id="status-lanterna"></span>
+                    <span class="item-label">1. LANTERNA DE MÃO TÁTICA</span>
+                    <div class="item-options">
+                        <div class="action-button sa-ok" id="btn-lanterna-sa" onclick="markItem('lanterna', 'ok', 'deposito')">S/A</div>
+                        <div class="action-button ca-alert" id="btn-lanterna-ca" onclick="showAlteracao('lanterna')">C/A</div>
+                    </div>
+                </div>
+                
+                <div class="descricao-inline" id="lanterna-descricao-inline">
+                    <strong>Alteração Encontrada:</strong>
+                    <span id="lanterna-texto-ca"></span>
+                </div>
+                
+                <div id="lanterna-alteracao" class="alteracao-container">
+                    <textarea id="lanterna-descricao" placeholder="Descreva a alteração encontrada (Ex: Bateria fraca, Quebrada)"></textarea>
+                    <button type="button" class="btn-salvar-alteracao" onclick="salvarItem('lanterna', 'alert', 'deposito')">SALVAR ALTERAÇÃO</button>
+                </div>
+            </div>
+
+            <div class="item-conferencia" id="item-kit" data-setor="deposito">
+                <div class="item-header">
+                    <span class="status-icon pending" id="status-kit"></span>
+                    <span class="item-label">2. KIT PRIMEIROS SOCORROS</span>
+                    <div class="item-options">
+                        <div class="action-button sa-ok" id="btn-kit-sa" onclick="markItem('kit', 'ok', 'deposito')">S/A</div>
+                        <div class="action-button ca-alert" id="btn-kit-ca" onclick="showAlteracao('kit')">C/A</div>
+                    </div>
+                </div>
+                
+                <div class="descricao-inline" id="kit-descricao-inline">
+                    <strong>Alteração Encontrada:</strong>
+                    <span id="kit-texto-ca"></span>
+                </div>
+                
+                <div id="kit-alteracao" class="alteracao-container">
+                    <textarea id="kit-descricao" placeholder="Descreva a alteração encontrada (Ex: Faltando bandagens)"></textarea>
+                    <button type="button" class="btn-salvar-alteracao" onclick="salvarItem('kit', 'alert', 'deposito')">SALVAR ALTERAÇÃO</button>
+                </div>
+            </div>
+
+            <div class="item-conferencia" id="item-radio" data-setor="deposito">
+                <div class="item-header">
+                    <span class="status-icon pending" id="status-radio"></span>
+                    <span class="item-label">3. RÁDIO COMUNICADOR PORTÁTIL</span>
+                    <div class="item-options">
+                        <div class="action-button sa-ok" id="btn-radio-sa" onclick="markItem('radio', 'ok', 'deposito')">S/A</div>
+                        <div class="action-button ca-alert" id="btn-radio-ca" onclick="showAlteracao('radio')">C/A</div>
+                    </div>
+                </div>
+                
+                <div class="descricao-inline" id="radio-descricao-inline">
+                    <strong>Alteração Encontrada:</strong>
+                    <span id="radio-texto-ca"></span>
+                </div>
+                
+                <div id="radio-alteracao" class="alteracao-container">
+                    <textarea id="radio-descricao" placeholder="Descreva a alteração encontrada (Ex: Antena danificada)"></textarea>
+                    <button type="button" class="btn-salvar-alteracao" onclick="salvarItem('radio', 'alert', 'deposito')">SALVAR ALTERAÇÃO</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="setor-header" onclick="toggleSetor('area-externa-content')">
+            <div class="setor-info">
+                <span>ÁREA EXTERNA</span>
+                <span class="setor-status ok" id="status-setor-area-externa" data-total-items="2" data-items-conferidos="0" data-items-alterados="0">S/A (0/2)</span>
+            </div>
+            <span class="arrow">▼</span>
+        </div>
+        <div class="setor-content" id="area-externa-content" data-setor-id="area-externa">
+            <div class="item-conferencia" id="item-cordas" data-setor="area-externa">
+                <div class="item-header">
+                    <span class="status-icon pending" id="status-cordas"></span>
+                    <span class="item-label">4. CORDAS DE RESGATE (30M)</span>
+                    <div class="item-options">
+                        <div class="action-button sa-ok" id="btn-cordas-sa" onclick="markItem('cordas', 'ok', 'area-externa')">S/A</div>
+                        <div class="action-button ca-alert" id="btn-cordas-ca" onclick="showAlteracao('cordas')">C/A</div>
+                    </div>
+                </div>
+                
+                <div class="descricao-inline" id="cordas-descricao-inline">
+                    <strong>Alteração Encontrada:</strong>
+                    <span id="cordas-texto-ca"></span>
+                </div>
+                
+                <div id="cordas-alteracao" class="alteracao-container">
+                    <textarea id="cordas-descricao" placeholder="Descreva a alteração encontrada (Ex: Desgaste excessivo)"></textarea>
+                    <button type="button" class="btn-salvar-alteracao" onclick="salvarItem('cordas', 'alert', 'area-externa')">SALVAR ALTERAÇÃO</button>
+                </div>
+            </div>
+            
+            <div class="item-conferencia" id="item-colete" data-setor="area-externa">
+                <div class="item-header">
+                    <span class="status-icon pending" id="status-colete"></span>
+                    <span class="item-label">5. COLETE REFLETIVO</span>
+                    <div class="item-options">
+                        <div class="action-button sa-ok" id="btn-colete-sa" onclick="markItem('colete', 'ok', 'area-externa')">S/A</div>
+                        <div class="action-button ca-alert" id="btn-colete-ca" onclick="showAlteracao('colete')">C/A</div>
+                    </div>
+                </div>
+                
+                <div class="descricao-inline" id="colete-descricao-inline">
+                    <strong>Alteração Encontrada:</strong>
+                    <span id="colete-texto-ca"></span>
+                </div>
+                
+                <div id="colete-alteracao" class="alteracao-container">
+                    <textarea id="colete-descricao" placeholder="Descreva a alteração encontrada (Ex: Zíper quebrado)"></textarea>
+                    <button type="button" class="btn-salvar-alteracao" onclick="salvarItem('colete', 'alert', 'area-externa')">SALVAR ALTERAÇÃO</button>
+                </div>
+            </div>
+        </div>
+        
+        <button type="submit" id="btn-finalizar">FINALIZAR CONFERÊNCIA (TESTE)</button>
+    </form>
+
+</div>
+
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+
 <script>
     // Variáveis globais (não dependem do DOM)
     let itemStatus = {};
@@ -26,6 +574,7 @@
     // ------------------------------------------
     function getBase64Image(imgUrl) {
         return new Promise((resolve, reject) => {
+            // Verifica se a biblioteca necessária está carregada
             if (typeof html2canvas === 'undefined') {
                  reject(new Error('html2canvas não carregado.'));
                  return;
@@ -284,10 +833,11 @@
 
 
     // ------------------------------------------
-    // FUNÇÃO DE GERAÇÃO DE PDF (AJUSTADA)
+    // FUNÇÃO DE GERAÇÃO DE PDF (CORRIGIDA)
     // ------------------------------------------
 
     async function generatePDF() {
+        // CORREÇÃO: Acessa jsPDF de forma segura, garantindo que o objeto exista.
         if (typeof window.jspdf === 'undefined' || typeof window.jspdf.jsPDF === 'undefined') {
             alert("Erro fatal: As bibliotecas de PDF não foram carregadas. Tente recarregar a página.");
             return;
@@ -393,16 +943,16 @@
         doc.setTextColor(defaultTextColor[0], defaultTextColor[1], defaultTextColor[2]);
         doc.setFontSize(10);
         doc.setFont("helvetica", "bold");
-        doc.text("MILITAR RESPONSÁVEL PELA CONFERÊNCIA", marginX, yOffset);
+        doc.text("MILITAR RESPONSÁVEL PELA CONFERÊNCIA:", marginX, yOffset); // Modificado
         yOffset += 5;
         
         doc.setFont("helvetica", "normal");
         doc.setFontSize(9);
         
         // Formato: POSTO QUADRO NOME
-        doc.text(`Posto/Graduação: ${userInfo.postoGraduacao} ${userInfo.quadro} ${userInfo.nomeGuerra}`, marginX, yOffset);
+        doc.text(`${userInfo.postoGraduacao} ${userInfo.quadro} ${userInfo.nomeGuerra}`, marginX, yOffset);
         // Data e Hora
-        doc.text(`Data/Hora: ${dataHora}`, docWidth / 2, yOffset);
+        doc.text(`DATA/HORA: ${dataHora}`, docWidth / 2, yOffset); // Modificado
         yOffset += 8;
         
         doc.setLineWidth(0.2);
@@ -434,15 +984,13 @@
             // Variáveis para centralização
             const SIGMA_TEXT = "SIGMA";
             const DETAIL_TEXT = "Sistema Integrado de Gestão de Materiais";
-            
-            // Larguras em mm (aproximadas, ajustadas manualmente para a fonte 9pt)
-            const SIGMA_WIDTH = 13.5; 
-            const DETAIL_WIDTH = 55;
-            const LOGO_WIDTH = 10;
+            const SIGMA_WIDTH = doc.getStringUnitWidth(SIGMA_TEXT) * 9 * 0.35;
+            const DETAIL_WIDTH = doc.getStringUnitWidth(DETAIL_TEXT) * 9 * 0.35;
+            const LOGO_SPACE = logoRodapeWidth + 2; 
             const SPACING = 2;
             
-            const totalContentWidth = LOGO_WIDTH + SPACING + SIGMA_WIDTH + SPACING + DETAIL_WIDTH;
-            const blockStartX = centroX - (totalContentWidth / 2);
+            const totalBlockWidth = LOGO_SPACE + SIGMA_WIDTH + SPACING + DETAIL_WIDTH;
+            const blockStartX = centroX - (totalBlockWidth / 2);
 
             let currentX = blockStartX;
 
@@ -457,7 +1005,563 @@
             doc.text(SIGMA_TEXT, currentX, finalY); 
             currentX += SIGMA_WIDTH + SPACING;
 
-            // 5.3 Texto "Sistema Integrado de Gestão de Materiais" (Normal)
+            // 5.3 Texto " - Sistema Integrado de Gestão de Materiais" (Normal)
+            doc.setFont("helvetica", "normal");
+            doc.text(DETAIL_TEXT, currentX, finalY);
+            finalY += 4;
+            
+            // 5.4 Rodapé Linha 2: CORPO DE BOMBEIROS MILITAR DE RORAIMA
+            doc.setFont("helvetica", "normal");
+            doc.setFontSize(8);
+            doc.text("CORPO DE BOMBEIROS MILITAR DE RORAIMA", centroX, finalY, { align: 'center' });
+        };
+        
+        let tableData = []; 
+        
+        // Loop que processa os dados por setor
+        itemsList.forEach((itemName, index) => {
+            const statusData = itemStatus[itemName] || { status: 'PENDENTE', descricao: 'ITEM NÃO CONFERIDO' };
+            const itemLabel = document.getElementById('item-' + itemName).querySelector('.item-label').textContent;
+            const setor = itemToSetor[itemName].toUpperCase();
+            
+            // --- Ação no início de cada novo setor ---
+            if (setor !== currentSetor) {
+                // Se não for o primeiro setor, gera a tabela de dados do setor anterior
+                if (currentSetor !== '') {
+                    doc.autoTable({
+                        startY: yOffset,
+                        body: tableData,
+                        margin: { top: 0, right: marginX, bottom: 0, left: marginX },
+                        styles: { ...baseStyles, theme: 'striped' },
+                        columnStyles: columnStyles,
+                        didParseCell: (data) => {
+                            if (data.row.section === 'body' && data.column.index === 1) {
+                                if (data.row.raw[1] === 'C/A') {
+                                    data.cell.styles.fillColor = amareloClaro;
+                                } else if (data.row.raw[1] === 'S/A') {
+                                    data.cell.styles.fillColor = verdeClaro;
+                                }
+                            }
+                        }
+                    });
+                    yOffset = doc.autoTable.previous.finalY;
+                }
+                
+                // 4.1 Cabeçalho do Setor (Vinho) - Título simples (SOLUÇÃO DE ALINHAMENTO)
+                doc.autoTable({
+                    startY: yOffset + 2,
+                    head: [
+                        [
+                            // Apenas o nome do Setor (mesclado nas 3 colunas)
+                            { 
+                                content: `${setor}`, 
+                                colSpan: 3, 
+                                styles: { 
+                                    fontStyle: 'bold', 
+                                    halign: 'center', // Centralizado
+                                    fillColor: vinhoColor, 
+                                    textColor: 255 
+                                } 
+                            }
+                        ]
+                    ],
+                    styles: baseStyles,
+                    margin: { top: 0, right: marginX, bottom: 0, left: marginX },
+                    columnStyles: { 0: { cellWidth: 190 } } // Uma única coluna larga para o nome
+                });
+
+                // Cabeçalho dos Itens (Material, Status, Observação) - Nova linha para colunas
+                doc.autoTable({
+                    startY: doc.autoTable.previous.finalY,
+                    head: [
+                        [
+                            { content: `Material`, colSpan: 1, styles: { fontStyle: 'bold', halign: 'left', fillColor: [204, 204, 204], textColor: 0 } }, 
+                            { content: `Status`, colSpan: 1, styles: { fontStyle: 'bold', halign: 'center', fillColor: [204, 204, 204], textColor: 0 } },
+                            { content: `Observação`, colSpan: 1, styles: { fontStyle: 'bold', halign: 'left', fillColor: [204, 204, 204], textColor: 0 } }
+                        ]
+                    ],
+                    styles: { ...baseStyles, theme: 'plain' },
+                    margin: { top: 0, right: marginX, bottom: 0, left: marginX },
+                    columnStyles: columnStyles // Usa as larguras corretas para alinhar
+                });
+                
+                yOffset = doc.autoTable.previous.finalY; // Define o Y para o início dos dados
+                currentSetor = setor;
+                tableData = []; // Zera os dados para a nova seção
+            }
+
+            const statusText = statusData.status;
+            const obsText = statusData.status === 'C/A' ? statusData.descricao : ''; 
+            
+            tableData.push([
+                itemLabel, 
+                statusText, 
+                obsText
+            ]);
+            
+            // Se for o último item geral, garante que a última tabela de dados seja gerada
+            if (index === itemsList.length - 1) {
+                doc.autoTable({
+                    startY: yOffset,
+                    body: tableData,
+                    margin: { top: 0, right: marginX, bottom: 10, left: marginX },
+                    styles: { ...baseStyles, theme: 'striped' },
+                    columnStyles: columnStyles,
+                    didParseCell: (data) => {
+                        // Aplica borda e cor APENAS na coluna Status (índice 1)
+                        if (data.row.section === 'body' && data.column.index === 1) {
+                            data.cell.styles.lineWidth = 0.3; // Borda (AJUSTE 2)
+                            data.cell.styles.lineColor = [0, 0, 0]; // Borda preta
+                            
+                            if (data.row.raw[1] === 'C/A') {
+                                data.cell.styles.fillColor = amareloClaro;
+                            } else if (data.row.raw[1] === 'S/A') {
+                                data.cell.styles.fillColor = verdeClaro;
+                            }
+                        }
+                    }
+                });
+            }
+        });
+        
+        // --- 6. Finalizar e Salvar ---
+        
+        const filename = `CONFERENCIA_${userInfo.nomeGuerra}_${dataHora.split(' ')[0].replace(/\//g, '-')}.pdf`;
+        
+        doc.save(filename);
+    }
+
+
+    // ------------------------------------------
+    // FUNÇÃO FINALIZAR
+    // ------------------------------------------
+
+    document.getElementById('form-conferencia').addEventListener('submit', async function(event) {
+        event.preventDefault();
+        
+        if (!validateAndSaveUserInfo()) {
+            return;
+        }
+
+        const todosItens = ['lanterna', 'kit', 'radio', 'cordas', 'colete'];
+        let pendente = false;
+        
+        todosItens.forEach(itemName => {
+            if (!itemStatus[itemName]) {
+                pendente = true;
+            }
+        });
+
+        if (pendente) {
+             alert('ATENÇÃO: Existem itens pendentes de conferência. Por favor, verifique todos os itens antes de finalizar.');
+        } else {
+             await generatePDF();
+        }
+    });
+
+    // ------------------------------------------
+    // FUNÇÕES RESTANTES (MANTIDAS)
+    // ------------------------------------------
+    function updateQuadroOptions() {
+        const postoSelect = document.getElementById('posto-graduacao');
+        const quadroSelect = document.getElementById('quadro');
+        const selectedPosto = postoSelect.value;
+        
+        quadroSelect.innerHTML = '<option value="" disabled selected>-- Selecione um Quadro --</option>';
+        
+        let quadroGroup = null;
+        if (oficiasPatentes.includes(selectedPosto)) {
+            quadroGroup = 'OFICIAIS';
+        } else if (selectedPosto) {
+            quadroGroup = 'PRACAS';
+        }
+
+        if (quadroGroup && quadrosMap[quadroGroup]) {
+            quadrosMap[quadroGroup].forEach(quadro => {
+                const option = document.createElement('option');
+                option.value = quadro;
+                option.textContent = quadro;
+                quadroSelect.appendChild(option);
+            });
+        }
+    }
+
+    function validateAndSaveUserInfo() {
+        const postoSelect = document.getElementById('posto-graduacao');
+        const quadroSelect = document.getElementById('quadro');
+        const nomeGuerraInput = document.getElementById('nome-guerra');
+        
+        let isValid = true;
+        
+        if (!postoSelect.value) {
+            postoSelect.classList.add('input-error');
+            isValid = false;
+        } else {
+            postoSelect.classList.remove('input-error');
+        }
+
+        if (!quadroSelect.value) {
+            quadroSelect.classList.add('input-error');
+            isValid = false;
+        } else {
+            quadroSelect.classList.remove('input-error');
+        }
+
+        if (nomeGuerraInput.value.trim() === "") {
+            nomeGuerraInput.classList.add('input-error');
+            isValid = false;
+        } else {
+            nomeGuerraInput.classList.remove('input-error');
+        }
+        
+        if (!isValid) {
+            return false;
+        }
+        
+        userInfo.postoGraduacao = postoSelect.value;
+        userInfo.quadro = quadroSelect.value;
+        userInfo.nomeGuerra = nomeGuerraInput.value.toUpperCase().trim();
+        
+        return true;
+    }
+
+    function toggleSetor(contentId) {
+        const content = document.getElementById(contentId);
+        content.classList.toggle('expanded');
+    }
+
+    function updateItemVisual(itemName, status, statusText, description = '') {
+        const itemContainer = document.getElementById('item-' + itemName); 
+        const statusIcon = document.getElementById('status-' + itemName);
+        const descriptionInline = document.getElementById(itemName + '-descricao-inline');
+        const descriptionText = document.getElementById(itemName + '-texto-ca');
+        
+        const saButton = document.getElementById(`btn-${itemName}-sa`);
+        const caButton = document.getElementById(`btn-${itemName}-ca`);
+        
+        saButton.classList.remove('active');
+        caButton.classList.remove('active');
+        
+        itemContainer.classList.remove('status-ok', 'status-alert');
+        statusIcon.classList.remove('ok', 'alert', 'pending');
+        
+        statusIcon.textContent = (status === 'alert' || status === 'pending') ? statusText : '';
+        statusIcon.classList.add(status);
+        
+        if (status === 'ok') {
+            itemContainer.classList.add('status-ok');
+            descriptionInline.style.display = 'none';
+            saButton.classList.add('active');
+        } else if (status === 'alert') {
+            itemContainer.classList.add('status-alert');
+            descriptionText.textContent = description;
+            descriptionInline.style.display = 'block';
+            caButton.classList.add('active');
+        } else {
+             descriptionInline.style.display = 'none';
+        }
+    }
+    
+    function updateSetorStatus(setorName) {
+        const setorStatusElement = document.getElementById(`status-setor-${setorName}`);
+        if (!setorStatusElement) return;
+
+        let totalItems = parseInt(setorStatusElement.getAttribute('data-total-items'));
+        let itemsConferidos = 0;
+        let itemsAlterados = 0;
+
+        for (const itemName in itemStatus) {
+            if (itemToSetor[itemName] === setorName) {
+                itemsConferidos++;
+                if (itemStatus[itemName].status === 'C/A') {
+                    itemsAlterados++;
+                }
+            }
+        }
+        
+        setorStatusElement.setAttribute('data-items-conferidos', itemsConferidos);
+        setorStatusElement.setAttribute('data-items-alterados', itemsAlterados);
+
+        if (itemsAlterados > 0) {
+            setorStatusElement.textContent = `${itemsAlterados} C/A`;
+            setorStatusElement.classList.remove('ok');
+        } else {
+            setorStatusElement.textContent = `S/A`;
+            if (itemsConferidos === totalItems) {
+                setorStatusElement.classList.add('ok');
+            } else {
+                setorStatusElement.classList.remove('ok');
+            }
+        }
+        
+        if (itemsConferidos < totalItems) {
+            setorStatusElement.textContent += ` (${itemsConferidos}/${totalItems})`;
+        }
+    }
+
+    function showAlteracao(itemName) {
+        const alteracaoDiv = document.getElementById(itemName + '-alteracao');
+        
+        updateItemVisual(itemName, 'pending', '...', '');
+        
+        document.getElementById(`btn-${itemName}-ca`).classList.add('active');
+        document.getElementById(`btn-${itemName}-sa`).classList.remove('active');
+
+        alteracaoDiv.style.display = 'block';
+        document.getElementById(itemName + '-descricao').focus();
+    }
+
+    function markItem(itemName, status, setorName) {
+        const alteracaoDiv = document.getElementById(itemName + '-alteracao');
+        
+        alteracaoDiv.style.display = 'none';
+        document.getElementById(itemName + '-descricao').value = '';
+
+        itemStatus[itemName] = { status: 'S/A', descricao: '' };
+        updateItemVisual(itemName, 'ok', '✓', '');
+        updateSetorStatus(setorName);
+
+        checkSetorCompletion(itemName, setorName);
+    }
+
+    function salvarItem(itemName, status, setorName) {
+        const alteracaoDiv = document.getElementById(itemName + '-alteracao');
+        const descricao = document.getElementById(itemName + '-descricao').value;
+        
+        if (descricao.trim() === "") {
+            alert("Por favor, descreva a alteração antes de salvar.");
+            document.getElementById(itemName + '-descricao').focus();
+            return;
+        }
+
+        alteracaoDiv.style.display = 'none';
+        
+        itemStatus[itemName] = { status: 'C/A', descricao: descricao };
+        updateItemVisual(itemName, 'alert', 'C/A', descricao);
+        updateSetorStatus(setorName);
+
+        checkSetorCompletion(itemName, setorName);
+    }
+    
+    function checkSetorCompletion(currentItemName, setorName) {
+        const currentItemElement = document.getElementById('item-' + currentItemName);
+        let nextItemElement = currentItemElement.nextElementSibling;
+        
+        while (nextItemElement && !nextItemElement.classList.contains('item-conferencia')) {
+            nextItemElement = nextItemElement.nextElementSibling;
+        }
+
+        if (nextItemElement && nextItemElement.classList.contains('item-conferencia')) {
+            nextItemElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            return;
+        }
+        
+        const itemsInSetor = Array.from(document.getElementById(setorContentMap[setorName]).querySelectorAll('.item-conferencia'));
+        const isLastItem = itemsInSetor.length > 0 && itemsInSetor[itemsInSetor.length - 1].id === currentItemElement.id;
+
+        if (isLastItem) {
+            autoAdvanceSetor(setorName);
+        }
+    }
+    
+    function autoAdvanceSetor(currentSetorName) {
+        const currentIndex = setorIds.indexOf(currentSetorName);
+        const nextIndex = currentIndex + 1;
+
+        const currentSetorContentId = setorContentMap[currentSetorName];
+        document.getElementById(currentSetorContentId).classList.remove('expanded');
+
+        if (nextIndex < setorIds.length) {
+            const nextSetorName = setorIds[nextIndex];
+            const nextSetorContentId = setorContentMap[nextSetorName];
+            
+            const nextSetorContent = document.getElementById(nextSetorContentId);
+            nextSetorContent.classList.add('expanded');
+            
+            nextSetorContent.previousElementSibling.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            
+            const firstItemInNextSetor = nextSetorContent.querySelector('.item-conferencia');
+            if (firstItemInNextSetor) {
+                firstItemInNextSetor.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+        } else {
+            document.getElementById('btn-finalizar').scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+    }
+
+
+    // ------------------------------------------
+    // FUNÇÃO DE GERAÇÃO DE PDF (CORRIGIDA)
+    // ------------------------------------------
+
+    async function generatePDF() {
+        // CORREÇÃO: Acessa jsPDF de forma segura, garantindo que o objeto exista.
+        if (typeof window.jspdf === 'undefined' || typeof window.jspdf.jsPDF === 'undefined') {
+            alert("Erro fatal: As bibliotecas de PDF não foram carregadas. Tente recarregar a página.");
+            return;
+        }
+        
+        const { jsPDF } = window.jspdf;
+
+        const doc = new jsPDF('p', 'mm', 'a4');
+        
+        if (typeof doc.autoTable === 'undefined') {
+            alert("Erro: O plugin jsPDF-autotable não foi carregado. Verifique os links CDN.");
+            return;
+        }
+        
+        const docWidth = doc.internal.pageSize.getWidth();
+        const docHeight = doc.internal.pageSize.getHeight();
+        let yOffset = 15; 
+        const marginX = 10;
+        const logoWidth = 20;
+        const logoHeight = 20;
+        const logoX = docWidth / 2 - logoWidth / 2;
+        const logoRodapeWidth = 10; 
+        const logoRodapeHeight = 10;
+        
+        const defaultTextColor = [51, 51, 51]; 
+        const vinhoColor = [128, 0, 32];
+        const cinzaClaro = [85, 85, 85];
+        const verdeClaro = [224, 255, 224]; 
+        const amareloClaro = [255, 255, 224]; 
+
+        const dataHora = new Date().toLocaleString('pt-BR');
+        
+        let roraimaDataUrl = '';
+        let sigmaDataUrl = '';
+        
+        try {
+            roraimaDataUrl = await getBase64Image('roraima.png');
+        } catch (error) {
+            console.warn("Aviso: Falha ao carregar roraima.png. Continuando sem imagem.");
+        }
+        try {
+            sigmaDataUrl = await getBase64Image('logo_sigma.png');
+        } catch (error) {
+            console.warn("Aviso: Falha ao carregar logo_sigma.png. Continuando sem imagem no rodapé.");
+        }
+
+
+        // --- 1. Imagem e Cabeçalho Centralizado ---
+        
+        // 1.1 Adicionar Imagem Roraima
+        if (roraimaDataUrl) {
+            doc.addImage(roraimaDataUrl, 'PNG', logoX, yOffset, logoWidth, logoHeight); 
+            yOffset += logoHeight; 
+        } else {
+            yOffset += 5; 
+        }
+        yOffset += 8; 
+
+        // 1.2 Textos do Cabeçalho
+        
+        doc.setTextColor(defaultTextColor[0], defaultTextColor[1], defaultTextColor[2]);
+        doc.setFont("helvetica", "normal");
+        doc.setFontSize(10);
+        doc.text("GOVERNO DO ESTADO DE RORAIMA", docWidth / 2, yOffset, { align: 'center' });
+        yOffset += 5;
+        
+        doc.setTextColor(vinhoColor[0], vinhoColor[1], vinhoColor[2]);
+        doc.setFontSize(11);
+        doc.text("CORPO DE BOMBEIROS MILITAR DE RORAIMA", docWidth / 2, yOffset, { align: 'center' });
+        yOffset += 5;
+        
+        doc.setTextColor(cinzaClaro[0], cinzaClaro[1], cinzaClaro[2]);
+        doc.setFontSize(8);
+        doc.setFont("helvetica", "italic"); 
+        doc.text("\"Amazônia: patrimônio dos brasileiros\"", docWidth / 2, yOffset, { align: 'center' });
+        doc.setFont("helvetica", "normal"); 
+        yOffset += 5;
+        
+        // 2. Linha e Título Principal
+        doc.setDrawColor(204, 204, 204); 
+        doc.setLineWidth(0.5);
+        yOffset += 1; 
+        doc.line(marginX, yOffset, docWidth - marginX, yOffset);
+        yOffset += 4; 
+        
+        doc.setTextColor(vinhoColor[0], vinhoColor[1], vinhoColor[2]);
+        doc.setFontSize(12);
+        doc.setFont("helvetica", "bold");
+        doc.text("CONFERÊNCIA DE MATERIAIS", docWidth / 2, yOffset, { align: 'center' });
+        yOffset += 5;
+        
+        doc.setTextColor(defaultTextColor[0], defaultTextColor[1], defaultTextColor[2]);
+        doc.setFontSize(10);
+        doc.text("LOCAL TESTE - Posto BRAVO", docWidth / 2, yOffset, { align: 'center' });
+        yOffset += 10;
+        
+        // --- 3. MILITAR RESPONSÁVEL ---
+        
+        doc.setLineWidth(0.2);
+        doc.line(marginX, yOffset, docWidth - marginX, yOffset);
+        yOffset += 5; 
+        
+        doc.setTextColor(defaultTextColor[0], defaultTextColor[1], defaultTextColor[2]);
+        doc.setFontSize(10);
+        doc.setFont("helvetica", "bold");
+        doc.text("MILITAR RESPONSÁVEL PELA CONFERÊNCIA:", marginX, yOffset);
+        yOffset += 5;
+        
+        doc.setFont("helvetica", "normal");
+        doc.setFontSize(9);
+        
+        doc.text(`${userInfo.postoGraduacao} ${userInfo.quadro} ${userInfo.nomeGuerra}`, marginX, yOffset);
+        doc.text(`DATA/HORA: ${dataHora}`, docWidth / 2, yOffset);
+        yOffset += 8;
+        
+        doc.setLineWidth(0.2);
+        doc.line(marginX, yOffset, docWidth - marginX, yOffset);
+        yOffset += 3;
+
+        // --- 4. Tabela de Conferência (Estrutura ajustada para Setores) ---
+        
+        const itemsList = ['lanterna', 'kit', 'radio', 'cordas', 'colete'];
+        let currentSetor = '';
+        
+        // Configuração de largura de colunas (CRÍTICO para alinhamento)
+        const columnStyles = {
+            0: { cellWidth: 70 },
+            1: { cellWidth: 20, halign: 'center' },
+            2: { cellWidth: 100 }
+        };
+        const baseStyles = { fontSize: 8, cellPadding: 2, overflow: 'linebreak', theme: 'plain' };
+
+        // Rodapé Fixo no final da página 
+        doc.autoTable.didDrawPage = function(data) {
+            const docWidth = doc.internal.pageSize.getWidth();
+            const finalY = docHeight - 15;
+            const centroX = docWidth / 2;
+            
+            doc.setTextColor(vinhoColor[0], vinhoColor[1], vinhoColor[2]);
+            doc.setFontSize(9);
+            
+            // Variáveis para centralização
+            const SIGMA_TEXT = "SIGMA";
+            const DETAIL_TEXT = "Sistema Integrado de Gestão de Materiais";
+            const SIGMA_WIDTH = doc.getStringUnitWidth(SIGMA_TEXT) * 9 * 0.35;
+            const DETAIL_WIDTH = doc.getStringUnitWidth(DETAIL_TEXT) * 9 * 0.35;
+            const LOGO_SPACE = logoRodapeWidth + 2; 
+            const SPACING = 2;
+            
+            const totalBlockWidth = LOGO_SPACE + SIGMA_WIDTH + SPACING + DETAIL_WIDTH;
+            const blockStartX = centroX - (totalBlockWidth / 2);
+
+            let currentX = blockStartX;
+
+            // 5.1 Logo SIGMA
+            if (sigmaDataUrl) {
+                doc.addImage(sigmaDataUrl, 'PNG', currentX, finalY - 3, logoRodapeWidth, logoRodapeHeight);
+                currentX += LOGO_SPACE; 
+            }
+            
+            // 5.2 Texto "SIGMA" (Negrito)
+            doc.setFont("helvetica", "bold");
+            doc.text(SIGMA_TEXT, currentX, finalY); 
+            currentX += SIGMA_WIDTH + SPACING;
+
+            // 5.3 Texto " - Sistema Integrado de Gestão de Materiais" (Normal)
             doc.setFont("helvetica", "normal");
             doc.text(DETAIL_TEXT, currentX, finalY);
             finalY += 4;
@@ -543,7 +1647,6 @@
             }
 
             const statusText = statusData.status;
-            // CORREÇÃO: Observação deve ser vazia se S/A
             const obsText = statusData.status === 'C/A' ? statusData.descricao : ''; 
             
             tableData.push([
