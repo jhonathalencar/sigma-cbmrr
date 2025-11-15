@@ -840,7 +840,7 @@
 
 
     // ------------------------------------------
-    // FUNÇÃO DE GERAÇÃO DE PDF (IMAGEM CARREGADA VIA URL)
+    // FUNÇÃO DE GERAÇÃO DE PDF (AJUSTADA)
     // ------------------------------------------
 
     async function generatePDF() {
@@ -857,7 +857,7 @@
         }
         
         const docWidth = doc.internal.pageSize.getWidth();
-        let yOffset = 15; // Margem superior inicial ajustada
+        let yOffset = 15; 
         const marginX = 10;
         const logoWidth = 20;
         const logoHeight = 20;
@@ -872,8 +872,6 @@
         const amareloClaro = [255, 255, 224]; 
 
         const dataHora = new Date().toLocaleString('pt-BR');
-        
-        // --- 1. Imagem e Cabeçalho Centralizado ---
         
         let roraimaDataUrl = '';
         let sigmaDataUrl = '';
@@ -891,6 +889,8 @@
         }
 
 
+        // --- 1. Imagem e Cabeçalho Centralizado ---
+        
         // 1.1 Adicionar Imagem Roraima
         if (roraimaDataUrl) {
             doc.addImage(roraimaDataUrl, 'PNG', logoX, yOffset, logoWidth, logoHeight); 
@@ -980,22 +980,41 @@
             const setor = itemToSetor[itemName].toUpperCase();
             
             if (setor !== currentSetor) {
-                // Linha que substitui o cabeçalho da tabela (AJUSTE 7)
-                tableData.push([{ 
-                    content: `MATERIAL - SETOR: ${setor}`, 
-                    colSpan: 3, 
+                // Linha de Cabeçalho do Setor (AJUSTE 1)
+                const headerContent = [
+                    { content: `MATERIAL - SETOR: ${setor}`, colSpan: 1, styles: { fontStyle: 'bold', halign: 'left' } },
+                    { content: `STATUS`, colSpan: 1, styles: { fontStyle: 'bold', halign: 'center' } },
+                    { content: `OBSERVAÇÃO`, colSpan: 1, styles: { fontStyle: 'bold', halign: 'left' } }
+                ];
+                
+                // Cria uma tabela separada para o cabeçalho do setor
+                doc.autoTable({
+                    startY: yOffset + 2,
+                    head: [headerContent.map(h => h.content)],
                     styles: { 
-                        fillColor: [204, 204, 204], 
-                        fontStyle: 'bold', 
-                        halign: 'left',
-                        textColor: [0, 0, 0]
-                    } 
-                }]);
+                        fontSize: 8, 
+                        cellPadding: 2, 
+                        overflow: 'linebreak',
+                        fillColor: vinhoColor, // Vermelho/Vinho para o cabeçalho
+                        textColor: 255 // Branco para o texto
+                    },
+                    margin: { top: 10, right: marginX, bottom: 0, left: marginX },
+                    theme: 'plain',
+                    columnStyles: {
+                        0: { cellWidth: 70 },
+                        1: { cellWidth: 20, halign: 'center' },
+                        2: { cellWidth: 100 }
+                    }
+                });
+                
+                // Ajusta o Y para o início dos dados abaixo do novo cabeçalho
+                yOffset = doc.autoTable.previous.finalY;
                 currentSetor = setor;
             }
 
             const statusText = statusData.status;
-            const obsText = statusData.status === 'C/A' ? statusData.descricao : 'S/A';
+            // Se for S/A, a observação deve ser vazia (AJUSTE 2)
+            const obsText = statusData.status === 'C/A' ? statusData.descricao : ''; 
             
             tableData.push([
                 itemLabel, 
@@ -1003,18 +1022,18 @@
                 obsText
             ]);
         });
-
+        
+        // Gera a tabela de dados
         doc.autoTable({
             startY: yOffset,
-            // Linha de cabeçalho da tabela omitida (headers: [])
             body: tableData,
             margin: { top: 0, right: marginX, bottom: 10, left: marginX },
             styles: { fontSize: 8, cellPadding: 2, overflow: 'linebreak' },
             theme: 'striped',
             columnStyles: {
-                0: { cellWidth: 70, fillColor: 255 }, // Branco
+                0: { cellWidth: 70, fillColor: 255 }, 
                 1: { cellWidth: 20, halign: 'center' },
-                2: { cellWidth: 100, fillColor: 255 } // Branco
+                2: { cellWidth: 100, fillColor: 255 }
             },
             // Destaque de cor APENAS NA COLUNA STATUS (AJUSTE 3)
             didParseCell: (data) => {
@@ -1031,42 +1050,47 @@
             }
         });
         
-        yOffset = doc.autoTable.previous.finalY + 15; // Atualiza o Y para o rodapé
+        yOffset = doc.autoTable.previous.finalY + 15; 
 
-        // --- 5. Rodapé (AJUSTADO: Imagem, Sobreposição e Centralização) ---
+        // --- 5. Rodapé (AJUSTADO: Imagem, Centralização e Sem Sobreposição) ---
         
         const centroX = docWidth / 2;
         
-        // Rodapé Linha 1: SIGMA (negrito) - Sistema Integrado de Gestão de Materiais
         doc.setTextColor(vinhoColor[0], vinhoColor[1], vinhoColor[2]);
         doc.setFontSize(9);
         
-        let rodapéText = "SIGMA - Sistema Integrado de Gestão de Materiais";
-        const sigamaTextWidth = doc.getStringUnitWidth("SIGMA") * 9; // Largura aproximada de SIGMA
-        const totalTextWidth = doc.getStringUnitWidth(rodapéText) * 9; // Largura do texto inteiro (aprox)
+        // Rodapé Linha 1: SIGMA (negrito) - Sistema Integrado de Gestão de Materiais
         
-        // Posição inicial para centralizar o bloco de texto e imagem
-        const blockStart = centroX - (totalTextWidth / 2) + 3; // Ajuste manual para centralizar
+        // A largura aproximada do bloco de texto total
+        const textNormalWidth = doc.getStringUnitWidth(" - Sistema Integrado de Gestão de Materiais") * 9;
+        const textBoldWidth = doc.getStringUnitWidth("SIGMA") * 9;
+        const totalBlockWidth = textNormalWidth + textBoldWidth + logoRodapeWidth + 4; // + 4 é o espaçamento
+        
+        const blockStartX = centroX - (totalBlockWidth / 2);
 
+        // 5.1 Logo SIGMA
+        let currentX = blockStartX;
         if (sigmaDataUrl) {
-            const logoXRodape = blockStart - logoRodapeWidth - 2;
-            doc.addImage(sigmaDataUrl, 'PNG', logoXRodape, yOffset - 3, logoRodapeWidth, logoRodapeHeight);
+            doc.addImage(sigmaDataUrl, 'PNG', currentX, yOffset - 3, logoRodapeWidth, logoRodapeHeight);
+            currentX += logoRodapeWidth + 2; // Avança após a imagem e espaço
+        } else {
+             currentX += 2; // Apenas um pequeno avanço se não houver imagem
         }
         
-        // Texto "SIGMA" (Negrito)
+        // 5.2 Texto "SIGMA" (Negrito)
         doc.setFont("helvetica", "bold");
-        doc.text("SIGMA", blockStart, yOffset); 
+        doc.text("SIGMA", currentX, yOffset); 
 
-        // Texto " - Sistema Integrado de Gestão de Materiais" (Normal)
+        // 5.3 Texto " - Sistema Integrado de Gestão de Materiais" (Normal)
         doc.setFont("helvetica", "normal");
-        const normalTextStart = blockStart + sigamaTextWidth + 1; // Posição após "SIGMA"
-        doc.text("- Sistema Integrado de Gestão de Materiais", normalTextStart, yOffset);
+        const normalTextX = currentX + doc.getStringUnitWidth("SIGMA") * 9; // Posição após "SIGMA"
+        doc.text("- Sistema Integrado de Gestão de Materiais", normalTextX, yOffset);
         yOffset += 4;
         
-        // Rodapé Linha 2: CORPO DE BOMBEIROS MILITAR DE RORAIMA
+        // 5.4 Rodapé Linha 2: CORPO DE BOMBEIROS MILITAR DE RORAIMA
         doc.setFont("helvetica", "normal");
         doc.setFontSize(8);
-        doc.text("CORPO DE BOMBEIROS MILITAR DE RORAIMA", centroX, yOffset, { align: 'center' }); // CENTRALIZADO (AJUSTE 4)
+        doc.text("CORPO DE BOMBEIROS MILITAR DE RORAIMA", centroX, yOffset, { align: 'center' }); // CENTRALIZADO
 
         // --- 6. Finalizar e Salvar ---
         
