@@ -58,15 +58,6 @@
             color: #FF3B3B;
         }
 
-        /* REGRAS DE VISIBILIDADE */
-        .header-title-desktop { 
-            display: none; 
-        }
-        .header-title-mobile { 
-            display: block; 
-        }
-        /* CORREÇÃO: Em mobile, queremos apenas SIGMA (que já é o padrão do mobile-title) */
-
         @media (min-width: 768px) {
             .header-title-desktop { display: block; }
             .header-title-mobile { display: none; }
@@ -591,7 +582,6 @@
      */
     function getBase64Image(imgUrl) {
         return new Promise((resolve, reject) => {
-            // Verifica se a biblioteca necessária está carregada
             if (typeof html2canvas === 'undefined') {
                  reject(new Error('html2canvas não carregado. Não é possível converter a imagem para Base64.'));
                  return;
@@ -670,7 +660,6 @@
         }
         
         if (!isValid) {
-            alert("Por favor, preencha todos os campos de identificação do conferente.");
             return false;
         }
         
@@ -851,28 +840,25 @@
 
 
     // ------------------------------------------
-    // FUNÇÃO DE GERAÇÃO DE PDF (IMAGEM CARREGADA VIA URL)
+    // FUNÇÃO DE GERAÇÃO DE PDF (AJUSTADA)
     // ------------------------------------------
 
     async function generatePDF() {
-        if (typeof jsPDF === 'undefined') {
-            alert("Erro: A biblioteca jsPDF não foi carregada. Verifique os links CDN.");
+        if (typeof jsPDF === 'undefined' || typeof doc.autoTable === 'undefined') {
+            alert("Erro: As bibliotecas de PDF não foram carregadas. Verifique os links CDN.");
             return;
         }
         
         const doc = new jsPDF('p', 'mm', 'a4');
         
-        if (typeof doc.autoTable === 'undefined') {
-            alert("Erro: O plugin jsPDF-autotable não foi carregado. Verifique os links CDN.");
-            return;
-        }
-        
         const docWidth = doc.internal.pageSize.getWidth();
-        let yOffset = 20;
+        let yOffset = 15; // Margem superior inicial ajustada
         const marginX = 10;
         const logoWidth = 20;
         const logoHeight = 20;
         const logoX = docWidth / 2 - logoWidth / 2;
+        const logoRodapeWidth = 10; // Tamanho do logo no rodapé
+        const logoRodapeHeight = 10;
         
         const defaultTextColor = [51, 51, 51]; 
         const vinhoColor = [128, 0, 32];
@@ -884,14 +870,26 @@
         
         // --- 1. Imagem e Cabeçalho Centralizado ---
         
+        let roraimaDataUrl = '';
+        let sigmaDataUrl = '';
+        
+        // Carregamento de imagens (assíncrono)
         try {
-            const roraimaDataUrl = await getBase64Image('roraima.png');
-            doc.addImage(roraimaDataUrl, 'PNG', logoX, yOffset, logoWidth, logoHeight); 
-            yOffset += logoHeight + 2;
+            roraimaDataUrl = await getBase64Image('roraima.png');
+            sigmaDataUrl = await getBase64Image('logo_sigma.png');
         } catch (error) {
-            console.warn("Aviso: Imagem roraima.png falhou ao carregar. Tentando continuar sem imagem.");
+            console.warn("Aviso: Falha ao carregar uma ou ambas as imagens (roraima.png ou logo_sigma.png). Continuando sem imagens no PDF.");
+        }
+
+
+        // 1.1 Adicionar Imagem Roraima
+        if (roraimaDataUrl) {
+            doc.addImage(roraimaDataUrl, 'PNG', logoX, yOffset, logoWidth, logoHeight); 
+            yOffset += logoHeight; // Aumenta a distância após a imagem
+        } else {
             yOffset += 5; 
         }
+        yOffset += 5; // Aumenta a distância entre a imagem e o texto (AJUSTE 1)
 
         // 1.2 Textos do Cabeçalho
         
@@ -916,10 +914,10 @@
         doc.setFont("helvetica", "normal"); 
         yOffset += 5;
         
-        // 2. Linha e Título Principal (AJUSTADO: Linha sobe mais)
+        // 2. Linha e Título Principal (AJUSTE 2: Linha sobe mais)
         doc.setDrawColor(204, 204, 204); 
         doc.setLineWidth(0.5);
-        yOffset += 2; // Ajustado para subir
+        yOffset += 1; // Linha acima do título
         doc.line(marginX, yOffset, docWidth - marginX, yOffset);
         yOffset += 4; 
         
@@ -933,13 +931,13 @@
         doc.setTextColor(defaultTextColor[0], defaultTextColor[1], defaultTextColor[2]);
         doc.setFontSize(10);
         doc.text("LOCAL TESTE - Posto BRAVO", docWidth / 2, yOffset, { align: 'center' });
-        yOffset += 7;
+        yOffset += 10;
         
         // --- 3. MILITAR RESPONSÁVEL (AJUSTADO) ---
         
         doc.setLineWidth(0.2);
         doc.line(marginX, yOffset, docWidth - marginX, yOffset);
-        yOffset += 3;
+        yOffset += 5; // Aumenta a distância (AJUSTE 2)
         
         doc.setTextColor(defaultTextColor[0], defaultTextColor[1], defaultTextColor[2]);
         doc.setFontSize(10);
@@ -950,18 +948,18 @@
         doc.setFont("helvetica", "normal");
         doc.setFontSize(9);
         
-        // Nome no estilo "3ª SGT QPCBM JHONATH"
+        // Nome no estilo "POSTO QUADRO NOME"
         doc.text(`${userInfo.postoGraduacao} ${userInfo.quadro} ${userInfo.nomeGuerra}`, marginX, yOffset);
         // Data e Hora
         doc.text(`Data/Hora: ${dataHora}`, docWidth / 2, yOffset);
         yOffset += 8;
         
-        // Linha de separação antes da Tabela (removido o título "CONFERÊNCIA")
+        // Linha de separação antes da Tabela
         doc.setLineWidth(0.2);
         doc.line(marginX, yOffset, docWidth - marginX, yOffset);
         yOffset += 3;
 
-        // --- 4. Tabela de Conferência (DESTAQUES DE COR) ---
+        // --- 4. Tabela de Conferência (Estrutura ajustada para Setores) ---
         
         const itemsList = ['lanterna', 'kit', 'radio', 'cordas', 'colete'];
         let tableData = [];
@@ -973,11 +971,12 @@
             const setor = itemToSetor[itemName].toUpperCase();
             
             if (setor !== currentSetor) {
+                // Linha que substitui o cabeçalho da tabela (AJUSTE 7)
                 tableData.push([{ 
-                    content: `SETOR: ${setor}`, 
+                    content: `MATERIAL - SETOR: ${setor}`, 
                     colSpan: 3, 
                     styles: { 
-                        fillColor: [240, 240, 240], 
+                        fillColor: [204, 204, 204], // Cinza mais escuro para o setor
                         fontStyle: 'bold', 
                         halign: 'left',
                         textColor: [0, 0, 0]
@@ -998,49 +997,67 @@
 
         doc.autoTable({
             startY: yOffset,
-            head: [['Material', 'Status', 'Observação / Alteração']],
+            // Linha de cabeçalho da tabela omitida (headers: [])
             body: tableData,
-            margin: { top: 10, right: marginX, bottom: 10, left: marginX },
+            margin: { top: 0, right: marginX, bottom: 10, left: marginX },
             styles: { fontSize: 8, cellPadding: 2, overflow: 'linebreak' },
-            headStyles: { fillColor: [128, 0, 32], fontStyle: 'bold' },
             theme: 'striped',
             columnStyles: {
+                // Definição das colunas baseada na posição
                 0: { cellWidth: 70 },
                 1: { cellWidth: 20, halign: 'center' },
                 2: { cellWidth: 100 }
             },
-            // Destaque de cor nas linhas (Verde para S/A, Amarelo para C/A)
+            // Destaque de cor APENAS NA COLUNA STATUS (AJUSTE 3)
             didParseCell: (data) => {
-                const cellStatus = data.row.raw[1]; 
-                if (data.row.section === 'body') {
+                const cellStatus = data.row.raw[1]; // Acessa o valor da coluna Status
+                
+                // Aplica cor apenas na coluna Status (índice 1)
+                if (data.row.section === 'body' && data.column.index === 1) {
                     if (cellStatus === 'C/A') {
                         data.cell.styles.fillColor = amareloClaro;
                     } else if (cellStatus === 'S/A') {
                         data.cell.styles.fillColor = verdeClaro;
                     }
                 }
+                
+                // Remove a cor de fundo da coluna 0 (Material) e 2 (Observação)
+                if (data.row.section === 'body' && (data.column.index === 0 || data.column.index === 2)) {
+                     data.cell.styles.fillColor = 255; // Branco
+                }
             }
         });
         
-        yOffset = doc.autoTable.previous.finalY + 15; // Atualiza o Y para o rodapé
+        yOffset = doc.autoTable.previous.finalY + 15; 
 
-        // --- 5. Rodapé ---
+        // --- 5. Rodapé (AJUSTADO: Imagem, Sobreposição e Centralização) ---
+        
+        const centroX = docWidth / 2;
+        const centroTextoRodape = 45; // Largura aproximada dos textos do rodapé para centralização
         
         doc.setTextColor(vinhoColor[0], vinhoColor[1], vinhoColor[2]);
-        doc.setFontSize(9);
         
         // Rodapé Linha 1: SIGMA (negrito) - Sistema Integrado de Gestão de Materiais
+        if (sigmaDataUrl) {
+            // Centraliza o logo com o bloco de texto
+            const logoRodapeX = centroX - centroTextoRodape; 
+            doc.addImage(sigmaDataUrl, 'PNG', logoRodapeX, yOffset - 3, logoRodapeWidth, logoRodapeHeight);
+        }
+        
+        doc.setFontSize(9);
         doc.setFont("helvetica", "bold");
-        // Nota: Centralizar dois textos exige calcular o deslocamento
-        doc.text("SIGMA", docWidth / 2 - 20, yOffset, { align: 'center' });
+        // Posição ajustada para centralizar o texto junto com o logo
+        const sigmaTextX = centroX - 25; 
+        doc.text("SIGMA", sigmaTextX, yOffset, { align: 'center' }); // Texto SIGMA
         doc.setFont("helvetica", "normal");
-        doc.text("- Sistema Integrado de Gestão de Materiais", docWidth / 2 + 10, yOffset, { align: 'center' });
+        // Posição ajustada para seguir o SIGMA
+        doc.text("- Sistema Integrado de Gestão de Materiais", sigmaTextX + 30, yOffset, { align: 'center' });
         yOffset += 4;
         
         // Rodapé Linha 2: CORPO DE BOMBEIROS MILITAR DE RORAIMA
         doc.setFont("helvetica", "normal");
         doc.setFontSize(8);
-        doc.text("CORPO DE BOMBEIROS MILITAR DE RORAIMA", docWidth / 2, yOffset, { align: 'center' });
+        doc.text("CORPO DE BOMBEIROS MILITAR DE RORAIMA", centroX, yOffset, { align: 'center' }); // CENTRALIZADO (AJUSTE 4)
 
         // --- 6. Finalizar e Salvar ---
         
