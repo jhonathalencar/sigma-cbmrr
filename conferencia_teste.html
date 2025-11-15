@@ -248,7 +248,6 @@
             color: white;
         }
         
-        .status-icon.alert { background-color: #d90f23; }
         .status-icon.alert:after {
             content: 'C/A';
             font-size: 10px;
@@ -943,16 +942,14 @@
         doc.setTextColor(defaultTextColor[0], defaultTextColor[1], defaultTextColor[2]);
         doc.setFontSize(10);
         doc.setFont("helvetica", "bold");
-        doc.text("MILITAR RESPONSÁVEL PELA CONFERÊNCIA:", marginX, yOffset); // Modificado
+        doc.text("MILITAR RESPONSÁVEL PELA CONFERÊNCIA:", marginX, yOffset);
         yOffset += 5;
         
         doc.setFont("helvetica", "normal");
         doc.setFontSize(9);
         
-        // Formato: POSTO QUADRO NOME
         doc.text(`${userInfo.postoGraduacao} ${userInfo.quadro} ${userInfo.nomeGuerra}`, marginX, yOffset);
-        // Data e Hora
-        doc.text(`DATA/HORA: ${dataHora}`, docWidth / 2, yOffset); // Modificado
+        doc.text(`DATA/HORA: ${dataHora}`, docWidth / 2, yOffset);
         yOffset += 8;
         
         doc.setLineWidth(0.2);
@@ -1507,7 +1504,9 @@
         doc.setFont("helvetica", "normal");
         doc.setFontSize(9);
         
+        // Formato: POSTO QUADRO NOME
         doc.text(`${userInfo.postoGraduacao} ${userInfo.quadro} ${userInfo.nomeGuerra}`, marginX, yOffset);
+        // Data e Hora
         doc.text(`DATA/HORA: ${dataHora}`, docWidth / 2, yOffset);
         yOffset += 8;
         
@@ -1614,7 +1613,7 @@
                                 colSpan: 3, 
                                 styles: { 
                                     fontStyle: 'bold', 
-                                    halign: 'center', // Centralizado (AJUSTE 3)
+                                    halign: 'center', // Centralizado
                                     fillColor: vinhoColor, 
                                     textColor: 255 
                                 } 
@@ -1666,7 +1665,7 @@
                     didParseCell: (data) => {
                         // Aplica borda e cor APENAS na coluna Status (índice 1)
                         if (data.row.section === 'body' && data.column.index === 1) {
-                            data.cell.styles.lineWidth = 0.3; // Borda (AJUSTE 2)
+                            data.cell.styles.lineWidth = 0.3; // Borda 
                             data.cell.styles.lineColor = [0, 0, 0]; // Borda preta
                             
                             if (data.row.raw[1] === 'C/A') {
