@@ -575,6 +575,11 @@
     // FUNÇÃO AUXILIAR PARA IMAGEM (Base64)
     // ------------------------------------------
 
+    /**
+     * Carrega uma imagem de uma URL (Github) e a converte para Base64.
+     * @param {string} imgUrl - URL da imagem (ex: 'roraima.png').
+     * @returns {Promise<string>} Promessa que resolve para o Data URL completo (base64).
+     */
     function getBase64Image(imgUrl) {
         return new Promise((resolve, reject) => {
             if (typeof html2canvas === 'undefined') {
@@ -883,6 +888,7 @@
             console.warn("Aviso: Falha ao carregar logo_sigma.png. Continuando sem imagem no rodapé.");
         }
 
+
         // --- 1. Imagem e Cabeçalho Centralizado ---
         
         // 1.1 Adicionar Imagem Roraima
@@ -920,7 +926,7 @@
         // 2. Linha e Título Principal
         doc.setDrawColor(204, 204, 204); 
         doc.setLineWidth(0.5);
-        yOffset += 1; // Linha acima do título (AJUSTE 2)
+        yOffset += 1; // Linha acima do título 
         doc.line(marginX, yOffset, docWidth - marginX, yOffset);
         yOffset += 4; 
         
@@ -940,7 +946,7 @@
         
         doc.setLineWidth(0.2);
         doc.line(marginX, yOffset, docWidth - marginX, yOffset);
-        yOffset += 5; // Aumenta a distância (AJUSTE 2)
+        yOffset += 5; 
         
         doc.setTextColor(defaultTextColor[0], defaultTextColor[1], defaultTextColor[2]);
         doc.setFontSize(10);
@@ -975,18 +981,77 @@
             2: { cellWidth: 100 }
         };
         const baseStyles = { fontSize: 8, cellPadding: 2, overflow: 'linebreak', theme: 'plain' };
+
+        // Rodapé Fixo no final da página
+        doc.autoTable.didDrawPage = function(data) {
+            const finalY = docHeight - 15;
+            const centroX = docWidth / 2;
+            
+            doc.setTextColor(vinhoColor[0], vinhoColor[1], vinhoColor[2]);
+            doc.setFontSize(9);
+            
+            // Variáveis para centralização
+            const SIGMA_TEXT = "SIGMA";
+            const DETAIL_TEXT = "- Sistema Integrado de Gestão de Materiais";
+            const SIGMA_WIDTH = doc.getStringUnitWidth(SIGMA_TEXT) * 9 * 0.35;
+            const DETAIL_WIDTH = doc.getStringUnitWidth(DETAIL_TEXT) * 9 * 0.35;
+            const LOGO_SPACE = logoRodapeWidth + 2; 
+            const SPACING = 2;
+            
+            const totalBlockWidth = LOGO_SPACE + SIGMA_WIDTH + SPACING + DETAIL_WIDTH;
+            const blockStartX = centroX - (totalBlockWidth / 2);
+
+            let currentX = blockStartX;
+
+            // 5.1 Logo SIGMA
+            if (sigmaDataUrl) {
+                doc.addImage(sigmaDataUrl, 'PNG', currentX, finalY - 3, logoRodapeWidth, logoRodapeHeight);
+                currentX += LOGO_SPACE; 
+            }
+            
+            // 5.2 Texto "SIGMA" (Negrito)
+            doc.setFont("helvetica", "bold");
+            doc.text(SIGMA_TEXT, currentX, finalY); 
+            currentX += SIGMA_WIDTH + SPACING;
+
+            // 5.3 Texto " - Sistema Integrado de Gestão de Materiais" (Normal)
+            doc.setFont("helvetica", "normal");
+            doc.text(DETAIL_TEXT, currentX, finalY);
+            finalY += 4;
+            
+            // 5.4 Rodapé Linha 2: CORPO DE BOMBEIROS MILITAR DE RORAIMA
+            doc.setFont("helvetica", "normal");
+            doc.setFontSize(8);
+            doc.text("CORPO DE BOMBEIROS MILITAR DE RORAIMA", centroX, finalY, { align: 'center' });
+        };
         
-        // Processa os dados por setor
-        itemsList.forEach(itemName => {
+        // Loop que monta as seções de cabeçalho e os dados
+        itemsList.forEach((itemName, index) => {
             const statusData = itemStatus[itemName] || { status: 'PENDENTE', descricao: 'ITEM NÃO CONFERIDO' };
             const itemLabel = document.getElementById('item-' + itemName).querySelector('.item-label').textContent;
             const setor = itemToSetor[itemName].toUpperCase();
             
-            // Se for um novo setor, gera o cabeçalho do setor (AJUSTE 1) e a tabela de dados
+            // --- Ação no início de cada novo setor ---
             if (setor !== currentSetor) {
-                // Finaliza a tabela anterior (se não for a primeira iteração)
+                // Se não for o primeiro setor, gera a tabela de dados do setor anterior
                 if (currentSetor !== '') {
-                     yOffset = doc.autoTable.previous.finalY;
+                    doc.autoTable({
+                        startY: yOffset,
+                        body: tableData,
+                        margin: { top: 0, right: marginX, bottom: 0, left: marginX },
+                        styles: { ...baseStyles, theme: 'striped' },
+                        columnStyles: columnStyles,
+                        didParseCell: (data) => {
+                            if (data.row.section === 'body' && data.column.index === 1) {
+                                if (data.row.raw[1] === 'C/A') {
+                                    data.cell.styles.fillColor = amareloClaro;
+                                } else if (data.row.raw[1] === 'S/A') {
+                                    data.cell.styles.fillColor = verdeClaro;
+                                }
+                            }
+                        }
+                    });
+                    yOffset = doc.autoTable.previous.finalY;
                 }
                 
                 // 4.1 Cabeçalho do Setor (Vinho)
@@ -994,19 +1059,19 @@
                     startY: yOffset + 2,
                     head: [
                         [
-                            { content: `${setor}`, colSpan: 1, styles: { fontStyle: 'bold', halign: 'left', fillColor: vinhoColor, textColor: 255 } }, // AJUSTE 2 (Nome do Setor)
+                            { content: `${setor}`, colSpan: 1, styles: { fontStyle: 'bold', halign: 'left', fillColor: vinhoColor, textColor: 255 } }, // AJUSTE 2
                             { content: `STATUS`, colSpan: 1, styles: { fontStyle: 'bold', halign: 'center', fillColor: vinhoColor, textColor: 255 } },
                             { content: `OBSERVAÇÃO`, colSpan: 1, styles: { fontStyle: 'bold', halign: 'left', fillColor: vinhoColor, textColor: 255 } }
                         ]
                     ],
                     styles: baseStyles,
                     margin: { top: 0, right: marginX, bottom: 0, left: marginX },
-                    columnStyles: columnStyles
+                    columnStyles: columnStyles // Usa as mesmas larguras
                 });
                 
-                yOffset = doc.autoTable.previous.finalY;
+                yOffset = doc.autoTable.previous.finalY; // Define o Y para o início dos dados
                 currentSetor = setor;
-                tableData = []; // Prepara array para os dados deste novo setor
+                tableData = []; // Zera os dados para a nova seção
             }
 
             const statusText = statusData.status;
@@ -1018,73 +1083,25 @@
                 statusText, 
                 obsText
             ]);
-        });
-        
-        // 4.2 Gera a última tabela de dados
-        doc.autoTable({
-            startY: yOffset,
-            body: tableData,
-            margin: { top: 0, right: marginX, bottom: 10, left: marginX },
-            styles: { ...baseStyles, theme: 'striped' },
-            columnStyles: {
-                0: { cellWidth: 70, fillColor: 255 }, 
-                1: { cellWidth: 20, halign: 'center' },
-                2: { cellWidth: 100, fillColor: 255 } 
-            },
-            // Destaque de cor APENAS NA COLUNA STATUS (AJUSTE 3)
-            didParseCell: (data) => {
-                const cellStatus = data.row.raw[1]; 
-                
-                // Aplica cor APENAS na coluna Status (índice 1)
-                if (data.row.section === 'body' && data.column.index === 1) {
-                    if (cellStatus === 'C/A') {
-                        data.cell.styles.fillColor = amareloClaro;
-                    } else if (cellStatus === 'S/A') {
-                        data.cell.styles.fillColor = verdeClaro;
+            
+            // Se for o último item geral, garante que a última tabela de dados seja gerada
+            if (index === itemsList.length - 1) {
+                doc.autoTable({
+                    startY: yOffset,
+                    body: tableData,
+                    margin: { top: 0, right: marginX, bottom: 10, left: marginX },
+                    styles: { ...baseStyles, theme: 'striped' },
+                    columnStyles: columnStyles,
+                    didParseCell: (data) => {
+                        if (data.row.section === 'body' && data.column.index === 1) {
+                            if (data.row.raw[1] === 'C/A') {
+                                data.cell.styles.fillColor = amareloClaro;
+                            } else if (data.row.raw[1] === 'S/A') {
+                                data.cell.styles.fillColor = verdeClaro;
+                            }
+                        }
                     }
-                }
-            },
-            // Rodapé Fixo no final da página (AJUSTE 4)
-            didDrawPage: (data) => {
-                const finalY = docHeight - 15; // Posição fixa no final da página
-                
-                doc.setTextColor(vinhoColor[0], vinhoColor[1], vinhoColor[2]);
-                doc.setFontSize(9);
-                
-                // Rodapé Linha 1: SIGMA (negrito) - Sistema Integrado de Gestão de Materiais
-                
-                const SIGMA_TEXT = "SIGMA";
-                const DETAIL_TEXT = "- Sistema Integrado de Gestão de Materiais";
-                const DETAIL_WIDTH = doc.getStringUnitWidth(DETAIL_TEXT) * 9 * 0.35;
-                const SIGMA_WIDTH = doc.getStringUnitWidth(SIGMA_TEXT) * 9 * 0.35;
-                const LOGO_SPACE = logoRodapeWidth + 2; 
-                const SPACING = 2;
-                
-                const totalBlockWidth = LOGO_SPACE + SIGMA_WIDTH + SPACING + DETAIL_WIDTH;
-                const blockStartX = centroX - (totalBlockWidth / 2);
-
-                let currentX = blockStartX;
-
-                // 5.1 Logo SIGMA
-                if (sigmaDataUrl) {
-                    doc.addImage(sigmaDataUrl, 'PNG', currentX, finalY - 3, logoRodapeWidth, logoRodapeHeight);
-                    currentX += LOGO_SPACE; 
-                }
-                
-                // 5.2 Texto "SIGMA" (Negrito)
-                doc.setFont("helvetica", "bold");
-                doc.text(SIGMA_TEXT, currentX, finalY); 
-                currentX += SIGMA_WIDTH + SPACING;
-
-                // 5.3 Texto " - Sistema Integrado de Gestão de Materiais" (Normal)
-                doc.setFont("helvetica", "normal");
-                doc.text(DETAIL_TEXT, currentX, finalY);
-                finalY += 4;
-                
-                // 5.4 Rodapé Linha 2: CORPO DE BOMBEIROS MILITAR DE RORAIMA
-                doc.setFont("helvetica", "normal");
-                doc.setFontSize(8);
-                doc.text("CORPO DE BOMBEIROS MILITAR DE RORAIMA", centroX, finalY, { align: 'center' });
+                });
             }
         });
         
