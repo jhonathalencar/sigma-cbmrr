@@ -577,7 +577,7 @@
     /**
      * Carrega uma imagem de uma URL (Github) e a converte para Base64.
      * @param {string} imgUrl - URL da imagem (ex: 'roraima.png').
-     * @returns {Promise<string>} Promessa que resolve para a string Base64.
+     * @returns {Promise<string>} Promessa que resolve para o Data URL completo (base64).
      */
     function getBase64Image(imgUrl) {
         return new Promise((resolve, reject) => {
@@ -589,12 +589,10 @@
                 canvas.height = img.height;
                 const ctx = canvas.getContext('2d');
                 ctx.drawImage(img, 0, 0);
-                // NOTA: Usa 'image/png' que é mais compatível.
                 const dataURL = canvas.toDataURL('image/png'); 
-                resolve(dataURL); // Retorna o DATA URL completo para AddImage
+                resolve(dataURL);
             };
-            img.onerror = () => reject(new Error('Erro ao carregar a imagem. Verifique o caminho ou permissões CORS.'));
-            // Tenta carregar a imagem pelo caminho relativo (funciona no GitHub)
+            img.onerror = () => reject(new Error('Erro ao carregar a imagem.'));
             img.src = imgUrl; 
         });
     }
@@ -634,7 +632,6 @@
         
         let isValid = true;
         
-        // 1. Posto/Graduação
         if (!postoSelect.value) {
             postoSelect.classList.add('input-error');
             isValid = false;
@@ -642,7 +639,6 @@
             postoSelect.classList.remove('input-error');
         }
 
-        // 2. Quadro
         if (!quadroSelect.value) {
             quadroSelect.classList.add('input-error');
             isValid = false;
@@ -650,7 +646,6 @@
             quadroSelect.classList.remove('input-error');
         }
 
-        // 3. Nome de Guerra
         if (nomeGuerraInput.value.trim() === "") {
             nomeGuerraInput.classList.add('input-error');
             isValid = false;
@@ -840,21 +835,16 @@
 
 
     // ------------------------------------------
-    // FUNÇÃO DE GERAÇÃO DE PDF (IMAGEM CARREGADA VIA URL)
+    // FUNÇÃO DE GERAÇÃO DE PDF (AJUSTADA)
     // ------------------------------------------
 
     async function generatePDF() {
-        if (typeof jsPDF === 'undefined') {
-            alert("Erro: A biblioteca jsPDF não foi carregada. Verifique os links CDN.");
+        if (typeof jsPDF === 'undefined' || typeof doc.autoTable === 'undefined') {
+            alert("Erro: As bibliotecas de PDF não foram carregadas. Verifique os links CDN.");
             return;
         }
         
         const doc = new jsPDF('p', 'mm', 'a4');
-        
-        if (typeof doc.autoTable === 'undefined') {
-            alert("Erro: O plugin jsPDF-autotable não foi carregado. Verifique os links CDN.");
-            return;
-        }
         
         const docWidth = doc.internal.pageSize.getWidth();
         let yOffset = 20;
@@ -863,48 +853,57 @@
         const logoHeight = 20;
         const logoX = docWidth / 2 - logoWidth / 2;
         
-        const defaultTextColor = [51, 51, 51];
+        const defaultTextColor = [51, 51, 51]; // Preto/Cinza Escuro
         const vinhoColor = [128, 0, 32];
         const cinzaClaro = [85, 85, 85];
+        const verdeClaro = [224, 255, 224]; // Para S/A
+        const amareloClaro = [255, 255, 224]; // Para C/A
 
-        // --- 1. Adicionar Imagem (Aguardando Base64) ---
+        // 1.1 Obter Data e Hora (para uso no cabeçalho)
+        const dataHora = new Date().toLocaleString('pt-BR');
+        
+        // --- 1. Imagem e Cabeçalho Centralizado ---
+        
         try {
-            // Tenta obter a imagem. O caminho relativo 'roraima.png' deve funcionar via GitHub/servidor local.
-            const roraimaBase64 = await getBase64Image('roraima.png');
-            // Adiciona a imagem, definindo a posição e o tamanho
-            doc.addImage(roraimaBase64, 'PNG', logoX, yOffset, logoWidth, logoHeight); 
+            // Tenta obter a imagem.
+            const roraimaDataUrl = await getBase64Image('roraima.png');
+            // Adiciona a imagem
+            doc.addImage(roraimaDataUrl, 'PNG', logoX, yOffset, logoWidth, logoHeight); 
             yOffset += logoHeight + 2;
         } catch (error) {
-            console.error("Erro ao carregar roraima.png para o PDF. Tentando continuar sem imagem.", error);
+            console.warn("Aviso: Imagem roraima.png falhou ao carregar. Verifique o caminho e CORS no servidor.");
             yOffset += 5; 
         }
 
-        // --- 2. Textos do Cabeçalho ---
+        // 1.2 Textos do Cabeçalho
         
-        // Governo do Estado de Roraima
+        // Governo do Estado de Roraima (MAIÚSCULAS)
         doc.setTextColor(defaultTextColor[0], defaultTextColor[1], defaultTextColor[2]);
         doc.setFont("helvetica", "normal");
         doc.setFontSize(10);
-        doc.text("Governo do Estado de Roraima", docWidth / 2, yOffset, { align: 'center' });
+        doc.text("GOVERNO DO ESTADO DE RORAIMA", docWidth / 2, yOffset, { align: 'center' });
         yOffset += 5;
         
-        // Corpo de Bombeiros Militar de Roraima
+        // Corpo de Bombeiros Militar de Roraima (MAIÚSCULAS)
         doc.setTextColor(vinhoColor[0], vinhoColor[1], vinhoColor[2]);
         doc.setFontSize(11);
-        doc.text("Corpo de Bombeiros Militar de Roraima", docWidth / 2, yOffset, { align: 'center' });
+        doc.text("CORPO DE BOMBEIROS MILITAR DE RORAIMA", docWidth / 2, yOffset, { align: 'center' });
         yOffset += 5;
         
-        // "Amazônia: patrimônio dos brasileiros"
+        // "Amazônia: patrimônio dos brasileiros" (ITÁLICO)
         doc.setTextColor(cinzaClaro[0], cinzaClaro[1], cinzaClaro[2]);
         doc.setFontSize(8);
+        doc.setFont("helvetica", "italic"); // Seta para itálico
         doc.text("\"Amazônia: patrimônio dos brasileiros\"", docWidth / 2, yOffset, { align: 'center' });
-        yOffset += 10;
+        doc.setFont("helvetica", "normal"); // Volta para normal
+        yOffset += 5;
         
-        // Linha e Título Principal
+        // 2. Linha e Título Principal (AJUSTADA PARA SUBIR MAIS)
         doc.setDrawColor(204, 204, 204); 
         doc.setLineWidth(0.5);
+        yOffset += 5; // Aumenta espaço antes da linha
         doc.line(marginX, yOffset, docWidth - marginX, yOffset);
-        yOffset += 3;
+        yOffset += 4; // Aumenta espaço depois da linha
         
         doc.setTextColor(vinhoColor[0], vinhoColor[1], vinhoColor[2]);
         doc.setFontSize(12);
@@ -912,12 +911,13 @@
         doc.text("CONFERÊNCIA DE MATERIAIS", docWidth / 2, yOffset, { align: 'center' });
         yOffset += 5;
         
+        // Local Teste - Posto Bravo (PRETO E NEGRITO)
+        doc.setTextColor(defaultTextColor[0], defaultTextColor[1], defaultTextColor[2]);
         doc.setFontSize(10);
-        doc.setFont("helvetica", "normal");
         doc.text("LOCAL TESTE - Posto Bravo", docWidth / 2, yOffset, { align: 'center' });
         yOffset += 7;
         
-        // --- 3. Identificação do Conferente ---
+        // --- 3. MILITAR RESPONSÁVEL (AJUSTADO) ---
         
         doc.setLineWidth(0.2);
         doc.line(marginX, yOffset, docWidth - marginX, yOffset);
@@ -926,29 +926,25 @@
         doc.setTextColor(defaultTextColor[0], defaultTextColor[1], defaultTextColor[2]);
         doc.setFontSize(10);
         doc.setFont("helvetica", "bold");
-        doc.text("IDENTIFICAÇÃO DE QUEM CONFERIU", marginX, yOffset);
+        doc.text("MILITAR RESPONSÁVEL PELA CONFERÊNCIA", marginX, yOffset);
         yOffset += 5;
         
         doc.setFont("helvetica", "normal");
         doc.setFontSize(9);
         
-        doc.text(`Posto/Graduação: ${userInfo.postoGraduacao}`, marginX, yOffset);
-        doc.text(`Quadro: ${userInfo.quadro}`, docWidth / 2, yOffset);
-        yOffset += 5;
-        doc.text(`Nome de Guerra: ${userInfo.nomeGuerra}`, marginX, yOffset);
+        // Nome no estilo "3ª SGT QPCBM JHONATH"
+        doc.text(`${userInfo.postoGraduacao} ${userInfo.quadro} ${userInfo.nomeGuerra}`, marginX, yOffset);
+        // Data e Hora
+        doc.text(`Data/Hora: ${dataHora}`, docWidth / 2, yOffset);
         yOffset += 8;
         
-        // --- 4. Tabela de Conferência ---
-        
+        // Linha de separação (Removemos o título "CONFERÊNCIA" conforme solicitado)
         doc.setLineWidth(0.2);
         doc.line(marginX, yOffset, docWidth - marginX, yOffset);
         yOffset += 3;
-        
-        doc.setFontSize(10);
-        doc.setFont("helvetica", "bold");
-        doc.text("CONFERÊNCIA", marginX, yOffset);
-        yOffset += 5;
 
+        // --- 4. Tabela de Conferência (DESTAQUES DE COR) ---
+        
         const itemsList = ['lanterna', 'kit', 'radio', 'cordas', 'colete'];
         let tableData = [];
         let currentSetor = '';
@@ -958,16 +954,12 @@
             const itemLabel = document.getElementById('item-' + itemName).querySelector('.item-label').textContent;
             const setor = itemToSetor[itemName].toUpperCase();
             
+            // Lógica de Linha de Setor
             if (setor !== currentSetor) {
                 tableData.push([{ 
                     content: `SETOR: ${setor}`, 
                     colSpan: 3, 
-                    styles: { 
-                        fillColor: [240, 240, 240], 
-                        fontStyle: 'bold', 
-                        halign: 'left',
-                        textColor: [0, 0, 0]
-                    } 
+                    styles: { fillColor: [240, 240, 240], fontStyle: 'bold', halign: 'left', textColor: [0, 0, 0] } 
                 }]);
                 currentSetor = setor;
             }
@@ -994,13 +986,40 @@
                 0: { cellWidth: 70 },
                 1: { cellWidth: 20, halign: 'center' },
                 2: { cellWidth: 100 }
+            },
+            // Destaque de cor nas linhas
+            didParseCell: (data) => {
+                const cellStatus = data.row.raw[1]; // Acessa o valor da coluna Status
+                if (cellStatus === 'C/A') {
+                    data.cell.styles.fillColor = amareloClaro; // Amarelo
+                } else if (cellStatus === 'S/A') {
+                    data.cell.styles.fillColor = verdeClaro; // Verde
+                }
             }
         });
         
-        // --- 5. Finalizar e Salvar ---
+        yOffset = doc.autoTable.previous.finalY + 15; // Atualiza o Y para o rodapé
+
+        // --- 5. Rodapé ---
         
-        const dataHora = new Date().toLocaleString('pt-BR').replace(/[:/\s,]/g, '-');
-        const filename = `CONFERENCIA_${userInfo.nomeGuerra}_${dataHora}.pdf`;
+        doc.setTextColor(vinhoColor[0], vinhoColor[1], vinhoColor[2]);
+        doc.setFontSize(9);
+        
+        // Rodapé Linha 1: SIGMA - Sistema Integrado de Gestão de Materiais
+        doc.setFont("helvetica", "bold");
+        doc.text("SIGMA", docWidth / 2 - 20, yOffset, { align: 'center' }); // Ajuste para o texto SIGMA negrito
+        doc.setFont("helvetica", "normal");
+        doc.text("- Sistema Integrado de Gestão de Materiais", docWidth / 2 + 10, yOffset, { align: 'center' });
+        yOffset += 4;
+        
+        // Rodapé Linha 2: CORPO DE BOMBEIROS MILITAR DE RORAIMA
+        doc.setFont("helvetica", "normal");
+        doc.setFontSize(8);
+        doc.text("CORPO DE BOMBEIROS MILITAR DE RORAIMA", docWidth / 2, yOffset, { align: 'center' });
+
+        // --- 6. Finalizar e Salvar ---
+        
+        const filename = `CONFERENCIA_${userInfo.nomeGuerra}_${dataHora.split(' ')[0].replace(/\//g, '-')}.pdf`;
         
         doc.save(filename);
     }
@@ -1013,7 +1032,6 @@
     document.getElementById('form-conferencia').addEventListener('submit', async function(event) {
         event.preventDefault();
         
-        // 1. Valida e coleta os dados do conferente
         if (!validateAndSaveUserInfo()) {
             return;
         }
@@ -1030,7 +1048,6 @@
         if (pendente) {
              alert('ATENÇÃO: Existem itens pendentes de conferência. Por favor, verifique todos os itens antes de finalizar.');
         } else {
-             // Chama a função assíncrona de geração de PDF
              await generatePDF();
         }
     });
