@@ -571,6 +571,35 @@
 
 
     // ------------------------------------------
+    // FUNÇÃO AUXILIAR PARA IMAGEM (Base64)
+    // ------------------------------------------
+
+    /**
+     * Carrega uma imagem de uma URL (Github) e a converte para Base64.
+     * @param {string} imgUrl - URL da imagem (ex: 'roraima.png').
+     * @returns {Promise<string>} Promessa que resolve para a string Base64.
+     */
+    function getBase64Image(imgUrl) {
+        return new Promise((resolve, reject) => {
+            const img = new Image();
+            img.crossOrigin = 'Anonymous'; 
+            img.onload = () => {
+                const canvas = document.createElement('canvas');
+                canvas.width = img.width;
+                canvas.height = img.height;
+                const ctx = canvas.getContext('2d');
+                ctx.drawImage(img, 0, 0);
+                // NOTA: Usa 'image/png' que é mais compatível.
+                const dataURL = canvas.toDataURL('image/png'); 
+                resolve(dataURL); // Retorna o DATA URL completo para AddImage
+            };
+            img.onerror = () => reject(new Error('Erro ao carregar a imagem. Verifique o caminho ou permissões CORS.'));
+            // Tenta carregar a imagem pelo caminho relativo (funciona no GitHub)
+            img.src = imgUrl; 
+        });
+    }
+
+    // ------------------------------------------
     // FUNÇÕES DE COLETA DE DADOS DO CONFERENTE
     // ------------------------------------------
 
@@ -719,11 +748,6 @@
         }
     }
 
-
-    // ------------------------------------------
-    // FUNÇÕES DE CONFERÊNCIA E SALVAMENTO
-    // ------------------------------------------
-
     function showAlteracao(itemName) {
         const alteracaoDiv = document.getElementById(itemName + '-alteracao');
         
@@ -768,11 +792,6 @@
         checkSetorCompletion(itemName, setorName);
     }
     
-
-    // ------------------------------------------
-    // FUNÇÕES DE FLUXO (RECOLHER E EXPANDIR)
-    // ------------------------------------------
-
     function checkSetorCompletion(currentItemName, setorName) {
         const currentItemElement = document.getElementById('item-' + currentItemName);
         let nextItemElement = currentItemElement.nextElementSibling;
@@ -821,11 +840,10 @@
 
 
     // ------------------------------------------
-    // FUNÇÃO DE GERAÇÃO DE PDF (REMODELADA E CORRIGIDA)
+    // FUNÇÃO DE GERAÇÃO DE PDF (IMAGEM CARREGADA VIA URL)
     // ------------------------------------------
 
-    function generatePDF() {
-        // CORREÇÃO: Verificação da biblioteca jsPDF deve vir primeiro
+    async function generatePDF() {
         if (typeof jsPDF === 'undefined') {
             alert("Erro: A biblioteca jsPDF não foi carregada. Verifique os links CDN.");
             return;
@@ -833,7 +851,6 @@
         
         const doc = new jsPDF('p', 'mm', 'a4');
         
-        // CORREÇÃO: Verificação do autoTable deve vir depois de doc ser criado
         if (typeof doc.autoTable === 'undefined') {
             alert("Erro: O plugin jsPDF-autotable não foi carregado. Verifique os links CDN.");
             return;
@@ -841,13 +858,28 @@
         
         const docWidth = doc.internal.pageSize.getWidth();
         let yOffset = 20;
-
-        // --- 1. Cabeçalho Centralizado (Texto) ---
+        const marginX = 10;
+        const logoWidth = 20;
+        const logoHeight = 20;
+        const logoX = docWidth / 2 - logoWidth / 2;
         
-        // Configurações de fonte/cor para o cabeçalho
-        const defaultTextColor = [51, 51, 51]; // Preto/Cinza Escuro
+        const defaultTextColor = [51, 51, 51];
         const vinhoColor = [128, 0, 32];
         const cinzaClaro = [85, 85, 85];
+
+        // --- 1. Adicionar Imagem (Aguardando Base64) ---
+        try {
+            // Tenta obter a imagem. O caminho relativo 'roraima.png' deve funcionar via GitHub/servidor local.
+            const roraimaBase64 = await getBase64Image('roraima.png');
+            // Adiciona a imagem, definindo a posição e o tamanho
+            doc.addImage(roraimaBase64, 'PNG', logoX, yOffset, logoWidth, logoHeight); 
+            yOffset += logoHeight + 2;
+        } catch (error) {
+            console.error("Erro ao carregar roraima.png para o PDF. Tentando continuar sem imagem.", error);
+            yOffset += 5; 
+        }
+
+        // --- 2. Textos do Cabeçalho ---
         
         // Governo do Estado de Roraima
         doc.setTextColor(defaultTextColor[0], defaultTextColor[1], defaultTextColor[2]);
@@ -869,9 +901,9 @@
         yOffset += 10;
         
         // Linha e Título Principal
-        doc.setDrawColor(204, 204, 204); // Cinza
+        doc.setDrawColor(204, 204, 204); 
         doc.setLineWidth(0.5);
-        doc.line(10, yOffset, docWidth - 10, yOffset);
+        doc.line(marginX, yOffset, docWidth - marginX, yOffset);
         yOffset += 3;
         
         doc.setTextColor(vinhoColor[0], vinhoColor[1], vinhoColor[2]);
@@ -885,41 +917,38 @@
         doc.text("LOCAL TESTE - Posto Bravo", docWidth / 2, yOffset, { align: 'center' });
         yOffset += 7;
         
-        // --- 2. Identificação do Conferente ---
+        // --- 3. Identificação do Conferente ---
         
         doc.setLineWidth(0.2);
-        doc.line(10, yOffset, docWidth - 10, yOffset);
+        doc.line(marginX, yOffset, docWidth - marginX, yOffset);
         yOffset += 3;
         
         doc.setTextColor(defaultTextColor[0], defaultTextColor[1], defaultTextColor[2]);
         doc.setFontSize(10);
         doc.setFont("helvetica", "bold");
-        doc.text("IDENTIFICAÇÃO DE QUEM CONFERIU", 10, yOffset);
+        doc.text("IDENTIFICAÇÃO DE QUEM CONFERIU", marginX, yOffset);
         yOffset += 5;
         
         doc.setFont("helvetica", "normal");
         doc.setFontSize(9);
         
-        // Formata e adiciona os dados do conferente
-        doc.text(`Posto/Graduação: ${userInfo.postoGraduacao}`, 10, yOffset);
+        doc.text(`Posto/Graduação: ${userInfo.postoGraduacao}`, marginX, yOffset);
         doc.text(`Quadro: ${userInfo.quadro}`, docWidth / 2, yOffset);
         yOffset += 5;
-        doc.text(`Nome de Guerra: ${userInfo.nomeGuerra}`, 10, yOffset);
+        doc.text(`Nome de Guerra: ${userInfo.nomeGuerra}`, marginX, yOffset);
         yOffset += 8;
         
-        // --- 3. Título da Conferência ---
+        // --- 4. Tabela de Conferência ---
         
         doc.setLineWidth(0.2);
-        doc.line(10, yOffset, docWidth - 10, yOffset);
+        doc.line(marginX, yOffset, docWidth - marginX, yOffset);
         yOffset += 3;
         
         doc.setFontSize(10);
         doc.setFont("helvetica", "bold");
-        doc.text("CONFERÊNCIA", 10, yOffset);
+        doc.text("CONFERÊNCIA", marginX, yOffset);
         yOffset += 5;
 
-        // --- 4. Tabela de Conferência (AutoTable) ---
-        
         const itemsList = ['lanterna', 'kit', 'radio', 'cordas', 'colete'];
         let tableData = [];
         let currentSetor = '';
@@ -929,7 +958,6 @@
             const itemLabel = document.getElementById('item-' + itemName).querySelector('.item-label').textContent;
             const setor = itemToSetor[itemName].toUpperCase();
             
-            // Adicionar linha de separação do Setor
             if (setor !== currentSetor) {
                 tableData.push([{ 
                     content: `SETOR: ${setor}`, 
@@ -958,7 +986,7 @@
             startY: yOffset,
             head: [['Material', 'Status', 'Observação / Alteração']],
             body: tableData,
-            margin: { top: 10, right: 10, bottom: 10, left: 10 },
+            margin: { top: 10, right: marginX, bottom: 10, left: marginX },
             styles: { fontSize: 8, cellPadding: 2, overflow: 'linebreak' },
             headStyles: { fillColor: [128, 0, 32], fontStyle: 'bold' },
             theme: 'striped',
@@ -975,15 +1003,14 @@
         const filename = `CONFERENCIA_${userInfo.nomeGuerra}_${dataHora}.pdf`;
         
         doc.save(filename);
-        alert('PDF gerado com sucesso!');
     }
 
 
     // ------------------------------------------
-    // FUNÇÃO FINALIZAR
+    // FUNÇÃO FINALIZAR (AJUSTADA PARA ASYNC)
     // ------------------------------------------
 
-    document.getElementById('form-conferencia').addEventListener('submit', function(event) {
+    document.getElementById('form-conferencia').addEventListener('submit', async function(event) {
         event.preventDefault();
         
         // 1. Valida e coleta os dados do conferente
@@ -1003,10 +1030,242 @@
         if (pendente) {
              alert('ATENÇÃO: Existem itens pendentes de conferência. Por favor, verifique todos os itens antes de finalizar.');
         } else {
-             // Chama a função de geração de PDF se tudo estiver OK
-             generatePDF();
+             // Chama a função assíncrona de geração de PDF
+             await generatePDF();
         }
     });
+
+    // ------------------------------------------
+    // FUNÇÕES RESTANTES (MANTIDAS)
+    // ------------------------------------------
+    function updateQuadroOptions() {
+        const postoSelect = document.getElementById('posto-graduacao');
+        const quadroSelect = document.getElementById('quadro');
+        const selectedPosto = postoSelect.value;
+        
+        quadroSelect.innerHTML = '<option value="" disabled selected>-- Selecione um Quadro --</option>';
+        
+        let quadroGroup = null;
+        if (oficiasPatentes.includes(selectedPosto)) {
+            quadroGroup = 'OFICIAIS';
+        } else if (selectedPosto) {
+            quadroGroup = 'PRACAS';
+        }
+
+        if (quadroGroup && quadrosMap[quadroGroup]) {
+            quadrosMap[quadroGroup].forEach(quadro => {
+                const option = document.createElement('option');
+                option.value = quadro;
+                option.textContent = quadro;
+                quadroSelect.appendChild(option);
+            });
+        }
+    }
+
+    function validateAndSaveUserInfo() {
+        const postoSelect = document.getElementById('posto-graduacao');
+        const quadroSelect = document.getElementById('quadro');
+        const nomeGuerraInput = document.getElementById('nome-guerra');
+        
+        let isValid = true;
+        
+        if (!postoSelect.value) {
+            postoSelect.classList.add('input-error');
+            isValid = false;
+        } else {
+            postoSelect.classList.remove('input-error');
+        }
+
+        if (!quadroSelect.value) {
+            quadroSelect.classList.add('input-error');
+            isValid = false;
+        } else {
+            quadroSelect.classList.remove('input-error');
+        }
+
+        if (nomeGuerraInput.value.trim() === "") {
+            nomeGuerraInput.classList.add('input-error');
+            isValid = false;
+        } else {
+            nomeGuerraInput.classList.remove('input-error');
+        }
+        
+        if (!isValid) {
+            alert("Por favor, preencha todos os campos de identificação do conferente.");
+            return false;
+        }
+        
+        userInfo.postoGraduacao = postoSelect.value;
+        userInfo.quadro = quadroSelect.value;
+        userInfo.nomeGuerra = nomeGuerraInput.value.toUpperCase().trim();
+        
+        return true;
+    }
+
+    function toggleSetor(contentId) {
+        const content = document.getElementById(contentId);
+        content.classList.toggle('expanded');
+    }
+
+    function updateItemVisual(itemName, status, statusText, description = '') {
+        const itemContainer = document.getElementById('item-' + itemName); 
+        const statusIcon = document.getElementById('status-' + itemName);
+        const descriptionInline = document.getElementById(itemName + '-descricao-inline');
+        const descriptionText = document.getElementById(itemName + '-texto-ca');
+        
+        const saButton = document.getElementById(`btn-${itemName}-sa`);
+        const caButton = document.getElementById(`btn-${itemName}-ca`);
+        
+        saButton.classList.remove('active');
+        caButton.classList.remove('active');
+        
+        itemContainer.classList.remove('status-ok', 'status-alert');
+        statusIcon.classList.remove('ok', 'alert', 'pending');
+        
+        statusIcon.textContent = (status === 'alert' || status === 'pending') ? statusText : '';
+        statusIcon.classList.add(status);
+        
+        if (status === 'ok') {
+            itemContainer.classList.add('status-ok');
+            descriptionInline.style.display = 'none';
+            saButton.classList.add('active');
+        } else if (status === 'alert') {
+            itemContainer.classList.add('status-alert');
+            descriptionText.textContent = description;
+            descriptionInline.style.display = 'block';
+            caButton.classList.add('active');
+        } else {
+             descriptionInline.style.display = 'none';
+        }
+    }
+    
+    function updateSetorStatus(setorName) {
+        const setorStatusElement = document.getElementById(`status-setor-${setorName}`);
+        if (!setorStatusElement) return;
+
+        let totalItems = parseInt(setorStatusElement.getAttribute('data-total-items'));
+        let itemsConferidos = 0;
+        let itemsAlterados = 0;
+
+        for (const itemName in itemStatus) {
+            if (itemToSetor[itemName] === setorName) {
+                itemsConferidos++;
+                if (itemStatus[itemName].status === 'C/A') {
+                    itemsAlterados++;
+                }
+            }
+        }
+        
+        setorStatusElement.setAttribute('data-items-conferidos', itemsConferidos);
+        setorStatusElement.setAttribute('data-items-alterados', itemsAlterados);
+
+        if (itemsAlterados > 0) {
+            setorStatusElement.textContent = `${itemsAlterados} C/A`;
+            setorStatusElement.classList.remove('ok');
+        } else {
+            setorStatusElement.textContent = `S/A`;
+            if (itemsConferidos === totalItems) {
+                setorStatusElement.classList.add('ok');
+            } else {
+                setorStatusElement.classList.remove('ok');
+            }
+        }
+        
+        if (itemsConferidos < totalItems) {
+            setorStatusElement.textContent += ` (${itemsConferidos}/${totalItems})`;
+        }
+    }
+
+    function showAlteracao(itemName) {
+        const alteracaoDiv = document.getElementById(itemName + '-alteracao');
+        
+        updateItemVisual(itemName, 'pending', '...', '');
+        
+        document.getElementById(`btn-${itemName}-ca`).classList.add('active');
+        document.getElementById(`btn-${itemName}-sa`).classList.remove('active');
+
+        alteracaoDiv.style.display = 'block';
+        document.getElementById(itemName + '-descricao').focus();
+    }
+
+    function markItem(itemName, status, setorName) {
+        const alteracaoDiv = document.getElementById(itemName + '-alteracao');
+        
+        alteracaoDiv.style.display = 'none';
+        document.getElementById(itemName + '-descricao').value = '';
+
+        itemStatus[itemName] = { status: 'S/A', descricao: '' };
+        updateItemVisual(itemName, 'ok', '✓', '');
+        updateSetorStatus(setorName);
+
+        checkSetorCompletion(itemName, setorName);
+    }
+
+    function salvarItem(itemName, status, setorName) {
+        const alteracaoDiv = document.getElementById(itemName + '-alteracao');
+        const descricao = document.getElementById(itemName + '-descricao').value;
+        
+        if (descricao.trim() === "") {
+            alert("Por favor, descreva a alteração antes de salvar.");
+            document.getElementById(itemName + '-descricao').focus();
+            return;
+        }
+
+        alteracaoDiv.style.display = 'none';
+        
+        itemStatus[itemName] = { status: 'C/A', descricao: descricao };
+        updateItemVisual(itemName, 'alert', 'C/A', descricao);
+        updateSetorStatus(setorName);
+
+        checkSetorCompletion(itemName, setorName);
+    }
+    
+    function checkSetorCompletion(currentItemName, setorName) {
+        const currentItemElement = document.getElementById('item-' + currentItemName);
+        let nextItemElement = currentItemElement.nextElementSibling;
+        
+        while (nextItemElement && !nextItemElement.classList.contains('item-conferencia')) {
+            nextItemElement = nextItemElement.nextElementSibling;
+        }
+
+        if (nextItemElement && nextItemElement.classList.contains('item-conferencia')) {
+            nextItemElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            return;
+        }
+        
+        const itemsInSetor = Array.from(document.getElementById(setorContentMap[setorName]).querySelectorAll('.item-conferencia'));
+        const isLastItem = itemsInSetor.length > 0 && itemsInSetor[itemsInSetor.length - 1].id === currentItemElement.id;
+
+        if (isLastItem) {
+            autoAdvanceSetor(setorName);
+        }
+    }
+    
+    function autoAdvanceSetor(currentSetorName) {
+        const currentIndex = setorIds.indexOf(currentSetorName);
+        const nextIndex = currentIndex + 1;
+
+        const currentSetorContentId = setorContentMap[currentSetorName];
+        document.getElementById(currentSetorContentId).classList.remove('expanded');
+
+        if (nextIndex < setorIds.length) {
+            const nextSetorName = setorIds[nextIndex];
+            const nextSetorContentId = setorContentMap[nextSetorName];
+            
+            const nextSetorContent = document.getElementById(nextSetorContentId);
+            nextSetorContent.classList.add('expanded');
+            
+            nextSetorContent.previousElementSibling.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            
+            const firstItemInNextSetor = nextSetorContent.querySelector('.item-conferencia');
+            if (firstItemInNextSetor) {
+                firstItemInNextSetor.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+        } else {
+            document.getElementById('btn-finalizar').scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+    }
+
 
     // ------------------------------------------
     // INICIALIZAÇÃO
@@ -1024,10 +1283,8 @@
             updateItemVisual(itemName, 'pending', '...', '');
         });
         
-        // Inicializa o status dos setores
         setorIds.forEach(updateSetorStatus);
         
-        // Garante que o texto '...' apareça no ícone de status inicial
         document.querySelectorAll('.status-icon.pending').forEach(icon => {
             icon.textContent = '...';
         });
