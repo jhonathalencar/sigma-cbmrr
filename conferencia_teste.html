@@ -821,46 +821,67 @@
 
 
     // ------------------------------------------
-    // FUNÇÃO DE GERAÇÃO DE PDF (REMODELADA)
+    // FUNÇÃO DE GERAÇÃO DE PDF (REMODELADA E CORRIGIDA)
     // ------------------------------------------
 
     function generatePDF() {
-        // Verifica se as bibliotecas de PDF estão carregadas
-        if (typeof jsPDF === 'undefined' || typeof doc.autoTable === 'undefined') {
-            alert("Erro: As bibliotecas de geração de PDF (jsPDF/AutoTable) não foram carregadas. Verifique se os links CDN estão corretos no final do código.");
+        // CORREÇÃO: Verificação da biblioteca jsPDF deve vir primeiro
+        if (typeof jsPDF === 'undefined') {
+            alert("Erro: A biblioteca jsPDF não foi carregada. Verifique os links CDN.");
             return;
         }
-
+        
         const doc = new jsPDF('p', 'mm', 'a4');
+        
+        // CORREÇÃO: Verificação do autoTable deve vir depois de doc ser criado
+        if (typeof doc.autoTable === 'undefined') {
+            alert("Erro: O plugin jsPDF-autotable não foi carregado. Verifique os links CDN.");
+            return;
+        }
+        
         const docWidth = doc.internal.pageSize.getWidth();
         let yOffset = 20;
 
         // --- 1. Cabeçalho Centralizado (Texto) ---
         
-        // *Nota: A inclusão de imagem (roraima.png) é complexa em jsPDF sem conversão prévia, 
-        // então estou mantendo apenas o texto conforme solicitado para garantir estabilidade.*
+        // Configurações de fonte/cor para o cabeçalho
+        const defaultTextColor = [51, 51, 51]; // Preto/Cinza Escuro
+        const vinhoColor = [128, 0, 32];
+        const cinzaClaro = [85, 85, 85];
         
+        // Governo do Estado de Roraima
+        doc.setTextColor(defaultTextColor[0], defaultTextColor[1], defaultTextColor[2]);
+        doc.setFont("helvetica", "normal");
         doc.setFontSize(10);
         doc.text("Governo do Estado de Roraima", docWidth / 2, yOffset, { align: 'center' });
         yOffset += 5;
-        doc.setTextColor(128, 0, 32); // Cor Vinho
+        
+        // Corpo de Bombeiros Militar de Roraima
+        doc.setTextColor(vinhoColor[0], vinhoColor[1], vinhoColor[2]);
         doc.setFontSize(11);
         doc.text("Corpo de Bombeiros Militar de Roraima", docWidth / 2, yOffset, { align: 'center' });
         yOffset += 5;
-        doc.setTextColor(85, 85, 85); // Cor cinza
+        
+        // "Amazônia: patrimônio dos brasileiros"
+        doc.setTextColor(cinzaClaro[0], cinzaClaro[1], cinzaClaro[2]);
         doc.setFontSize(8);
         doc.text("\"Amazônia: patrimônio dos brasileiros\"", docWidth / 2, yOffset, { align: 'center' });
         yOffset += 10;
         
+        // Linha e Título Principal
+        doc.setDrawColor(204, 204, 204); // Cinza
         doc.setLineWidth(0.5);
-        doc.line(10, yOffset, docWidth - 10, yOffset); // Linha separadora
+        doc.line(10, yOffset, docWidth - 10, yOffset);
         yOffset += 3;
         
-        doc.setTextColor(128, 0, 32); // Cor Vinho
+        doc.setTextColor(vinhoColor[0], vinhoColor[1], vinhoColor[2]);
         doc.setFontSize(12);
+        doc.setFont("helvetica", "bold");
         doc.text("CONFERÊNCIA DE MATERIAIS", docWidth / 2, yOffset, { align: 'center' });
         yOffset += 5;
+        
         doc.setFontSize(10);
+        doc.setFont("helvetica", "normal");
         doc.text("LOCAL TESTE - Posto Bravo", docWidth / 2, yOffset, { align: 'center' });
         yOffset += 7;
         
@@ -870,7 +891,7 @@
         doc.line(10, yOffset, docWidth - 10, yOffset);
         yOffset += 3;
         
-        doc.setTextColor(51, 51, 51); // Cor preta
+        doc.setTextColor(defaultTextColor[0], defaultTextColor[1], defaultTextColor[2]);
         doc.setFontSize(10);
         doc.setFont("helvetica", "bold");
         doc.text("IDENTIFICAÇÃO DE QUEM CONFERIU", 10, yOffset);
@@ -879,6 +900,7 @@
         doc.setFont("helvetica", "normal");
         doc.setFontSize(9);
         
+        // Formata e adiciona os dados do conferente
         doc.text(`Posto/Graduação: ${userInfo.postoGraduacao}`, 10, yOffset);
         doc.text(`Quadro: ${userInfo.quadro}`, docWidth / 2, yOffset);
         yOffset += 5;
