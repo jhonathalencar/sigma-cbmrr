@@ -58,6 +58,15 @@
             color: #FF3B3B;
         }
 
+        /* REGRAS DE VISIBILIDADE */
+        .header-title-desktop { 
+            display: none; 
+        }
+        .header-title-mobile { 
+            display: block; 
+        }
+        /* CORREÇÃO: Em mobile, queremos apenas SIGMA (que já é o padrão do mobile-title) */
+
         @media (min-width: 768px) {
             .header-title-desktop { display: block; }
             .header-title-mobile { display: none; }
@@ -545,6 +554,7 @@
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 
 <script>
     // Define a variável global do jsPDF para uso fácil
@@ -581,6 +591,12 @@
      */
     function getBase64Image(imgUrl) {
         return new Promise((resolve, reject) => {
+            // Verifica se a biblioteca necessária está carregada
+            if (typeof html2canvas === 'undefined') {
+                 reject(new Error('html2canvas não carregado. Não é possível converter a imagem para Base64.'));
+                 return;
+            }
+
             const img = new Image();
             img.crossOrigin = 'Anonymous'; 
             img.onload = () => {
@@ -835,16 +851,21 @@
 
 
     // ------------------------------------------
-    // FUNÇÃO DE GERAÇÃO DE PDF (AJUSTADA)
+    // FUNÇÃO DE GERAÇÃO DE PDF (IMAGEM CARREGADA VIA URL)
     // ------------------------------------------
 
     async function generatePDF() {
-        if (typeof jsPDF === 'undefined' || typeof doc.autoTable === 'undefined') {
-            alert("Erro: As bibliotecas de PDF não foram carregadas. Verifique os links CDN.");
+        if (typeof jsPDF === 'undefined') {
+            alert("Erro: A biblioteca jsPDF não foi carregada. Verifique os links CDN.");
             return;
         }
         
         const doc = new jsPDF('p', 'mm', 'a4');
+        
+        if (typeof doc.autoTable === 'undefined') {
+            alert("Erro: O plugin jsPDF-autotable não foi carregado. Verifique os links CDN.");
+            return;
+        }
         
         const docWidth = doc.internal.pageSize.getWidth();
         let yOffset = 20;
@@ -853,25 +874,22 @@
         const logoHeight = 20;
         const logoX = docWidth / 2 - logoWidth / 2;
         
-        const defaultTextColor = [51, 51, 51]; // Preto/Cinza Escuro
+        const defaultTextColor = [51, 51, 51]; 
         const vinhoColor = [128, 0, 32];
         const cinzaClaro = [85, 85, 85];
-        const verdeClaro = [224, 255, 224]; // Para S/A
-        const amareloClaro = [255, 255, 224]; // Para C/A
+        const verdeClaro = [224, 255, 224]; // Para S/A (Tabela)
+        const amareloClaro = [255, 255, 224]; // Para C/A (Tabela)
 
-        // 1.1 Obter Data e Hora (para uso no cabeçalho)
         const dataHora = new Date().toLocaleString('pt-BR');
         
         // --- 1. Imagem e Cabeçalho Centralizado ---
         
         try {
-            // Tenta obter a imagem.
             const roraimaDataUrl = await getBase64Image('roraima.png');
-            // Adiciona a imagem
             doc.addImage(roraimaDataUrl, 'PNG', logoX, yOffset, logoWidth, logoHeight); 
             yOffset += logoHeight + 2;
         } catch (error) {
-            console.warn("Aviso: Imagem roraima.png falhou ao carregar. Verifique o caminho e CORS no servidor.");
+            console.warn("Aviso: Imagem roraima.png falhou ao carregar. Tentando continuar sem imagem.");
             yOffset += 5; 
         }
 
@@ -893,17 +911,17 @@
         // "Amazônia: patrimônio dos brasileiros" (ITÁLICO)
         doc.setTextColor(cinzaClaro[0], cinzaClaro[1], cinzaClaro[2]);
         doc.setFontSize(8);
-        doc.setFont("helvetica", "italic"); // Seta para itálico
+        doc.setFont("helvetica", "italic"); 
         doc.text("\"Amazônia: patrimônio dos brasileiros\"", docWidth / 2, yOffset, { align: 'center' });
-        doc.setFont("helvetica", "normal"); // Volta para normal
+        doc.setFont("helvetica", "normal"); 
         yOffset += 5;
         
-        // 2. Linha e Título Principal (AJUSTADA PARA SUBIR MAIS)
+        // 2. Linha e Título Principal (AJUSTADO: Linha sobe mais)
         doc.setDrawColor(204, 204, 204); 
         doc.setLineWidth(0.5);
-        yOffset += 5; // Aumenta espaço antes da linha
+        yOffset += 2; // Ajustado para subir
         doc.line(marginX, yOffset, docWidth - marginX, yOffset);
-        yOffset += 4; // Aumenta espaço depois da linha
+        yOffset += 4; 
         
         doc.setTextColor(vinhoColor[0], vinhoColor[1], vinhoColor[2]);
         doc.setFontSize(12);
@@ -914,7 +932,7 @@
         // Local Teste - Posto Bravo (PRETO E NEGRITO)
         doc.setTextColor(defaultTextColor[0], defaultTextColor[1], defaultTextColor[2]);
         doc.setFontSize(10);
-        doc.text("LOCAL TESTE - Posto Bravo", docWidth / 2, yOffset, { align: 'center' });
+        doc.text("LOCAL TESTE - Posto BRAVO", docWidth / 2, yOffset, { align: 'center' });
         yOffset += 7;
         
         // --- 3. MILITAR RESPONSÁVEL (AJUSTADO) ---
@@ -938,7 +956,7 @@
         doc.text(`Data/Hora: ${dataHora}`, docWidth / 2, yOffset);
         yOffset += 8;
         
-        // Linha de separação (Removemos o título "CONFERÊNCIA" conforme solicitado)
+        // Linha de separação antes da Tabela (removido o título "CONFERÊNCIA")
         doc.setLineWidth(0.2);
         doc.line(marginX, yOffset, docWidth - marginX, yOffset);
         yOffset += 3;
@@ -954,12 +972,16 @@
             const itemLabel = document.getElementById('item-' + itemName).querySelector('.item-label').textContent;
             const setor = itemToSetor[itemName].toUpperCase();
             
-            // Lógica de Linha de Setor
             if (setor !== currentSetor) {
                 tableData.push([{ 
                     content: `SETOR: ${setor}`, 
                     colSpan: 3, 
-                    styles: { fillColor: [240, 240, 240], fontStyle: 'bold', halign: 'left', textColor: [0, 0, 0] } 
+                    styles: { 
+                        fillColor: [240, 240, 240], 
+                        fontStyle: 'bold', 
+                        halign: 'left',
+                        textColor: [0, 0, 0]
+                    } 
                 }]);
                 currentSetor = setor;
             }
@@ -987,13 +1009,15 @@
                 1: { cellWidth: 20, halign: 'center' },
                 2: { cellWidth: 100 }
             },
-            // Destaque de cor nas linhas
+            // Destaque de cor nas linhas (Verde para S/A, Amarelo para C/A)
             didParseCell: (data) => {
-                const cellStatus = data.row.raw[1]; // Acessa o valor da coluna Status
-                if (cellStatus === 'C/A') {
-                    data.cell.styles.fillColor = amareloClaro; // Amarelo
-                } else if (cellStatus === 'S/A') {
-                    data.cell.styles.fillColor = verdeClaro; // Verde
+                const cellStatus = data.row.raw[1]; 
+                if (data.row.section === 'body') {
+                    if (cellStatus === 'C/A') {
+                        data.cell.styles.fillColor = amareloClaro;
+                    } else if (cellStatus === 'S/A') {
+                        data.cell.styles.fillColor = verdeClaro;
+                    }
                 }
             }
         });
@@ -1005,9 +1029,10 @@
         doc.setTextColor(vinhoColor[0], vinhoColor[1], vinhoColor[2]);
         doc.setFontSize(9);
         
-        // Rodapé Linha 1: SIGMA - Sistema Integrado de Gestão de Materiais
+        // Rodapé Linha 1: SIGMA (negrito) - Sistema Integrado de Gestão de Materiais
         doc.setFont("helvetica", "bold");
-        doc.text("SIGMA", docWidth / 2 - 20, yOffset, { align: 'center' }); // Ajuste para o texto SIGMA negrito
+        // Nota: Centralizar dois textos exige calcular o deslocamento
+        doc.text("SIGMA", docWidth / 2 - 20, yOffset, { align: 'center' });
         doc.setFont("helvetica", "normal");
         doc.text("- Sistema Integrado de Gestão de Materiais", docWidth / 2 + 10, yOffset, { align: 'center' });
         yOffset += 4;
@@ -1108,7 +1133,6 @@
         }
         
         if (!isValid) {
-            alert("Por favor, preencha todos os campos de identificação do conferente.");
             return false;
         }
         
