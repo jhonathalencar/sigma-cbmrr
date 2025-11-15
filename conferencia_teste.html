@@ -875,44 +875,12 @@
         let sigmaDataUrl = '';
         
         try {
-            // Tenta carregar a imagem
-            const imgPromise = new Promise((resolve, reject) => {
-                const img = new Image();
-                img.crossOrigin = 'Anonymous'; 
-                img.onload = () => {
-                    const canvas = document.createElement('canvas');
-                    canvas.width = img.width;
-                    canvas.height = img.height;
-                    const ctx = canvas.getContext('2d');
-                    ctx.drawImage(img, 0, 0);
-                    resolve(canvas.toDataURL('image/png')); 
-                };
-                img.onerror = reject;
-                img.src = 'roraima.png'; 
-            });
-            roraimaDataUrl = await imgPromise;
-
+            roraimaDataUrl = await getBase64Image('roraima.png');
         } catch (error) {
             console.warn("Aviso: Falha ao carregar roraima.png. Continuando sem imagem.");
         }
         try {
-            // Tenta carregar a imagem do sigma
-            const imgPromise = new Promise((resolve, reject) => {
-                const img = new Image();
-                img.crossOrigin = 'Anonymous'; 
-                img.onload = () => {
-                    const canvas = document.createElement('canvas');
-                    canvas.width = img.width;
-                    canvas.height = img.height;
-                    const ctx = canvas.getContext('2d');
-                    ctx.drawImage(img, 0, 0);
-                    resolve(canvas.toDataURL('image/png')); 
-                };
-                img.onerror = reject;
-                img.src = 'logo_sigma.png'; 
-            });
-            sigmaDataUrl = await imgPromise;
-
+            sigmaDataUrl = await getBase64Image('logo_sigma.png');
         } catch (error) {
             console.warn("Aviso: Falha ao carregar logo_sigma.png. Continuando sem imagem no rodapé.");
         }
