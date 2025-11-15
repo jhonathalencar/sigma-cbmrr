@@ -833,7 +833,7 @@
 
 
     // ------------------------------------------
-    // FUNÇÃO DE GERAÇÃO DE PDF (AJUSTADA)
+    // FUNÇÃO DE GERAÇÃO DE PDF (CORRIGIDA)
     // ------------------------------------------
 
     async function generatePDF() {
@@ -1050,13 +1050,13 @@
                     startY: yOffset + 2,
                     head: [
                         [
-                            // Apenas o nome do Setor (mesclado nas 3 colunas)
+                            // Apenas o nome do Setor, centralizado
                             { 
                                 content: `${setor}`, 
                                 colSpan: 3, 
                                 styles: { 
                                     fontStyle: 'bold', 
-                                    halign: 'left', 
+                                    halign: 'center', // Centralizado
                                     fillColor: vinhoColor, 
                                     textColor: 255 
                                 } 
