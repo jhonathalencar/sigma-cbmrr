@@ -840,16 +840,21 @@
 
 
     // ------------------------------------------
-    // FUNÇÃO DE GERAÇÃO DE PDF (AJUSTADA)
+    // FUNÇÃO DE GERAÇÃO DE PDF (IMAGEM CARREGADA VIA URL)
     // ------------------------------------------
 
     async function generatePDF() {
-        if (typeof jsPDF === 'undefined' || typeof doc.autoTable === 'undefined') {
-            alert("Erro: As bibliotecas de PDF não foram carregadas. Verifique os links CDN.");
+        if (typeof jsPDF === 'undefined') {
+            alert("Erro: A biblioteca jsPDF não foi carregada. Verifique os links CDN.");
             return;
         }
         
         const doc = new jsPDF('p', 'mm', 'a4');
+        
+        if (typeof doc.autoTable === 'undefined') {
+            alert("Erro: O plugin jsPDF-autotable não foi carregado. Verifique os links CDN.");
+            return;
+        }
         
         const docWidth = doc.internal.pageSize.getWidth();
         let yOffset = 15; // Margem superior inicial ajustada
@@ -857,14 +862,14 @@
         const logoWidth = 20;
         const logoHeight = 20;
         const logoX = docWidth / 2 - logoWidth / 2;
-        const logoRodapeWidth = 10; // Tamanho do logo no rodapé
+        const logoRodapeWidth = 10; 
         const logoRodapeHeight = 10;
         
         const defaultTextColor = [51, 51, 51]; 
         const vinhoColor = [128, 0, 32];
         const cinzaClaro = [85, 85, 85];
-        const verdeClaro = [224, 255, 224]; // Para S/A (Tabela)
-        const amareloClaro = [255, 255, 224]; // Para C/A (Tabela)
+        const verdeClaro = [224, 255, 224]; 
+        const amareloClaro = [255, 255, 224]; 
 
         const dataHora = new Date().toLocaleString('pt-BR');
         
@@ -873,19 +878,23 @@
         let roraimaDataUrl = '';
         let sigmaDataUrl = '';
         
-        // Carregamento de imagens (assíncrono)
+        // Carregamento de imagens (assíncrono e isolado)
         try {
             roraimaDataUrl = await getBase64Image('roraima.png');
+        } catch (error) {
+            console.warn("Aviso: Falha ao carregar roraima.png. Continuando sem imagem.");
+        }
+        try {
             sigmaDataUrl = await getBase64Image('logo_sigma.png');
         } catch (error) {
-            console.warn("Aviso: Falha ao carregar uma ou ambas as imagens (roraima.png ou logo_sigma.png). Continuando sem imagens no PDF.");
+            console.warn("Aviso: Falha ao carregar logo_sigma.png. Continuando sem imagem no rodapé.");
         }
 
 
         // 1.1 Adicionar Imagem Roraima
         if (roraimaDataUrl) {
             doc.addImage(roraimaDataUrl, 'PNG', logoX, yOffset, logoWidth, logoHeight); 
-            yOffset += logoHeight; // Aumenta a distância após a imagem
+            yOffset += logoHeight; 
         } else {
             yOffset += 5; 
         }
@@ -917,7 +926,7 @@
         // 2. Linha e Título Principal (AJUSTE 2: Linha sobe mais)
         doc.setDrawColor(204, 204, 204); 
         doc.setLineWidth(0.5);
-        yOffset += 1; // Linha acima do título
+        yOffset += 1; // Linha acima do título (AJUSTE 2)
         doc.line(marginX, yOffset, docWidth - marginX, yOffset);
         yOffset += 4; 
         
@@ -976,7 +985,7 @@
                     content: `MATERIAL - SETOR: ${setor}`, 
                     colSpan: 3, 
                     styles: { 
-                        fillColor: [204, 204, 204], // Cinza mais escuro para o setor
+                        fillColor: [204, 204, 204], 
                         fontStyle: 'bold', 
                         halign: 'left',
                         textColor: [0, 0, 0]
@@ -1003,14 +1012,13 @@
             styles: { fontSize: 8, cellPadding: 2, overflow: 'linebreak' },
             theme: 'striped',
             columnStyles: {
-                // Definição das colunas baseada na posição
-                0: { cellWidth: 70 },
+                0: { cellWidth: 70, fillColor: 255 }, // Branco
                 1: { cellWidth: 20, halign: 'center' },
-                2: { cellWidth: 100 }
+                2: { cellWidth: 100, fillColor: 255 } // Branco
             },
             // Destaque de cor APENAS NA COLUNA STATUS (AJUSTE 3)
             didParseCell: (data) => {
-                const cellStatus = data.row.raw[1]; // Acessa o valor da coluna Status
+                const cellStatus = data.row.raw[1]; 
                 
                 // Aplica cor apenas na coluna Status (índice 1)
                 if (data.row.section === 'body' && data.column.index === 1) {
@@ -1020,38 +1028,39 @@
                         data.cell.styles.fillColor = verdeClaro;
                     }
                 }
-                
-                // Remove a cor de fundo da coluna 0 (Material) e 2 (Observação)
-                if (data.row.section === 'body' && (data.column.index === 0 || data.column.index === 2)) {
-                     data.cell.styles.fillColor = 255; // Branco
-                }
             }
         });
         
-        yOffset = doc.autoTable.previous.finalY + 15; 
+        yOffset = doc.autoTable.previous.finalY + 15; // Atualiza o Y para o rodapé
 
         // --- 5. Rodapé (AJUSTADO: Imagem, Sobreposição e Centralização) ---
         
         const centroX = docWidth / 2;
-        const centroTextoRodape = 45; // Largura aproximada dos textos do rodapé para centralização
-        
-        doc.setTextColor(vinhoColor[0], vinhoColor[1], vinhoColor[2]);
         
         // Rodapé Linha 1: SIGMA (negrito) - Sistema Integrado de Gestão de Materiais
+        doc.setTextColor(vinhoColor[0], vinhoColor[1], vinhoColor[2]);
+        doc.setFontSize(9);
+        
+        let rodapéText = "SIGMA - Sistema Integrado de Gestão de Materiais";
+        const sigamaTextWidth = doc.getStringUnitWidth("SIGMA") * 9; // Largura aproximada de SIGMA
+        const totalTextWidth = doc.getStringUnitWidth(rodapéText) * 9; // Largura do texto inteiro (aprox)
+        
+        // Posição inicial para centralizar o bloco de texto e imagem
+        const blockStart = centroX - (totalTextWidth / 2) + 3; // Ajuste manual para centralizar
+
         if (sigmaDataUrl) {
-            // Centraliza o logo com o bloco de texto
-            const logoRodapeX = centroX - centroTextoRodape; 
-            doc.addImage(sigmaDataUrl, 'PNG', logoRodapeX, yOffset - 3, logoRodapeWidth, logoRodapeHeight);
+            const logoXRodape = blockStart - logoRodapeWidth - 2;
+            doc.addImage(sigmaDataUrl, 'PNG', logoXRodape, yOffset - 3, logoRodapeWidth, logoRodapeHeight);
         }
         
-        doc.setFontSize(9);
+        // Texto "SIGMA" (Negrito)
         doc.setFont("helvetica", "bold");
-        // Posição ajustada para centralizar o texto junto com o logo
-        const sigmaTextX = centroX - 25; 
-        doc.text("SIGMA", sigmaTextX, yOffset, { align: 'center' }); // Texto SIGMA
+        doc.text("SIGMA", blockStart, yOffset); 
+
+        // Texto " - Sistema Integrado de Gestão de Materiais" (Normal)
         doc.setFont("helvetica", "normal");
-        // Posição ajustada para seguir o SIGMA
-        doc.text("- Sistema Integrado de Gestão de Materiais", sigmaTextX + 30, yOffset, { align: 'center' });
+        const normalTextStart = blockStart + sigamaTextWidth + 1; // Posição após "SIGMA"
+        doc.text("- Sistema Integrado de Gestão de Materiais", normalTextStart, yOffset);
         yOffset += 4;
         
         // Rodapé Linha 2: CORPO DE BOMBEIROS MILITAR DE RORAIMA
@@ -1068,7 +1077,7 @@
 
 
     // ------------------------------------------
-    // FUNÇÃO FINALIZAR (AJUSTADA PARA ASYNC)
+    // FUNÇÃO FINALIZAR
     // ------------------------------------------
 
     document.getElementById('form-conferencia').addEventListener('submit', async function(event) {
