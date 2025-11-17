@@ -508,7 +508,7 @@
                     </div>
                     <p class="tombamento-descricao-salva"></p>
                     <div class="tombamento-obs-container">
-                        <label>Obs. (Obrigatória para C/A no Tomb. 123.456):</label>
+                        <label>Observação (Obrigatória para C/A):</label>
                         <textarea placeholder="Detalhe a alteração para este tombamento."></textarea>
                         <button type="button" class="btn-salvar-alteracao" onclick="salvarTombamento(this)">SALVAR OBSERVAÇÃO</button>
                     </div>
@@ -524,7 +524,7 @@
                     </div>
                     <p class="tombamento-descricao-salva"></p>
                     <div class="tombamento-obs-container">
-                        <label>Obs. (Obrigatória para C/A no Tomb. 678.910):</label>
+                        <label>Observação (Obrigatória para C/A):</label>
                         <textarea placeholder="Detalhe a alteração para este tombamento."></textarea>
                         <button type="button" class="btn-salvar-alteracao" onclick="salvarTombamento(this)">SALVAR OBSERVAÇÃO</button>
                     </div>
@@ -805,9 +805,9 @@
         // 2. Oculta o container de observação e exibe o texto salvo
         obsContainer.style.display = 'none';
         descricaoSalvaEl.innerHTML = `
-            <span class="obs-titulo">Obs. Tomb. ${tombId}:</span> 
+            <span class="obs-titulo">Alteração encontrada:</span> 
             <span class="obs-texto">${observacao}</span>
-        `;
+            <span class="obs-titulo"> (Tomb.: ${tombId})</span> `;
         descricaoSalvaEl.style.display = 'block';
 
         // 3. Atualiza o status do item principal e do setor
@@ -997,13 +997,13 @@
             const nextItemId = nextItem.dataset.id;
             const itemData = itemStatus[nextItemId];
 
-            // Verifica se o item está PENDENTE DE CONFERÊNCIA (PENDING)
+            // 1. Verifica se o item está PENDENTE DE CONFERÊNCIA (PENDING)
             if (!itemData || itemData.status === 'PENDING') {
                  nextItem.scrollIntoView({ behavior: 'smooth', block: 'center' });
                  return;
             } 
             
-            // Verifica se o item MULTI-TOMBAMENTO está PENDENTE DE OBSERVAÇÃO INDIVIDUAL (PENDING_CA)
+            // 2. Verifica se o item MULTI-TOMBAMENTO está PENDENTE DE OBSERVAÇÃO INDIVIDUAL (PENDING_CA)
             if (nextItem.dataset.type === 'multi') {
                 // Procura um tombamento pendente de observação dentro do item
                 const pendingTombamento = Array.from(nextItem.querySelectorAll('.tombamento-container')).find(tomb => {
