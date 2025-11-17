@@ -153,10 +153,10 @@
             font-weight: bold;
         }
         
-        /* --- CORREÇÕES NO CSS PARA SUPORTAR 3 PASSOS --- */
+        /* --- CORREÇÕES CRÍTICAS NO CSS PARA SUPORTAR 3 PASSOS --- */
         .step-indicator {
             display: flex;
-            justify-content: space-between; /* Ajustado para espaçar 3 itens */
+            justify-content: space-between; /* Garante que os 3 itens se separem */
             align-items: center;
             margin: 15px 0 30px;
             padding: 0 10px;
@@ -165,11 +165,17 @@
 
         .step-item {
             text-align: center;
-            flex-grow: 0;
+            flex-grow: 1; /* Permite que os itens cresçam para preencher o espaço */
+            flex-basis: 0; /* Distribui o espaço uniformemente */
             position: relative;
             z-index: 2;
             margin: 0; 
         }
+        
+        /* Altera o margin/padding do item do meio para que o círculo permaneça centralizado visualmente */
+        #step-item-2 {
+            padding: 0 10px;
+        }
 
         .step-circle {
             width: 30px;
@@ -203,7 +209,7 @@
             display: none;
         }
 
-        /* LINHAS DE CONEXÃO: AJUSTADAS PARA 3 PASSOS */
+        /* LINHAS DE CONEXÃO: AJUSTADAS COM NOVA MATEMÁTICA */
         .step-line {
             position: absolute;
             top: 15px; /* Metade da altura do circle */
@@ -215,13 +221,13 @@
         /* Linha 1: 1 -> 2 */
         #line-1-2 {
             left: 10px; 
-            width: calc(50% - 15px); 
+            width: calc(50% - 10px); /* Ajuste de largura para 3 itens */
         }
 
         /* Linha 2: 2 -> 3 */
         #line-2-3 {
             right: 10px; 
-            width: calc(50% - 15px); 
+            width: calc(50% - 10px); 
         }
         
         /* Linha de progresso (a parte que muda de cor) */
