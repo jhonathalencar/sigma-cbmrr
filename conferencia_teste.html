@@ -189,20 +189,19 @@
         .item-header {
             display: flex;
             justify-content: space-between;
-            align-items: center;
+            align-items: flex-start; /* Alinhamento superior */
             margin-bottom: 5px;
             flex-wrap: wrap;
         }
 
-        .item-label {
-            font-weight: bold;
-            color: #333;
-            flex-grow: 1;
-            margin-right: 10px;
-            text-align: left;
-            font-size: 0.95em;
+        .item-main-label {
+             font-weight: bold;
+             color: #333;
+             flex-grow: 1;
+             text-align: left;
+             font-size: 0.95em;
         }
-        
+
         .item-quantidade {
             font-size: 0.9em;
             color: #800020;
@@ -242,52 +241,31 @@
             color: white;
         }
         
-        .item-options {
+        /* Novo estilo para o container de tombamento */
+        .tombamento-container {
             display: flex;
-            justify-content: flex-end;
-            gap: 5px;
+            justify-content: space-between;
+            align-items: center;
+            padding: 5px 0;
+            border-top: 1px dotted #eee;
             margin-top: 5px;
-        }
-        
-        .action-button {
-            padding: 5px 8px;
-            border: 2px solid #ccc;
-            border-radius: 4px;
-            cursor: pointer;
-            font-weight: bold;
-            transition: background-color 0.2s, border-color 0.2s;
-            font-size: 0.9em;
-            color: #555;
-            flex-shrink: 0;
-            background-color: #fff;
-        }
-        
-        .action-button.sa-ok:hover, .action-button.sa-ok.active {
-            background-color: #e6ffe6; 
-            border-color: #1b8a3e;
-            color: #1b8a3e;
-        }
-
-        .action-button.ca-alert:hover, .action-button.ca-alert.active {
-             background-color: #ffe6e6; 
-             border-color: #d90f23;
-             color: #d90f23;
-        }
-        
-        .alteracao-container {
-            margin-top: 10px;
-            padding-top: 10px;
-            border-top: 1px dashed #e0e0e0;
-            display: none; 
+            font-size: 0.85em;
             text-align: left;
         }
+        .tombamento-container:first-of-type {
+            border-top: none; 
+        }
+
+        .tombamento-options {
+            display: flex;
+            gap: 5px;
+        }
         
-        /* NOVO ESTILO PARA EXIBIÇÃO DA OBS SALVA (Alterado) */
         .descricao-salva {
             font-size: 0.9em;
             margin-top: 5px;
             display: none;
-            text-align: left; /* Garante alinhamento à esquerda */
+            text-align: left; 
         }
         .descricao-salva .obs-texto {
             color: #d90f23; /* Cor vermelha para o texto do usuário */
@@ -298,6 +276,14 @@
              font-weight: bold;
         }
 
+
+        .alteracao-container {
+            margin-top: 10px;
+            padding-top: 10px;
+            border-top: 1px dashed #e0e0e0;
+            display: none; 
+            text-align: left;
+        }
 
         .alteracao-container label {
             display: block;
@@ -354,14 +340,13 @@
 
         /* --- CORREÇÃO DE ALINHAMENTO DO RODAPÉ --- */
         .footer-central {
-            text-align: center; /* Já estava, mas garantindo */
+            text-align: center;
         }
         .footer-central strong, .footer-autor {
-             display: block; /* Garante que os elementos de texto se comportem como bloco para centralização total */
+             display: block; 
              width: 100%;
              text-align: center;
         }
-
     </style>
 </head>
 <body>
@@ -400,10 +385,10 @@
         </div>
         <div class="setor-content expanded">
             
-            <div class="item-conferencia" data-status="pending" data-id="1-1">
+            <div class="item-conferencia" data-type="single" data-status="pending" data-id="1-1">
                 <div class="item-header">
                     <span class="status-icon"></span>
-                    <span class="item-label">KIT PRIMEIROS SOCORROS</span>
+                    <span class="item-main-label">KIT PRIMEIROS SOCORROS</span>
                     <span class="item-quantidade">Qtd. Esperada: 5</span>
                 </div>
                 <div class="item-options">
@@ -418,25 +403,38 @@
                 </div>
             </div>
 
-            <div class="item-conferencia" data-status="pending" data-id="1-2">
+            <div class="item-conferencia item-has-tombamentos" data-type="multi" data-total-tombamentos="2" data-status="pending" data-id="1-2">
                 <div class="item-header">
                     <span class="status-icon"></span>
-                    <span class="item-label">LANTERNA TÁTICA</span>
-                    <span class="item-quantidade">Qtd. Esperada: 12</span>
+                    <span class="item-main-label">LANTERNA TÁTICA</span>
+                    <span class="item-quantidade">Qtd. Esperada: 2</span>
                 </div>
-                <div class="item-options">
-                    <button class="action-button sa-ok" onclick="setItemStatus(this, 'ok')">S/A</button>
-                    <button class="action-button ca-alert" onclick="setItemStatus(this, 'alert')">C/A</button>
+                
+                <div class="tombamento-container" data-tomb="123.456" data-item-id="1-2">
+                    <span>Tomb.: 123.456</span>
+                    <div class="tombamento-options">
+                        <button class="action-button sa-ok" onclick="setTombamentoStatus(this, 'ok')">S/A</button>
+                        <button class="action-button ca-alert" onclick="setTombamentoStatus(this, 'alert')">C/A</button>
+                    </div>
                 </div>
+                
+                <div class="tombamento-container" data-tomb="678.910" data-item-id="1-2">
+                    <span>Tomb.: 678.910</span>
+                    <div class="tombamento-options">
+                        <button class="action-button sa-ok" onclick="setTombamentoStatus(this, 'ok')">S/A</button>
+                        <button class="action-button ca-alert" onclick="setTombamentoStatus(this, 'alert')">C/A</button>
+                    </div>
+                </div>
+
                 <p class="descricao-salva" data-text-id="1-2"></p>
                 <div class="alteracao-container">
                     <label>Observação (Obrigatória para C/A):</label>
-                    <textarea data-id="1-2" placeholder="Descreva o tipo de alteração ou falta."></textarea>
+                    <textarea data-id="1-2" placeholder="Descreva o tipo de alteração no(s) tombamento(s)"></textarea>
                     <button type="button" class="btn-salvar-alteracao" onclick="salvarItem(this)">SALVAR</button>
                 </div>
             </div>
 
-            <div class="item-conferencia" data-status="pending" data-id="1-3">
+            <div class="item-conferencia" data-type="single" data-status="pending" data-id="1-3">
                 <div class="item-header">
                     <span class="status-icon"></span>
                     <span class="item-label">MANGUEIRA DE INCÊNDIO (30m)</span>
@@ -466,7 +464,7 @@
         </div>
         <div class="setor-content">
             
-            <div class="item-conferencia" data-status="pending" data-id="2-1">
+            <div class="item-conferencia" data-type="single" data-status="pending" data-id="2-1">
                 <div class="item-header">
                     <span class="status-icon"></span>
                     <span class="item-label">ALMOTOLIA 500ml</span>
@@ -484,7 +482,7 @@
                 </div>
             </div>
 
-            <div class="item-conferencia" data-status="pending" data-id="2-2">
+            <div class="item-conferencia" data-type="single" data-status="pending" data-id="2-2">
                 <div class="item-header">
                     <span class="status-icon"></span>
                     <span class="item-label">CILINDRO DE OXIGÊNIO (portátil)</span>
@@ -502,7 +500,7 @@
                 </div>
             </div>
 
-            <div class="item-conferencia" data-status="pending" data-id="2-3">
+            <div class="item-conferencia" data-type="single" data-status="pending" data-id="2-3">
                 <div class="item-header">
                     <span class="status-icon"></span>
                     <span class="item-label">CHAVE DE RODA</span>
@@ -547,7 +545,6 @@
         name = name.replace(/[\[]/, '\\[').replace(/[\]]/, '\\]');
         const regex = new RegExp('[\\?&]' + name + '=([^&#]*)');
         const results = regex.exec(location.search);
-        // Usa decodeURIComponent para garantir que '3º SGT' ou 'LOCAL TESTE' não fiquem codificados
         return results === null ? '' : decodeURIComponent(results[1].replace(/\+/g, ' '));
     }
     
@@ -558,7 +555,9 @@
         nomeGuerra: getUrlParameter('nome_guerra') || "SOUSA", 
     };
     
-    // Variável para armazenar o status de todos os itens
+    // Variável para armazenar o status de todos os itens e tombamentos
+    // Ex: itemStatus['1-2'] = { type: 'multi', total: 2, conferidos: 1, alterados: 0, obs: '' }
+    // Ex: itemStatus['1-2-123.456'] = { status: 'S/A' }
     let itemStatus = {}; 
 
     // Mapeamento dos setores (usado para auto-avançar)
@@ -567,6 +566,8 @@
         '1': 'DEPÓSITO CENTRAL',
         '2': 'VIATURA 13-1'
     };
+
+    // --- LÓGICA GERAL DE SETORES E FLUXO ---
 
     // Função para expandir/recolher o setor
     function toggleSetor(headerElement) {
@@ -588,7 +589,7 @@
         }
     }
 
-    // Função principal para marcar S/A ou C/A
+    // Marca o status de um item único (sem tombamento)
     function setItemStatus(button, status) {
         const item = button.closest('.item-conferencia');
         const setor = button.closest('.setor');
@@ -614,7 +615,7 @@
             // S/A (Sem Alteração)
             item.classList.add('status-ok');
             statusIcon.classList.add('ok');
-            observacaoTextarea.value = ''; // Limpa a observação (se houver)
+            observacaoTextarea.value = ''; 
             itemStatus[item.dataset.id] = { status: 'S/A', obs: '' };
         } else if (status === 'alert') {
             // C/A (Com Alteração) - Abre a área de observação
@@ -622,11 +623,9 @@
             statusIcon.classList.add('alert');
             alteracaoContainer.style.display = 'block';
             
-            // Marca como pendente no itemStatus até salvar (Para não contar no completed)
             itemStatus[item.dataset.id] = { status: 'PENDING_CA', obs: '' };
             observacaoTextarea.focus();
             
-            // Apenas atualiza o status visual
             updateSetorStatus(setor);
             return;
         }
@@ -637,30 +636,133 @@
         checkSetorCompletion(setor, item.dataset.id);
     }
     
+    // Marca o status de um tombamento (item com múltiplos tombamentos)
+    function setTombamentoStatus(button, status) {
+        const tombamentoEl = button.closest('.tombamento-container');
+        const item = button.closest('.item-conferencia');
+        const setor = button.closest('.setor');
+        const tombId = tombamentoEl.dataset.tomb;
+        const itemId = item.dataset.id;
+        const uniqueId = `${itemId}-${tombId}`; // Ex: 1-2-123.456
+
+        const statusIcon = item.querySelector('.status-icon');
+        const buttons = tombamentoEl.querySelectorAll('.action-button');
+
+        buttons.forEach(btn => btn.classList.remove('active'));
+        button.classList.add('active');
+        
+        // Atualiza o status individual do tombamento
+        itemStatus[uniqueId] = { status: status, obs: '' };
+        
+        // Se C/A, abre a área de alteração no item principal e marca o item como PENDENTE_CA
+        if (status === 'alert') {
+            item.dataset.status = 'alert';
+            item.querySelector('.alteracao-container').style.display = 'block';
+            statusIcon.classList.remove('ok');
+            statusIcon.classList.add('alert');
+            itemStatus[itemId] = { status: 'PENDING_CA', obs: '' };
+        } else {
+            // Se S/A, garante que a área de alteração esteja escondida (se não houver outro C/A)
+            const hasOtherCA = Array.from(item.querySelectorAll('.tombamento-container')).some(t => {
+                const id = `${itemId}-${t.dataset.tomb}`;
+                return itemStatus[id]?.status === 'alert';
+            });
+
+            if (!hasOtherCA) {
+                 item.querySelector('.alteracao-container').style.display = 'none';
+                 item.dataset.status = 'pending'; // Volta ao status pendente se todos são S/A ou pendentes
+            }
+        }
+        
+        // 1. Recalcula o status do item principal (1-2)
+        updateMultiItemStatus(item);
+
+        // 2. Atualiza o progresso do setor e geral
+        updateSetorStatus(setor);
+        updateOverallStatus();
+    }
+    
+    // Lógica para atualizar o status de um item com tombamentos
+    function updateMultiItemStatus(item) {
+        const itemId = item.dataset.id;
+        const total = parseInt(item.dataset.totalTombamentos);
+        const tombamentos = item.querySelectorAll('.tombamento-container');
+        let conferidos = 0;
+        let alterados = 0;
+        let requiresObservation = false;
+
+        tombamentos.forEach(tomb => {
+            const uniqueId = `${itemId}-${tomb.dataset.tomb}`;
+            const status = itemStatus[uniqueId]?.status;
+
+            if (status === 'ok') {
+                conferidos++;
+            } else if (status === 'alert') {
+                // Conta como conferido se for C/A, mas só se a observação for salva (C/A no item principal)
+                if (itemStatus[itemId]?.status === 'C/A' || itemStatus[itemId]?.status === 'PENDING_CA') {
+                    conferidos++;
+                }
+                alterados++;
+                requiresObservation = true;
+            }
+        });
+        
+        // Determina o status final do item principal (1-2)
+        if (conferidos === total) {
+            if (alterados > 0) {
+                 // 100% conferido com alterações. O status é C/A, mas o item principal é marcado como tal
+                 item.dataset.status = (itemStatus[itemId]?.status === 'C/A') ? 'alert' : 'pending';
+            } else {
+                 item.dataset.status = 'ok';
+                 itemStatus[itemId] = { status: 'S/A', obs: '' };
+            }
+        } else {
+            item.dataset.status = 'pending';
+            itemStatus[itemId] = { status: 'PENDING', obs: '' };
+        }
+        
+        // Atualiza o ícone principal
+        const statusIcon = item.querySelector('.status-icon');
+        statusIcon.className = 'status-icon';
+        if (item.dataset.status === 'ok') statusIcon.classList.add('ok');
+        if (item.dataset.status === 'alert') statusIcon.classList.add('alert');
+        if (item.dataset.status === 'pending') statusIcon.classList.add('pending');
+    }
+    
     // Função para atualizar o contador de um setor (MODIFICADA AQUI)
     function updateSetorStatus(setor) {
         const totalItems = parseInt(setor.dataset.totalItems);
         const setorStatusDiv = setor.querySelector('.setor-status');
         const items = setor.querySelectorAll('.item-conferencia');
         let completedItems = 0;
-        let alteredItems = 0; // Novo contador para itens C/A
+        let alteredItems = 0; 
+        let totalItemsInSetor = 0;
 
         items.forEach(item => {
             const itemID = item.dataset.id;
+            totalItemsInSetor++; // Conta cada item principal
             
-            if (item.dataset.status === 'ok') {
-                completedItems++;
-            } else if (itemStatus[itemID]?.status === 'C/A') {
-                // Item C/A SALVO, conta como completo e alterado
-                completedItems++;
-                alteredItems++;
+            const itemStatusData = itemStatus[itemID];
+
+            if (item.dataset.type === 'multi') {
+                // Para itens com tombamento, verificamos se o status principal é OK ou C/A (salvo)
+                if (itemStatusData?.status === 'ok' || itemStatusData?.status === 'C/A') {
+                     completedItems++;
+                     if (itemStatusData?.status === 'C/A') alteredItems++;
+                }
+            } else {
+                // Item único
+                if (item.dataset.status === 'ok' || itemStatusData?.status === 'C/A') {
+                    completedItems++;
+                    if (itemStatusData?.status === 'C/A') alteredItems++;
+                }
             }
         });
 
         // Atualiza a exibição do status (0/3, S/A ou X C/A)
         setorStatusDiv.dataset.completed = completedItems;
 
-        if (completedItems === totalItems && alteredItems === 0) {
+        if (completedItems === totalItemsInSetor && alteredItems === 0) {
             // 100% conferido e SEM ALTERAÇÃO
             setorStatusDiv.textContent = `S/A`;
             setorStatusDiv.classList.add('ok');
@@ -670,7 +772,7 @@
             setorStatusDiv.classList.remove('ok');
         } else {
             // Conferência incompleta ou 100% S/A
-            setorStatusDiv.textContent = `${completedItems}/${totalItems}`;
+            setorStatusDiv.textContent = `${completedItems}/${totalItemsInSetor}`;
             setorStatusDiv.classList.remove('ok');
         }
     }
@@ -714,7 +816,7 @@
         item.dataset.status = 'alert';
         itemStatus[item.dataset.id] = { status: 'C/A', obs: observacao };
 
-        // 2. Oculta o container de alteração e exibe o texto salvo (MODIFICADO AQUI)
+        // 2. Oculta o container de alteração e exibe o texto salvo
         item.querySelector('.alteracao-container').style.display = 'none';
         descricaoSalvaEl.innerHTML = `
             <span class="obs-titulo">Alteração encontrada:</span> 
