@@ -596,39 +596,48 @@
         }
 
         // Função que prepara a navegação/submissão
-        function navigateToForms() {
-            const formsLink = localSelect.value;
-            const posto = postoSelect.value;
-            const local = localSelect.options[localSelect.selectedIndex].textContent;
-            
-            const pGrad = postoGraduacaoSelect.value;
-            const quadro = quadroSelect.value;
-            const nomeGuerra = nomeGuerraInput.value.toUpperCase();
+function navigateToForms() {
+    const formsLink = localSelect.value;
+    const posto = postoSelect.value;
+    const local = localSelect.options[localSelect.selectedIndex].textContent;
+    
+    const pGrad = postoGraduacaoSelect.value;
+    const quadro = quadroSelect.value;
+    const nomeGuerra = nomeGuerraInput.value.toUpperCase();
 
-            // Validação de segurança (redundante, mas importante)
-            if (btnIr.disabled) {
-                alert("Por favor, preencha a identificação antes de iniciar a conferência.");
-                return;
-            }
+    // Validação de segurança (redundante, mas importante)
+    if (btnIr.disabled) {
+        alert("Por favor, preencha a identificação antes de iniciar a conferência.");
+        return;
+    }
 
-            // Constrói a URL com os Query Parameters
-            const params = new URLSearchParams();
-            
-            // Parâmetros do Local
-            params.append('posto', posto);
-            params.append('local', local);
-            
-            // Parâmetros da Identificação do Militar
-            params.append('posto_grad', pGrad);
-            params.append('quadro_mil', quadro); 
-            params.append('nome_guerra', nomeGuerra);
-            
-            // Define o separador para a URL (aplica '?' se não houver)
-            const separator = formsLink.includes('?') ? '&' : '?';
-            const finalLink = `${formsLink}${separator}${params.toString()}`;
-            
-            window.open(finalLink, '_self');
-        }
+    // Constrói a URL com os Query Parameters
+    const params = new URLSearchParams();
+    
+    // Parâmetros do Local
+    params.append('posto', posto);
+    params.append('local', local);
+    
+    // Parâmetros da Identificação do Militar
+    params.append('posto_grad', pGrad);
+    params.append('quadro_mil', quadro); 
+    params.append('nome_guerra', nomeGuerra);
+    
+    // CORREÇÃO E OTIMIZAÇÃO: Usa o objeto URL para lidar com a query string
+    // O seu formsLink já pode vir com parâmetros, então URLSearchParams garante que ele seja anexado corretamente.
+    
+    let finalLink = formsLink;
+
+    if (finalLink.includes('?')) {
+        // Se a URL já tiver parâmetros (com '?'), adiciona com '&'
+        finalLink = `${finalLink}&${params.toString()}`;
+    } else {
+        // Se a URL não tiver parâmetros, adiciona com '?'
+        finalLink = `${finalLink}?${params.toString()}`;
+    }
+    
+    window.open(finalLink, '_self');
+}
 
         // ------------------------------------------------------------------
         // LÓGICA DO FLUXO (INICIALIZAÇÃO E EVENTOS)
