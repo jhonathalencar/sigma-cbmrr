@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="icon" type="image/png" href="logo_sigma.png" onerror="this.onerror=null; this.src='https://placehold.co/16x16/800020/ffffff?text=S'">
+    <link rel="icon" type="image/png" href="logo_sigma.png" onerror="this.href='https://placehold.co/16x16/800020/ffffff?text=S'">
     <title>SIGMA - Conferência de Materiais</title>
     <style>
         /* BASE & RESET */
@@ -55,7 +55,6 @@
             color: white;
         }
 
-        /* O novo vermelho mais claro para o texto no cabeçalho */
         .text-red { 
             color: #FF3B3B; 
         }
@@ -94,14 +93,19 @@
         }
 
         /* TIPOGRAFIA E ELEMENTOS PRINCIPAIS */
-        .logo {
+        /* CORREÇÃO DE IMAGEM */
+        .container img {
+            max-width: 100%;
+            height: auto;
+        }
+
+        .logo {
             width: 80px; 
             height: auto;
             margin-bottom: 10px;
             display: block;
             margin-left: auto;
             margin-right: auto;
-            max-width: 100%; /* Segurança contra imagens grandes */
         }
 
         h1 {
@@ -327,7 +331,7 @@
 
         /* Novo estilo para o separador e o texto do autor */
         .footer-autor {
-            margin-top: 10px; 
+    107         margin-top: 10px; 
             color: #888;
             font-size: 0.9em; 
         }
@@ -409,4 +413,332 @@
                 <option value="CHARLIE">CHARLIE</option>
                 <option value="CARACARAÍ">CARACARAÍ</option>
                 <option value="RORAINÓPOLIS">RORAINÓPOLIS</option>
-                <option value="PACARA
+                <option value="PACARAIMA">PACARAIMA</option>
+            </select>
+        </div>
+    </div>
+
+    <div id="step-2-content" style="display: none;">
+        <h2 class="step-title">Local de Conferência</h2>
+        <div class="form-group">
+            <label for="local">Escolha o Local</label>
+            <select id="local">
+                <option value="" disabled selected>-- Selecione um Local --</option>
+            </select>
+        </div>
+     </div>
+
+    <div id="step-3-content" style="display: none;">
+        <h2 class="step-title">Identificação do Militar</h2>
+
+        <div class="form-group">
+            <label for="posto-graduacao">Posto/Graduação</label>
+            <select id="posto-graduacao">
+                <option value="" disabled selected>-- Selecione --</option>
+                <option value="CAP">CAP</option>
+                <option value="1º TEN">1º TEN</option>
+                <option value="2º TEN">2º TEN</option>
+                <option value="ST">ST</option>
+                <option value="1º SGT">1º SGT</option>
+                <option value="2º SGT">2º SGT</option>
+                <option value="3º SGT">3º SGT</option>
+                <option value="CB">CB</option>
+                <option value="SD">SD</option>
+            </select>
+        </div>
+
+        <div class="form-group" id="quadro-group" style="display: none;">
+            <label for="quadro">Quadro</label>
+            <select id="quadro">
+                <option value="" disabled selected>-- Selecione --</option>
+                </select>
+        </div>
+
+        <div class="form-group" id="nome-guerra-group" style="display: none;">
+            <label for="nome-guerra">Nome de Guerra (Todas as letras maiúsculas)</label>
+            <input type="text" id="nome-guerra" class="uppercase-input" placeholder="Seu Nome de Guerra (Ex: SOUSA)">
+        </div>
+        
+    </div>
+    <button id="btn-ir" disabled>INICIAR CONFERÊNCIA</button>
+
+</div>
+
+<div class="footer-central">
+    <strong>GOVERNO DE RORAIMA</strong><br>
+    <strong>CORPO DE BOMBEIROS MILITAR DE RORAIMA</strong><br>
+    <em>“Amazônia: patrimônio dos brasileiros”</em>
+    
+    <span class="footer-autor">
+        Elaborado por: 3º SGT QPCBM JHONATH
+    </span>
+</div>
+
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Elementos principais
+        const postoSelect = document.getElementById('posto-servico');
+        const localSelect = document.getElementById('local');
+        const btnIr = document.getElementById('btn-ir');
+        const step2Content = document.getElementById('step-2-content');
+        
+        // Novos Elementos de Identificação (Passo 3)
+        const step3Content = document.getElementById('step-3-content');
+        const postoGraduacaoSelect = document.getElementById('posto-graduacao');
+        const quadroSelect = document.getElementById('quadro');
+        const quadroGroup = document.getElementById('quadro-group');
+        const nomeGuerraInput = document.getElementById('nome-guerra');
+        const nomeGuerraGroup = document.getElementById('nome-guerra-group');
+        
+        // Elementos do passo a passo visual (3 passos)
+        const stepIndicator = document.getElementById('step-indicator');
+        const stepItem1 = document.getElementById('step-item-1');
+        const stepItem2 = document.getElementById('step-item-2');
+        const stepItem3 = document.getElementById('step-item-3');
+
+        // MAPA DE FORMULÁRIOS (Existente)
+        const formsMap = {
+            'ALFA': {
+                'ABT-17': 'https://docs.google.com/forms/d/e/1FAIpQLScaIN4xEGq0FP_5s4cyMUP-OSqLyh9QZiUUAj1v2nMzymXfwg/viewform',
+                'RESGATE': 'https://docs.google.com/forms/d/e/1FAIpQLSe2CuhwbeVTt5OCm6nqWdM-kB0Xv-rChzmkA8byBqil7kHRdg/viewform',
+                'VTR CMD SOS': 'https://docs.google.com/forms/d/e/1FAIpQLSdGEdJBqe9Qadvv5TT5QfZ3Zc2KqJcbGcqwGUut0q796TJnXg/viewform',
+                'PERMANÊNCIA': 'https://docs.google.com/forms/d/e/1FAIpQLSckUGLpBsCIM_nFFS-BCPhAKbrI4CU5p6zo0juwy0Orcu0nTg/viewform',
+                'RESGATE EXTRA': 'https://docs.google.com/forms/d/e/1FAIpQLSf5TJ8w6_6DWTr1oxXgZFPIOuC0_jvpcJMF4ciqRJloaSk5WQ/viewform'
+            },
+            'BRAVO': {
+                'ABT-18': 'https://docs.google.com/forms/d/e/1FAIpQLSctaCjNUB2gDdNDXn3h4RiGOoch94CvAC5sj15D8YgzPT8Z9w/viewform',
+                'PERMANÊNCIA': 'https://docs.google.com/forms/d/e/1FAIpQLSd4paOCzbr3mjS3DEoFOBwmVTjVOrvk6NfspYJ-p1XcNtD7bg/viewform',
+                'LOCAL TESTE': 'conferencia_teste.html' 
+            },
+            'CHARLIE': {
+                'VTR SALVAMENTO': 'https://docs.google.com/forms/d/e/1FAIpQLSfzEdboDDlJJ24oYcr3uIgWxemDzbBfIn8YqQBMJag7A-eqWA/viewform',
+                'PERMANÊNCIA': 'https://docs.google.com/forms/d/e/1FAIpQLSdEpX-ak7Lv3VQSXNkw0JeMGndJfc97Ac_3PhO95M67UHJ3Dw/viewform'
+            },
+            'CARACARAÍ': {
+                'ABT-16': 'https://docs.google.com/forms/d/e/1FAIpQLScuEX-onfOntuiCrccAj5IcPHmgijyL6bTTgFxRDH6c4VPjDg/viewform',
+                'UR 13-23': 'https://docs.google.com/forms/d/e/1FAIpQLSdPS0HfYfTcQ1w-Wd2a8r1PGsd4U3DplCA1fCf6bPNNDrogUQ/viewform',
+                'ATPS 31-21 (GBS)': 'https://docs.google.com/forms/d/e/1FAIpQLSchXqGfiGeTDC2hIpnxgxIGLkxKZziYE5go7pVcYYHGnpj9ow/viewform',
+                'ATF 01-21 (GCIF)': 'https://docs.google.com/forms/d/e/1FAIpQLSdWgjlqDH6Dt2DwM7qRgMAeC2SOSIPShCDVBZXX-T5peyu8TA/viewform',
+                'PERMANÊNCIA': 'https://docs.google.com/forms/d/e/1FAIpQLScW4_vbkqZVKtNM02BBFMkMdpZStX-FF9OIEQkhrPS0ThVVgg/viewform'
+            },
+            'RORAINÓPOLIS': {
+                'ABT-15': 'https://docs.google.com/forms/d/e/1FAIpQLSdbGEFe2CMF_56N5QyXsoNHfBWlokvYTRf5s48_T84T_srt_w/viewform',
+                'UR 09-23': 'https://docs.google.com/forms/d/e/1FAIpQLScRW_T3DEMt0OLOjBD_gGxM3gSUW_igGN0KIJPXjMYTn8C62A/viewform'
+            },
+            'PACARAIMA': {
+                'POSTO PACARAIMA': 'LINK_DO_FORMS_PACARAIMA'
+            }
+        };
+        
+        // MAPA DE QUADROS
+        const quadrosMap = {
+            'Oficiais': ['QOCBM', 'QCOBM', 'QOSBM', 'QEOBM'],
+            'Pracas': ['QPCBM', 'QPSBM', 'QEPBM']
+        };
+        
+        // ------------------------------------------------------------------
+        //  FUNÇÕES DE CONTROLE DE FLUXO E VALIDAÇÃO
+        // ------------------------------------------------------------------
+
+        // Função para atualizar o status visual dos passos (3 passos)
+        function updateStepIndicator(currentStep) {
+            // Reset de todas as classes de status
+            stepItem1.className = 'step-item';
+            stepItem2.className = 'step-item';
+            stepItem3.className = 'step-item';
+            stepIndicator.className = 'step-indicator';
+
+            // Passo 1
+            if (currentStep >= 1) {
+                stepItem1.classList.add(currentStep > 1 ? 'complete' : 'active');
+            }
+            // Passo 2
+            if (currentStep >= 2) {
+                stepItem2.classList.add(currentStep > 2 ? 'complete' : 'active');
+                stepIndicator.classList.add('progress-1'); // Linha 1 ativa/completa
+            }
+            // Passo 3 (Identificação em andamento)
+            if (currentStep >= 3) {
+                stepItem3.classList.add(currentStep > 3 ? 'complete' : 'active');
+                stepIndicator.classList.add('progress-2'); // Linha 2 ativa/completa
+            }
+            // Passo Finalizado (Todos os campos válidos e pronto para clicar)
+            if (currentStep >= 4) {
+                stepIndicator.classList.add('progress-3'); // Todas as linhas verdes
+                stepItem3.classList.add('complete');
+            }
+        }
+        
+        // Função que verifica o preenchimento total do formulário de Identificação
+        function checkIdentificationCompletion() {
+            // Verifica se os campos existem antes de tentar acessá-los
+            const pGradEl = document.getElementById('posto-graduacao');
+            const quadroEl = document.getElementById('quadro');
+            const nomeGuerraEl = document.getElementById('nome-guerra');
+            
+            if (!pGradEl || !quadroEl || !nomeGuerraEl) {
+                return false; 
+            }
+
+            const isPGradSelected = !!pGradEl.value;
+            const isQuadroSelected = !!quadroEl.value;
+            const isNomeGuerraComplete = nomeGuerraEl.value.trim().length > 1;
+
+            if (isPGradSelected && isQuadroSelected && isNomeGuerraComplete) {
+                btnIr.disabled = false;
+                updateStepIndicator(4); // Completo (Habilita o botão final e deixa os círculos verdes)
+            } else {
+                btnIr.disabled = true;
+                updateStepIndicator(3); // Passo 3 Ativo (em preenchimento)
+            }
+        }
+
+        // Função que prepara a navegação/submissão (CORRIGIDA)
+        function navigateToForms() {
+            const formsLink = localSelect.value;
+            const posto = postoSelect.value;
+            const local = localSelect.options[localSelect.selectedIndex].textContent;
+            
+            const pGrad = postoGraduacaoSelect.value;
+            const quadro = quadroSelect.value;
+            const nomeGuerra = nomeGuerraInput.value.toUpperCase();
+
+            if (btnIr.disabled) {
+                alert("Por favor, preencha a identificação antes de iniciar a conferência.");
+                return;
+            }
+
+            // Constrói a URL com os Query Parameters (CORREÇÃO APLICADA AQUI)
+            const params = new URLSearchParams();
+            
+            // Parâmetros do Local
+            params.append('posto', posto);
+            params.append('local', local);
+            
+            // Parâmetros da Identificação do Militar
+            params.append('posto_grad', pGrad);
+            params.append('quadro_mil', quadro); 
+            params.append('nome_guerra', nomeGuerra);
+            
+            // Define o separador para a URL (aplica '?' se não houver)
+            const separator = formsLink.includes('?') ? '&' : '?';
+            const finalLink = `${formsLink}${separator}${params.toString()}`;
+            
+            window.open(finalLink, '_self');
+        }
+
+        // ------------------------------------------------------------------
+        //  LÓGICA DO FLUXO (INICIALIZAÇÃO E EVENTOS)
+        // ------------------------------------------------------------------
+        
+        function updateQuadroOptions() {
+            const pGrad = postoGraduacaoSelect.value;
+            let options = [];
+            
+            if (['CAP', '1º TEN', '2º TEN'].includes(pGrad)) {
+                options = quadrosMap['Oficiais'];
+            } else if (pGrad) {
+                options = quadrosMap['Pracas'];
+            }
+
+            quadroSelect.innerHTML = '<option value="" disabled selected>-- Selecione --</option>';
+            options.forEach(quadro => {
+                const option = document.createElement('option');
+                option.value = quadro;
+                option.textContent = quadro;
+                quadroSelect.appendChild(option);
+            });
+            
+            quadroGroup.style.display = 'block';
+            nomeGuerraGroup.style.display = 'none';
+            nomeGuerraInput.value = '';
+            
+            postoGraduacaoSelect.blur();
+            checkIdentificationCompletion();
+        }
+
+        function updateLocalOptions() {
+            const selectedPosto = postoSelect.value;
+            localSelect.innerHTML = '<option value="" disabled selected>-- Selecione um Local --</option>';  
+            postoSelect.blur(); 
+            
+            step2Content.style.display = 'none';
+            step3Content.style.display = 'none';
+            btnIr.disabled = true;
+            updateStepIndicator(0);
+
+            if (selectedPosto && formsMap[selectedPosto]) {
+                const locais = formsMap[selectedPosto];
+                for (const localName in locais) {
+                    const option = document.createElement('option');
+                    option.value = locais[localName];
+                    option.textContent = localName;
+                    localSelect.appendChild(option);
+                }
+
+                step2Content.style.display = 'block';
+                updateStepIndicator(1);
+            }
+        }
+
+        // ------------------------------------------------------------------
+        //  LISTENERS (APLICADOS)
+        // ------------------------------------------------------------------
+
+        // 1. Listener para o menu 'Posto de Serviço' (Passo 1)
+        postoSelect.addEventListener('change', updateLocalOptions);
+        
+        // 2. Listener para o menu 'Local' (Passo 2)
+        localSelect.addEventListener('change', function() {
+            const isLocalSelected = !!localSelect.value;
+            localSelect.blur(); 
+
+            if (isLocalSelected) {
+                step3Content.style.display = 'block';
+                
+                quadroGroup.style.display = 'none';
+                nomeGuerraGroup.style.display = 'none';
+                postoGraduacaoSelect.value = ''; 
+                
+                checkIdentificationCompletion();
+                updateStepIndicator(2);
+            } else {
+                step3Content.style.display = 'none';
+                updateStepIndicator(1);
+                btnIr.disabled = true;
+            }
+        });
+        
+        // 3a. Listener para Posto/Graduação (Passo 3 - Campo 1)
+        postoGraduacaoSelect.addEventListener('change', updateQuadroOptions);
+        
+        // 3b. Listener para Quadro (Passo 3 - Campo 2)
+        quadroSelect.addEventListener('change', function() {
+            const isQuadroSelected = !!quadroSelect.value;
+            
+            if (isQuadroSelected) {
+                nomeGuerraGroup.style.display = 'block';
+                nomeGuerraInput.focus();
+            } else {
+                nomeGuerraGroup.style.display = 'none';
+            }
+            
+            quadroSelect.blur();
+            checkIdentificationCompletion();
+        });
+        
+        // 3c. Listener para Nome de Guerra (Passo 3 - Campo 3)
+        nomeGuerraInput.addEventListener('input', function() {
+            nomeGuerraInput.value = nomeGuerraInput.value.toUpperCase();
+            checkIdentificationCompletion();
+        });
+
+        // 4. Listener para o botão 'INICIAR CONFERÊNCIA'
+        btnIr.addEventListener('click', navigateToForms);
+
+        // --- INICIALIZAÇÃO ---
+        updateLocalOptions();
+        updateStepIndicator(0); 
+    });
+</script>
