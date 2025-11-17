@@ -1,352 +1,307 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="icon" type="image/png" href="logo_sigma.png" onerror="this.href='https://placehold.co/16x16/800020/ffffff?text=S'">
-    <title>Conferência - LOCAL TESTE</title>
-    <style>
-        /* ESTILOS BASE REUTILIZADOS */
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #f4f4f9;
-            color: #333;
-            min-height: 100vh;
-            margin: 0;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: flex-start;
-            padding-bottom: 20px;
-            padding-top: 60px; /* Ajuste para compensar o header fixo */
-            box-sizing: border-box;
-        }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/png" href="logo_sigma.png" onerror="this.href='https://placehold.co/16x16/800020/ffffff?text=S'">
+    <title>Conferência - LOCAL TESTE</title>
+    <style>
+        /* ESTILOS BASE REUTILIZADOS (IDÊNTICOS AO SEU LAYOUT) */
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f9;
+            color: #333;
+            min-height: 100vh;
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+            padding-bottom: 20px;
+            padding-top: 60px; /* Ajuste para compensar o header fixo */
+            box-sizing: border-box;
+        }
 
-        .main-header {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 50px;
-            background-color: #800020;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
-            z-index: 100;
-            display: flex;
-            align-items: center;
-            padding: 0 15px;
-            box-sizing: border-box;
-            gap: 10px;
-        }
+        .main-header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 50px;
+            background-color: #800020;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+            z-index: 100;
+            display: flex;
+            align-items: center;
+            padding: 0 15px;
+            box-sizing: border-box;
+            gap: 10px;
+        }
 
-        .header-icon {
-            height: 40px; 
-            width: auto; 
-            vertical-align: middle; 
-        }
+        .header-icon {
+            height: 40px; 
+            width: auto; 
+            vertical-align: middle; 
+        }
 
-        .header-title-desktop, .header-title-mobile {
-            font-weight: bold;
-            font-size: 1.1em;
-            line-height: 1.2;
-        }
+        .header-title-desktop, .header-title-mobile {
+            font-weight: bold;
+            font-size: 1.1em;
+            line-height: 1.2;
+        }
 
-        .text-white {
-            color: white;
-        }
+        .text-white {
+            color: white;
+        }
 
-        .text-red {
-            color: #FF3B3B;
-        }
+        .text-red {
+            color: #FF3B3B;
+        }
 
-        @media (min-width: 768px) {
-            .header-title-desktop { display: block; }
-            .header-title-mobile { display: none; }
-            .header-title-desktop { font-size: 1.2em; }
-        }
+        @media (min-width: 768px) {
+            .header-title-desktop { display: block; }
+            .header-title-mobile { display: none; }
+            .header-title-desktop { font-size: 1.2em; }
+        }
 
-        /* --- ESTILOS DO CONTAINER E CABEÇALHOS --- */
-        .container {
-            background-color: #fff;
-            padding: 20px;
-            border-radius: 10px;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-            width: 95%;
-            max-width: 600px;
-            margin-bottom: 20px;
-            text-align: center;
-            box-sizing: border-box;
-        }
+        /* --- ESTILOS DO CONTAINER E CABEÇALHOS --- */
+        .container {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            width: 95%;
+            max-width: 600px;
+            margin-bottom: 20px;
+            text-align: center;
+            box-sizing: border-box;
+        }
 
-        h1 {
-            color: #d90f23;
-            margin-bottom: 3px;
-            font-size: 1.6em;
-            padding-bottom: 5px;
-            border-bottom: 1px solid #e0e0e0;
-            margin-bottom: 10px;
-        }
+        h1 {
+            color: #d90f23;
+            margin-bottom: 3px;
+            font-size: 1.6em;
+            padding-bottom: 5px;
+            border-bottom: 1px solid #e0e0e0;
+            margin-bottom: 10px;
+        }
 
-        .subtitulo {
-            font-size: 0.9em;
-            color: #666;
-            margin-bottom: 20px;
-            font-weight: 600;
-        }
-        
-        /* --- ESTILOS DE FORMULÁRIO (Geral) --- */
-        .form-group {
-            margin-bottom: 15px;
-        }
+        .subtitulo {
+            font-size: 0.9em;
+            color: #666;
+            margin-bottom: 20px;
+            font-weight: 600;
+        }
+        
+        /* --- ESTILOS PARA SETORES (COLLAPSIBLE) --- */
+        .setor-header {
+            background-color: #800020; 
+            color: white;
+            padding: 12px 15px;
+            margin-top: 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            text-align: left;
+            font-weight: bold;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            transition: background-color 0.3s;
+        }
 
-        label {
-            display: block;
-            margin-bottom: 6px;
-            font-weight: bold;
-            color: #555;
-            font-size: 0.9em;
-        }
+        .setor-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .setor-status {
+            background-color: #d90f23;
+            color: white;
+            font-size: 0.9em;
+            padding: 3px 8px;
+            border-radius: 4px;
+            min-width: 35px;
+            text-align: center;
+            transition: background-color 0.3s;
+        }
+        
+        .setor-status.ok { background-color: #1b8a3e; }
 
-        select, input[type="text"] {
-            width: 100%;
-            padding: 10px;
-            border-radius: 6px;
-            border: 1px solid #ccc;
-            box-sizing: border-box;
-            font-size: 1em;
-            background-color: #fff;
-            font-family: Arial, sans-serif;
-        }
+        .setor-content {
+            padding: 10px 0;
+            max-height: 0; 
+            overflow: hidden;
+            transition: max-height 0.4s ease-out, padding 0.4s ease-out;
+            background-color: #fff;
+            border-left: 1px solid #e0e0e0;
+            border-right: 1px solid #e0e0e0;
+        }
 
-        .input-error {
-            border: 2px solid #d90f23 !important;
-            box-shadow: 0 0 5px rgba(217, 15, 35, 0.5);
-        }
-        
-        /* --- ESTILOS PARA SETORES (COLLAPSIBLE) --- */
-        .setor-header {
-            background-color: #800020; 
-            color: white;
-            padding: 12px 15px;
-            margin-top: 20px;
-            border-radius: 6px;
-            cursor: pointer;
-            text-align: left;
-            font-weight: bold;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-            transition: background-color 0.3s;
-        }
+        .setor-content.expanded {
+            max-height: 1000px; 
+            padding-bottom: 20px;
+            border-bottom: 1px solid #e0e0e0;
+            border-radius: 0 0 6px 6px;
+        }
+        
+        .arrow {
+            font-size: 1.2em;
+            transition: transform 0.4s;
+        }
 
-        .setor-info {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-        
-        .setor-status {
-            background-color: #d90f23;
-            color: white;
-            font-size: 0.9em;
-            padding: 3px 8px;
-            border-radius: 4px;
-            min-width: 35px;
-            text-align: center;
-            transition: background-color 0.3s;
-        }
-        
-        .setor-status.ok { background-color: #1b8a3e; }
+        /* --- ESTILOS DO ITEM DE CONFERÊNCIA --- */
+        .item-conferencia {
+            border: 1px solid #e0e0e0;
+            border-left: 5px solid #ccc;
+            border-radius: 6px;
+            padding: 10px;
+            margin: 10px;
+            background-color: #fafafa;
+            transition: border-left-color 0.3s ease, background-color 0.3s ease;
+        }
 
-        .setor-content {
-            padding: 10px 0;
-            max-height: 0; 
-            overflow: hidden;
-            transition: max-height 0.4s ease-out, padding 0.4s ease-out;
-            background-color: #fff;
-        }
+        .item-conferencia.status-ok { border-left-color: #1b8a3e; background-color: #f0fff0; }
+        .item-conferencia.status-alert { border-left-color: #d90f23; background-color: #fff0f0; }
+        
+        .item-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 5px;
+            flex-wrap: wrap;
+        }
 
-        .setor-content.expanded {
-            max-height: 1000px; 
-            padding-bottom: 20px;
-            border: 1px solid #e0e0e0;
-            border-top: none;
-            border-radius: 0 0 6px 6px;
-        }
-        
-        .arrow {
-            font-size: 1.2em;
-            transition: transform 0.4s;
-        }
+        .item-label {
+            font-weight: bold;
+            color: #333;
+            flex-grow: 1;
+            margin-right: 10px;
+            text-align: left;
+            font-size: 0.95em;
+        }
+        
+        .item-quantidade {
+            font-size: 0.9em;
+            color: #800020;
+            font-weight: bold;
+            flex-shrink: 0;
+        }
+        
+        .status-icon {
+            font-weight: bold;
+            font-size: 0; 
+            padding: 0; 
+            width: 18px; 
+            height: 18px; 
+            line-height: 18px;
+            border-radius: 4px;
+            color: white;
+            min-width: 18px;
+            text-align: center;
+            margin-right: 10px;
+            background-color: transparent;
+            border: 1px dashed #aaa;
+        }
 
-        /* --- ESTILOS DO ITEM DE CONFERÊNCIA --- */
-        .item-conferencia {
-            border: 1px solid #e0e0e0;
-            border-left: 5px solid #ccc;
-            border-radius: 6px;
-            padding: 10px;
-            margin: 10px;
-            background-color: #fafafa;
-            transition: border-left-color 0.3s ease, background-color 0.3s ease;
-        }
+        .status-icon.ok { background-color: #1b8a3e; border: none; }
+        .status-icon.ok:after {
+            content: '✓';
+            font-size: 12px;
+            line-height: 18px;
+            color: white;
+        }
+        
+        .status-icon.alert { background-color: #d90f23; border: none; }
+        .status-icon.alert:after {
+            content: 'C/A';
+            font-size: 10px;
+            line-height: 18px;
+            color: white;
+        }
+        
+        .item-options {
+            display: flex;
+            justify-content: flex-end;
+            gap: 5px;
+            margin-top: 5px;
+        }
+        
+        .action-button {
+            padding: 5px 8px;
+            border: 2px solid #ccc;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: background-color 0.2s, border-color 0.2s;
+            font-size: 0.9em;
+            color: #555;
+            flex-shrink: 0;
+            background-color: #fff;
+        }
+        
+        .action-button.sa-ok:hover, .action-button.sa-ok.active {
+            background-color: #e6ffe6; 
+            border-color: #1b8a3e;
+            color: #1b8a3e;
+        }
 
-        .item-conferencia.status-ok { border-left-color: #1b8a3e; background-color: #f0fff0; }
-        .item-conferencia.status-alert { border-left-color: #d90f23; background-color: #fff0f0; }
-        
-        .item-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 0;
-            flex-wrap: nowrap;
-        }
+        .action-button.ca-alert:hover, .action-button.ca-alert.active {
+             background-color: #ffe6e6; 
+             border-color: #d90f23;
+             color: #d90f23;
+        }
+        
+        .alteracao-container {
+            margin-top: 10px;
+            padding-top: 10px;
+            border-top: 1px dashed #e0e0e0;
+            display: none; 
+            text-align: left;
+        }
 
-        .item-label {
-            font-weight: bold;
-            color: #333;
-            flex-grow: 1;
-            margin-right: 10px;
-            text-align: left;
-        }
-        
-        .status-icon {
-            font-weight: bold;
-            font-size: 0; 
-            padding: 0; 
-            width: 18px; 
-            height: 18px; 
-            line-height: 18px;
-            border-radius: 4px;
-            color: white;
-            min-width: 18px;
-            text-align: center;
-            margin-right: 10px;
-        }
+        .alteracao-container label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #d90f23;
+            font-size: 0.9em;
+        }
 
-        .status-icon.ok:after {
-            content: '✓';
-            font-size: 12px;
-            line-height: 18px;
-            color: white;
-        }
-        
-        .status-icon.alert:after {
-            content: 'C/A';
-            font-size: 10px;
-            line-height: 18px;
-            color: white;
-        }
-
-        .status-icon.pending {
-            background-color: transparent;
-            border: 1px dashed #aaa;
-        }
-        
-        .item-options {
-            display: flex;
-            gap: 5px;
-            margin-bottom: 0;
-        }
-        
-        .action-button {
-            padding: 5px 8px;
-            border: 2px solid #ccc;
-            border-radius: 4px;
-            cursor: pointer;
-            font-weight: bold;
-            transition: background-color 0.2s, border-color 0.2s;
-            font-size: 0.9em;
-            color: #555;
-            flex-shrink: 0;
-        }
-        
-        .action-button.sa-ok:hover, .action-button.sa-ok.active {
-            background-color: #e6ffe6; 
-            border-color: #1b8a3e;
-            color: #1b8a3e;
-        }
-
-        .action-button.ca-alert:hover, .action-button.ca-alert.active {
-             background-color: #ffe6e6; 
-             border-color: #d90f23;
-             color: #d90f23;
-        }
-        
-        .alteracao-container {
-            margin-top: 10px;
-            display: none; 
-            border-top: 1px solid #e0e0e0;
-            padding-top: 10px;
-        }
-
-        .alteracao-container textarea {
-            width: 100%;
-            padding: 8px;
-            border-radius: 4px;
-            border: 1px solid #d90f23;
-            box-sizing: border-box;
-            font-size: 0.9em;
-            resize: vertical;
-            min-height: 50px;
-            margin-bottom: 10px;
-        }
-        
-        .btn-salvar-alteracao {
-            background-color: #800020;
-            color: white;
-            font-weight: bold;
-            border: none;
-            padding: 8px 15px;
-            border-radius: 4px;
-            cursor: pointer;
-            width: 100%;
-        }
-
-        .descricao-inline {
-            background-color: #fee;
-            border: 1px solid #fcc;
-            border-radius: 4px;
-            padding: 8px;
-            margin-top: 10px;
-            font-size: 0.9em;
-            color: #a30b1c;
-            display: none; 
-            text-align: left;
-            font-weight: 500;
-        }
-
-        .descricao-inline strong {
-            color: #333;
-            display: block;
-            margin-bottom: 3px;
-        }
-
-        #btn-finalizar {
-            background-color: #d90f23; 
-            color: white;
-            font-weight: bold;
-            border: none;
-            padding: 15px 10px; 
-            border-radius: 6px;
-            width: 100%;
-            cursor: pointer;
-            transition: background-color 0.3s ease;
-            margin-top: 20px;
-            font-size: 1.1em;
-            box-shadow: 0 4px 8px rgba(217, 15, 35, 0.4); 
-        }
-        
-        #btn-finalizar:hover {
-            background-color: #a30b1c; 
-        }
-
-        /* Estilo para botão desativado durante a geração do PDF */
-        #btn-finalizar:disabled {
-            background-color: #999;
-            cursor: wait;
-            box-shadow: none;
-        }
-    </style>
+        .alteracao-container textarea {
+            width: 100%;
+            padding: 8px;
+            border-radius: 4px;
+            border: 1px solid #d90f23;
+            box-sizing: border-box;
+            font-size: 0.9em;
+            resize: vertical;
+            min-height: 50px;
+            margin-bottom: 10px;
+        }
+        
+        #btn-finalizar {
+            background-color: #d90f23; 
+            color: white;
+            font-weight: bold;
+            border: none;
+            padding: 15px 10px; 
+            border-radius: 6px;
+            width: 100%;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+            margin-top: 30px;
+            font-size: 1.1em;
+            box-shadow: 0 4px 8px rgba(217, 15, 35, 0.4); 
+        }
+        
+        #btn-finalizar:disabled {
+            background-color: #999;
+            cursor: not-allowed;
+            box-shadow: none;
+        }
+    </style>
 </head>
 <body>
 
@@ -367,89 +322,134 @@
     <img src="logo_sigma.png" alt="Logo do Sistema SIGMA" class="logo" 
           onerror="this.onerror=null; this.src='https://placehold.co/80x80/d90f23/ffffff?text=SIGMA'">
     
-    <h1>SIGMA</h1>
-    <p class="subtitulo">Sistema Integrado de Gestão de Materiais</p>
+    <h1>Conferência de Materiais</h1>
+    <p class="subtitulo">Local: **LOCAL TESTE**</p>
     
-    <div class="step-indicator progress-0" id="step-indicator">
-        <div class="step-item active" id="step-item-1">
-            <div class="step-circle">1</div>
-            <div class="step-label">Posto de Serviço</div> 
-        </div>
-        
-        <div class="step-line" id="line-1-2"></div>
+    <p style="font-size: 0.85em; color: #888; text-align: left; margin-top: -10px;">
+        **Conferente:** CAP QOCBM SOUSA (05/11/2025) - *(Simulação de dados de identificação)*
+    </p>
 
-        <div class="step-item" id="step-item-2">
-            <div class="step-circle">2</div>
-            <div class="step-label">Local de Conferência</div> 
+    <div class="setor" data-total-items="3" data-id="1">
+        <div class="setor-header" onclick="toggleSetor(this)">
+            <div class="setor-info">
+                <span>1. DEPÓSITO CENTRAL</span>
+                <div class="setor-status" data-completed="0">0/3</div>
+            </div>
+            <span class="arrow">▼</span>
         </div>
-        
-        <div class="step-line" id="line-2-3"></div>
+        <div class="setor-content expanded">
+            
+            <div class="item-conferencia" data-status="pending" data-id="1-1">
+                <div class="item-header">
+                    <span class="status-icon"></span>
+                    <span class="item-label">KIT PRIMEIROS SOCORROS</span>
+                    <span class="item-quantidade">Qtd. Esperada: 5</span>
+                </div>
+                <div class="item-options">
+                    <button class="action-button sa-ok" onclick="setItemStatus(this, 'ok')">S/A</button>
+                    <button class="action-button ca-alert" onclick="setItemStatus(this, 'alert')">C/A</button>
+                </div>
+                <div class="alteracao-container">
+                    <label>Observação (Obrigatória para C/A):</label>
+                    <textarea placeholder="Descreva o tipo de alteração ou falta."></textarea>
+                </div>
+            </div>
 
-        <div class="step-item" id="step-item-3">
-            <div class="step-circle">3</div>
-            <div class="step-label">Identificação</div> 
+            <div class="item-conferencia" data-status="pending" data-id="1-2">
+                <div class="item-header">
+                    <span class="status-icon"></span>
+                    <span class="item-label">LANTERNA TÁTICA</span>
+                    <span class="item-quantidade">Qtd. Esperada: 12</span>
+                </div>
+                <div class="item-options">
+                    <button class="action-button sa-ok" onclick="setItemStatus(this, 'ok')">S/A</button>
+                    <button class="action-button ca-alert" onclick="setItemStatus(this, 'alert')">C/A</button>
+                </div>
+                <div class="alteracao-container">
+                    <label>Observação (Obrigatória para C/A):</label>
+                    <textarea placeholder="Descreva o tipo de alteração ou falta."></textarea>
+                </div>
+            </div>
+
+            <div class="item-conferencia" data-status="pending" data-id="1-3">
+                <div class="item-header">
+                    <span class="status-icon"></span>
+                    <span class="item-label">MANGUEIRA DE INCÊNDIO (30m)</span>
+                    <span class="item-quantidade">Qtd. Esperada: 3</span>
+                </div>
+                <div class="item-options">
+                    <button class="action-button sa-ok" onclick="setItemStatus(this, 'ok')">S/A</button>
+                    <button class="action-button ca-alert" onclick="setItemStatus(this, 'alert')">C/A</button>
+                </div>
+                <div class="alteracao-container">
+                    <label>Observação (Obrigatória para C/A):</label>
+                    <textarea placeholder="Descreva o tipo de alteração ou falta."></textarea>
+                </div>
+            </div>
+
         </div>
     </div>
+    <div class="setor" data-total-items="3" data-id="2">
+        <div class="setor-header" onclick="toggleSetor(this)">
+            <div class="setor-info">
+                <span>2. VIATURA 13-1</span>
+                <div class="setor-status" data-completed="0">0/3</div>
+            </div>
+            <span class="arrow">►</span>
+        </div>
+        <div class="setor-content">
+            
+            <div class="item-conferencia" data-status="pending" data-id="2-1">
+                <div class="item-header">
+                    <span class="status-icon"></span>
+                    <span class="item-label">ALMOTOLIA 500ml</span>
+                    <span class="item-quantidade">Qtd. Esperada: 2</span>
+                </div>
+                <div class="item-options">
+                    <button class="action-button sa-ok" onclick="setItemStatus(this, 'ok')">S/A</button>
+                    <button class="action-button ca-alert" onclick="setItemStatus(this, 'alert')">C/A</button>
+                </div>
+                <div class="alteracao-container">
+                    <label>Observação (Obrigatória para C/A):</label>
+                    <textarea placeholder="Descreva o tipo de alteração ou falta."></textarea>
+                </div>
+            </div>
 
-    <div id="step-1-content">
-        <h2 class="step-title">Nova Conferência</h2>
-        <div class="form-group">
-            <label for="posto-servico">Escolha o Posto de Serviço</label>
-            <select id="posto-servico">
-                <option value="" disabled selected>-- Selecione um Posto --</option>
-                <option value="ALFA">ALFA</option>
-                <option value="BRAVO">BRAVO</option>
-                <option value="CHARLIE">CHARLIE</option>
-                <option value="CARACARAÍ">CARACARAÍ</option>
-                <option value="RORAINÓPOLIS">RORAINÓPOLIS</option>
-                <option value="PACARAIMA">PACARAIMA</option>
-            </select>
+            <div class="item-conferencia" data-status="pending" data-id="2-2">
+                <div class="item-header">
+                    <span class="status-icon"></span>
+                    <span class="item-label">CILINDRO DE OXIGÊNIO (portátil)</span>
+                    <span class="item-quantidade">Qtd. Esperada: 1</span>
+                </div>
+                <div class="item-options">
+                    <button class="action-button sa-ok" onclick="setItemStatus(this, 'ok')">S/A</button>
+                    <button class="action-button ca-alert" onclick="setItemStatus(this, 'alert')">C/A</button>
+                </div>
+                <div class="alteracao-container">
+                    <label>Observação (Obrigatória para C/A):</label>
+                    <textarea placeholder="Descreva o tipo de alteração ou falta."></textarea>
+                </div>
+            </div>
+
+            <div class="item-conferencia" data-status="pending" data-id="2-3">
+                <div class="item-header">
+                    <span class="status-icon"></span>
+                    <span class="item-label">CHAVE DE RODA</span>
+                    <span class="item-quantidade">Qtd. Esperada: 1</span>
+                </div>
+                <div class="item-options">
+                    <button class="action-button sa-ok" onclick="setItemStatus(this, 'ok')">S/A</button>
+                    <button class="action-button ca-alert" onclick="setItemStatus(this, 'alert')">C/A</button>
+                </div>
+                <div class="alteracao-container">
+                    <label>Observação (Obrigatória para C/A):</label>
+                    <textarea placeholder="Descreva o tipo de alteração ou falta."></textarea>
+                </div>
+            </div>
+
         </div>
     </div>
-
-    <div id="step-2-content" style="display: none;">
-        <h2 class="step-title">Local de Conferência</h2>
-        <div class="form-group">
-            <label for="local">Escolha o Local</label>
-            <select id="local">
-                <option value="" disabled selected>-- Selecione um Local --</option>
-            </select>
-        </div>
-    </div>
-    
-    <div id="step-3-content" style="display: none;">
-        <h2 class="step-title">Identificação do Militar</h2>
-
-        <div class="form-group">
-            <label for="posto-graduacao">Posto/Graduação</label>
-            <select id="posto-graduacao">
-                <option value="" disabled selected>-- Selecione --</option>
-                <option value="CAP">CAP</option>
-                <option value="1º TEN">1º TEN</option>
-                <option value="2º TEN">2º TEN</option>
-                <option value="ST">ST</option>
-                <option value="1º SGT">1º SGT</option>
-                <option value="2º SGT">2º SGT</option>
-                <option value="3º SGT">3º SGT</option>
-                <option value="CB">CB</option>
-                <option value="SD">SD</option>
-            </select>
-        </div>
-
-        <div class="form-group" id="quadro-group" style="display: none;">
-            <label for="quadro">Quadro</label>
-            <select id="quadro">
-                <option value="" disabled selected>-- Selecione --</option>
-                </select>
-        </div>
-
-        <div class="form-group" id="nome-guerra-group" style="display: none;">
-            <label for="nome-guerra">Nome de Guerra (Todas as letras maiúsculas)</label>
-            <input type="text" id="nome-guerra" class="uppercase-input" placeholder="Seu Nome de Guerra (Ex: SOUSA)">
-        </div>
-        
-    </div>
-    <button id="btn-ir" disabled>INICIAR CONFERÊNCIA</button>
+    <button id="btn-finalizar" disabled>FINALIZAR CONFERÊNCIA (0/6 ITENS)</button>
 
 </div>
 
@@ -465,263 +465,138 @@
 
 
 <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        // Elementos principais
-        const postoSelect = document.getElementById('posto-servico');
-        const localSelect = document.getElementById('local');
-        const btnIr = document.getElementById('btn-ir');
-        const step2Content = document.getElementById('step-2-content');
+    // Função para expandir/recolher o setor
+    function toggleSetor(headerElement) {
+        const content = headerElement.nextElementSibling;
+        const arrow = headerElement.querySelector('.arrow');
         
-        // Novos Elementos de Identificação (Passo 3)
-        const step3Content = document.getElementById('step-3-content');
-        const postoGraduacaoSelect = document.getElementById('posto-graduacao');
-        const quadroSelect = document.getElementById('quadro');
-        const quadroGroup = document.getElementById('quadro-group');
-        const nomeGuerraInput = document.getElementById('nome-guerra');
-        const nomeGuerraGroup = document.getElementById('nome-guerra-group');
-        
-        // Elementos do passo a passo visual (3 passos)
-        const stepIndicator = document.getElementById('step-indicator');
-        const stepItem1 = document.getElementById('step-item-1');
-        const stepItem2 = document.getElementById('step-item-2');
-        const stepItem3 = document.getElementById('step-item-3');
-
-        // MAPA DE FORMULÁRIOS (Existente)
-        const formsMap = {
-            'ALFA': {
-                'ABT-17': 'https://docs.google.com/forms/d/e/1FAIpQLScaIN4xEGq0FP_5s4cyMUP-OSqLyh9QZiUUAj1v2nMzymXfwg/viewform',
-                'RESGATE': 'https://docs.google.com/forms/d/e/1FAIpQLSe2CuhwbeVTt5OCm6nqWdM-kB0Xv-rChzmkA8byBqil7kHRdg/viewform',
-                'VTR CMD SOS': 'https://docs.google.com/forms/d/e/1FAIpQLSdGEdJBqe9Qadvv5TT5QfZ3Zc2KqJcbGcqwGUut0q796TJnXg/viewform',
-                'PERMANÊNCIA': 'https://docs.google.com/forms/d/e/1FAIpQLSckUGLpBsCIM_nFFS-BCPhAKbrI4CU5p6zo0juwy0Orcu0nTg/viewform',
-                'RESGATE EXTRA': 'https://docs.google.com/forms/d/e/1FAIpQLSf5TJ8w6_6DWTr1oxXgZFPIOuC0_jvpcJMF4ciqRJloaSk5WQ/viewform'
-            },
-            'BRAVO': {
-                'ABT-18': 'https://docs.google.com/forms/d/e/1FAIpQLSctaCjNUB2gDdNDXn3h4RiGOoch94CvAC5sj15D8YgzPT8Z9w/viewform',
-                'PERMANÊNCIA': 'https://docs.google.com/forms/d/e/1FAIpQLSd4paOCzbr3mjS3DEoFOBwmVTjVOrvk6NfspYJ-p1XcNtD7bg/viewform',
-                'LOCAL TESTE': 'conferencia_teste.html' 
-            },
-            'CHARLIE': {
-                'VTR SALVAMENTO': 'https://docs.google.com/forms/d/e/1FAIpQLSfzEdboDDlJJ24oYcr3uIgWxemDzbBfIn8YqQBMJag7A-eqWA/viewform',
-                'PERMANÊNCIA': 'https://docs.google.com/forms/d/e/1FAIpQLSdEpX-ak7Lv3VQSXNkw0JeMGndJfc97Ac_3PhO95M67UHJ3Dw/viewform'
-            },
-            'CARACARAÍ': {
-                'ABT-16': 'https://docs.google.com/forms/d/e/1FAIpQLScuEX-onfOntuiCrccAj5IcPHmgijyL6bTTgFxRDH6c4VPjDg/viewform',
-                'UR 13-23': 'https://docs.google.com/forms/d/e/1FAIpQLSdPS0HfYfTcQ1w-Wd2a8r1PGsd4U3DplCA1fCf6bPNNDrogUQ/viewform',
-                'ATPS 31-21 (GBS)': 'https://docs.google.com/forms/d/e/1FAIpQLSchXqGfiGeTDC2hIpnxgxIGLkxKZziYE5go7pVcYYHGnpj9ow/viewform',
-                'ATF 01-21 (GCIF)': 'https://docs.google.com/forms/d/e/1FAIpQLSdWgjlqDH6Dt2DwM7qRgMAeC2SOSIPShCDVBZXX-T5peyu8TA/viewform',
-                'PERMANÊNCIA': 'https://docs.google.com/forms/d/e/1FAIpQLScW4_vbkqZVKtNM02BBFMkMdpZStX-FF9OIEQkhrPS0ThVVgg/viewform'
-            },
-            'RORAINÓPOLIS': {
-                'ABT-15': 'https://docs.google.com/forms/d/e/1FAIpQLSdbGEFe2CMF_56N5QyXsoNHfBWlokvYTRf5s48_T84T_srt_w/viewform',
-                'UR 09-23': 'https://docs.google.com/forms/d/e/1FAIpQLScRW_T3DEMt0OLOjBD_gGxM3gSUW_igGN0KIJPXjMYTn8C62A/viewform'
-            },
-            'PACARAIMA': {
-                'POSTO PACARAIMA': 'LINK_DO_FORMS_PACARAIMA'
-            }
-        };
-        
-        // MAPA DE QUADROS
-        const quadrosMap = {
-            'Oficiais': ['QOCBM', 'QCOBM', 'QOSBM', 'QEOBM'],
-            'Pracas': ['QPCBM', 'QPSBM', 'QEPBM']
-        };
-        
-        // ------------------------------------------------------------------
-        // FUNÇÕES DE CONTROLE DE FLUXO E VALIDAÇÃO
-        // ------------------------------------------------------------------
-
-        // Função para atualizar o status visual dos passos (3 passos)
-        function updateStepIndicator(currentStep) {
-            // Reset de todas as classes de status
-            stepItem1.className = 'step-item';
-            stepItem2.className = 'step-item';
-            stepItem3.className = 'step-item';
-            stepIndicator.className = 'step-indicator';
-
-            // Passo 1
-            if (currentStep >= 1) {
-                stepItem1.classList.add(currentStep > 1 ? 'complete' : 'active');
-            }
-            // Passo 2
-            if (currentStep >= 2) {
-                stepItem2.classList.add(currentStep > 2 ? 'complete' : 'active');
-                stepIndicator.classList.add('progress-1'); // Linha 1 ativa/completa
-            }
-            // Passo 3 (Identificação em andamento)
-            if (currentStep >= 3) {
-                stepItem3.classList.add(currentStep > 3 ? 'complete' : 'active');
-                stepIndicator.classList.add('progress-2'); // Linha 2 ativa/completa
-            }
-            // Passo Finalizado (Todos os campos válidos e pronto para clicar)
-            if (currentStep >= 4) {
-                stepIndicator.classList.add('progress-3'); // Todas as linhas verdes
-                stepItem3.classList.add('complete');
-            }
+        if (content.classList.contains('expanded')) {
+            content.classList.remove('expanded');
+            arrow.textContent = '►';
+        } else {
+            content.classList.add('expanded');
+            arrow.textContent = '▼';
         }
-        
-        // Função que verifica o preenchimento total do formulário de Identificação
-        function checkIdentificationCompletion() {
-            const isPGradSelected = !!postoGraduacaoSelect.value;
-            const isQuadroSelected = !!quadroSelect.value;
-            const isNomeGuerraComplete = nomeGuerraInput.value.trim().length > 1;
+    }
 
-            if (isPGradSelected && isQuadroSelected && isNomeGuerraComplete) {
-                btnIr.disabled = false;
-                updateStepIndicator(4); // Completo (Habilita o botão final e deixa os círculos verdes)
-            } else {
-                btnIr.disabled = true;
-                updateStepIndicator(3); // Passo 3 Ativo (em preenchimento)
-            }
+    // Função principal para marcar S/A ou C/A
+    function setItemStatus(button, status) {
+        const item = button.closest('.item-conferencia');
+        const setor = button.closest('.setor');
+        const statusIcon = item.querySelector('.status-icon');
+        const alteracaoContainer = item.querySelector('.alteracao-container');
+        const observacaoTextarea = alteracaoContainer.querySelector('textarea');
+        const buttons = item.querySelectorAll('.action-button');
+
+        // Limpa classes e status anterior
+        item.classList.remove('status-ok', 'status-alert');
+        statusIcon.className = 'status-icon';
+        item.dataset.status = status;
+        
+        buttons.forEach(btn => btn.classList.remove('active'));
+        button.classList.add('active');
+
+        if (status === 'ok') {
+            // S/A (Sem Alteração)
+            item.classList.add('status-ok');
+            statusIcon.classList.add('ok');
+            alteracaoContainer.style.display = 'none';
+            observacaoTextarea.value = ''; // Limpa a observação
+        } else if (status === 'alert') {
+            // C/A (Com Alteração)
+            item.classList.add('status-alert');
+            statusIcon.classList.add('alert');
+            alteracaoContainer.style.display = 'block';
+            observacaoTextarea.focus();
         }
 
-        // Função que prepara a navegação/submissão
-        function navigateToForms() {
-            const formsLink = localSelect.value;
-            const posto = postoSelect.value;
-            const local = localSelect.options[localSelect.selectedIndex].textContent;
-            
-            // Dados da Identificação (coletados antes de clicar)
-            const pGrad = postoGraduacaoSelect.value;
-            const quadro = quadroSelect.value;
-            const nomeGuerra = nomeGuerraInput.value.toUpperCase();
+        // 1. Atualiza o status do item no item-conferencia
+        updateItemDisplay(item);
 
-            // Validação de segurança antes de navegar (Embora o botão esteja desabilitado)
-            if (btnIr.disabled) {
-                alert("Por favor, preencha a identificação antes de iniciar a conferência.");
-                return;
-            }
+        // 2. Recalcula o progresso do setor e do total
+        updateSetorStatus(setor);
+        updateOverallStatus();
+    }
+    
+    // Função auxiliar para garantir que o visual do item reflete o status
+    function updateItemDisplay(item) {
+        // Nada extra necessário por enquanto, mas útil para futuras validações.
+    }
 
-            // Constrói a URL com os Query Parameters
-            const params = new URLSearchParams();
-            params.append('entry.PARAM_POSTO_SERV', posto);  
-            params.append('entry.PARAM_LOCAL_CONF', local);
-            params.append('entry.PARAM_POSTO_GRAD', pGrad);
-            params.append('entry.PARAM_QUADRO', quadro);
-            params.append('entry.PARAM_NOME_GUERRA', nomeGuerra);
-            
-            const finalLink = formsLink.startsWith('http') ? `${formsLink}&${params.toString()}` : formsLink;
-            
-            if (formsLink) {
-                window.open(finalLink, '_self');
-            } else {
-                console.error('Atenção: O link não foi configurado.');
-            }
-        }
+    // Função para atualizar o contador de um setor
+    function updateSetorStatus(setor) {
+        const totalItems = parseInt(setor.dataset.totalItems);
+        const setorStatusDiv = setor.querySelector('.setor-status');
+        const items = setor.querySelectorAll('.item-conferencia');
+        let completedItems = 0;
+        let hasAlert = false;
 
-        // ------------------------------------------------------------------
-        // LISTENERS
-        // ------------------------------------------------------------------
+        items.forEach(item => {
+            const status = item.dataset.status;
+            const observacao = item.querySelector('textarea')?.value.trim();
 
-        // 1. Listener para o menu 'Posto de Serviço' (Passo 1)
-        postoSelect.addEventListener('change', function() {
-            const selectedPosto = postoSelect.value;
-            localSelect.innerHTML = '<option value="" disabled selected>-- Selecione um Local --</option>';  
-            postoSelect.blur(); 
-            
-            // Oculta Local e Identificação
-            step2Content.style.display = 'none';
-            step3Content.style.display = 'none';
-            btnIr.disabled = true;
-            updateStepIndicator(0); // Reseta para Passo 1 Ativo
-
-            if (selectedPosto && formsMap[selectedPosto]) {
-                const locais = formsMap[selectedPosto];
-                for (const localName in locais) {
-                    const option = document.createElement('option');
-                    option.value = locais[localName];
-                    option.textContent = localName;
-                    localSelect.appendChild(option);
+            if (status === 'ok') {
+                completedItems++;
+            } else if (status === 'alert') {
+                // Para ser considerado completo, C/A precisa de observação
+                if (observacao.length > 0) {
+                    completedItems++;
                 }
-
-                // MOSTRA O CONTEÚDO DO PASSO 2
-                step2Content.style.display = 'block';
-                updateStepIndicator(1); // Passo 1 Completo, Passo 2 Ativo
+                hasAlert = true;
             }
         });
-        
-        // 2. Listener para o menu 'Local' (Passo 2)
-        localSelect.addEventListener('change', function() {
-            const isLocalSelected = !!localSelect.value;
-            localSelect.blur(); 
 
-            if (isLocalSelected) {
-                // MOSTRA O CONTEÚDO DO PASSO 3 (Identificação)
-                step3Content.style.display = 'block';
-                
-                // Reseta/Oculta os campos sequenciais do Passo 3, mostrando apenas o primeiro
-                quadroGroup.style.display = 'none';
-                nomeGuerraGroup.style.display = 'none';
-                postoGraduacaoSelect.value = ''; // Reseta P/G
-                
-                checkIdentificationCompletion(); // Garante que o botão esteja desabilitado
-                updateStepIndicator(2); // Passo 2 Completo, Passo 3 Ativo
-                
-            } else {
-                // ESCONDE IDENTIFICAÇÃO
-                step3Content.style.display = 'none';
-                updateStepIndicator(1); // Volta para o Passo 2 Ativo
-                btnIr.disabled = true;
-            }
-        });
-        
-        // 3a. Listener para Posto/Graduação (Passo 3 - Campo 1)
-        postoGraduacaoSelect.addEventListener('change', function() {
-            const pGrad = postoGraduacaoSelect.value;
-            
-            let options = [];
-            if (['CAP', '1º TEN', '2º TEN'].includes(pGrad)) {
-                options = quadrosMap['Oficiais'];
-            } else if (pGrad) {
-                options = quadrosMap['Pracas'];
-            }
+        // Atualiza a exibição
+        setorStatusDiv.textContent = `${completedItems}/${totalItems}`;
+        setorStatusDiv.dataset.completed = completedItems;
 
-            quadroSelect.innerHTML = '<option value="" disabled selected>-- Selecione --</option>';
-            options.forEach(quadro => {
-                const option = document.createElement('option');
-                option.value = quadro;
-                option.textContent = quadro;
-                quadroSelect.appendChild(option);
-            });
-            
-            // MOSTRA o campo QUADRO, esconde o Nome de Guerra
-            quadroGroup.style.display = 'block';
-            nomeGuerraGroup.style.display = 'none';
-            nomeGuerraInput.value = '';
-            
-            postoGraduacaoSelect.blur();
-            checkIdentificationCompletion();
-        });
-        
-        // 3b. Listener para Quadro (Passo 3 - Campo 2)
-        quadroSelect.addEventListener('change', function() {
-            const isQuadroSelected = !!quadroSelect.value;
-            
-            if (isQuadroSelected) {
-                // MOSTRA o campo NOME DE GUERRA
-                nomeGuerraGroup.style.display = 'block';
-                nomeGuerraInput.focus();
-            } else {
-                nomeGuerraGroup.style.display = 'none';
-            }
-            
-            quadroSelect.blur();
-            checkIdentificationCompletion();
-        });
-        
-        // 3c. Listener para Nome de Guerra (Passo 3 - Campo 3)
-        nomeGuerraInput.addEventListener('input', function() {
-            // Força maiúsculas
-            nomeGuerraInput.value = nomeGuerraInput.value.toUpperCase();
-            checkIdentificationCompletion();
+        // Atualiza a cor de status do setor
+        if (completedItems === totalItems) {
+            setorStatusDiv.classList.add('ok');
+        } else {
+            setorStatusDiv.classList.remove('ok');
+        }
+    }
+
+    // Função para atualizar o contador total e o botão finalizar
+    function updateOverallStatus() {
+        const todosSetores = document.querySelectorAll('.setor');
+        let totalItems = 0;
+        let totalCompleted = 0;
+
+        todosSetores.forEach(setor => {
+            totalItems += parseInt(setor.dataset.totalItems);
+            totalCompleted += parseInt(setor.querySelector('.setor-status').dataset.completed);
         });
 
-        // 4. Listener para o botão 'INICIAR CONFERÊNCIA'
-        btnIr.addEventListener('click', navigateToForms);
+        const btnFinalizar = document.getElementById('btn-finalizar');
+        btnFinalizar.textContent = `FINALIZAR CONFERÊNCIA (${totalCompleted}/${totalItems} ITENS)`;
 
-        // --- INICIALIZAÇÃO ---
-        
-        // Garante que o estado inicial (Passo 1 Ativo) está correto
-        postoSelect.dispatchEvent(new Event('change')); // Chama o listener para inicializar
-        updateStepIndicator(0); 
+        if (totalCompleted === totalItems) {
+            btnFinalizar.disabled = false;
+        } else {
+            btnFinalizar.disabled = true;
+        }
+    }
+    
+    // Listener para o campo de texto (Observação)
+    document.querySelectorAll('.alteracao-container textarea').forEach(textarea => {
+        textarea.addEventListener('input', function() {
+            const setor = this.closest('.setor');
+            updateSetorStatus(setor);
+            updateOverallStatus();
+        });
     });
+
+    // Listener para o botão Finalizar
+    document.getElementById('btn-finalizar').addEventListener('click', function() {
+        alert('Conferência Finalizada! (A lógica de submissão do formulário viria aqui)');
+        // Aqui você adicionaria o código para coletar todos os dados e enviar.
+    });
+
+    // Inicialização: Garante que os status estão corretos ao carregar a página
+    window.onload = function() {
+        document.querySelectorAll('.setor').forEach(updateSetorStatus);
+        updateOverallStatus();
+    };
 </script>
