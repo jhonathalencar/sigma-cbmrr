@@ -103,11 +103,7 @@
             font-weight: 600;
         }
         
-        /* --- ESTILOS DE FORMULÁRIO E ITENS --- */
-        .form-group {
-            margin-bottom: 15px;
-        }
-        
+        /* --- ESTILOS DE FORMULÁRIO (Geral) --- */
         .user-info-display {
             font-size: 0.85em; 
             color: #333; 
@@ -117,10 +113,8 @@
             padding-bottom: 5px;
             border-bottom: 1px solid #eee;
         }
-
-
-        /* Outros estilos de conferência (mantidos) */
         
+        /* --- ESTILOS PARA SETORES (COLLAPSIBLE) --- */
         .setor-header {
             background-color: #800020; 
             color: white;
@@ -178,6 +172,7 @@
             transition: transform 0.4s;
         }
 
+        /* --- ESTILOS DO ITEM DE CONFERÊNCIA --- */
         .item-conferencia {
             border: 1px solid #e0e0e0;
             border-left: 5px solid #ccc;
@@ -327,6 +322,16 @@
             cursor: not-allowed;
             box-shadow: none;
         }
+
+        /* --- CORREÇÃO DE ALINHAMENTO DO RODAPÉ --- */
+        .footer-central {
+            text-align: center; /* Já estava, mas garantindo */
+        }
+        .footer-central strong, .footer-autor {
+             display: block; /* Garante que os elementos de texto se comportem como bloco para centralização total */
+             width: 100%;
+        }
+
     </style>
 </head>
 <body>
@@ -349,7 +354,7 @@
           onerror="this.onerror=null; this.src='https://placehold.co/80x80/d90f23/ffffff?text=SIGMA'">
     
     <h1>Conferência de Materiais</h1>
-    <p class="subtitulo">Local: **LOCAL TESTE**</p>
+    <p class="subtitulo" id="local-posto-info">Local: **LOCAL TESTE**</p>
     
     <p id="militar-info" class="user-info-display">
         Carregando dados do conferente...
@@ -491,11 +496,21 @@
 
 
 <script>
-    // Dados fixos do militar (simulando a coleta do index.html)
+    // Função utilitária para ler parâmetros da URL
+    function getUrlParameter(name) {
+        name = name.replace(/[\[]/, '\\[').replace(/[\]]/, '\\]');
+        const regex = new RegExp('[\\?&]' + name + '=([^&#]*)');
+        const results = regex.exec(location.search);
+        return results === null ? '' : decodeURIComponent(results[1].replace(/\+/g, ' '));
+    }
+    
+    // Dados fixos do militar (Simulando a coleta do index.html)
     const userInfo = {
+        // Estes valores viriam da URL do index.html se estivessem ativos,
+        // mas aqui são fixos para o contexto do teste.
         postoGraduacao: "3º SGT",
         quadro: "QPCBM",
-        nomeGuerra: "JHONY",
+        nomeGuerra: "JHONATH", 
     };
     
     // Variável para armazenar o status de todos os itens
@@ -526,10 +541,10 @@
     function setItemStatus(button, status) {
         const item = button.closest('.item-conferencia');
         const setor = button.closest('.setor');
-        const statusIcon = item.querySelector('.status-icon');
         const alteracaoContainer = item.querySelector('.alteracao-container');
         const observacaoTextarea = alteracaoContainer.querySelector('textarea');
         const buttons = item.querySelectorAll('.action-button');
+        const statusIcon = item.querySelector('.status-icon');
 
         // Limpa classes e status anterior
         item.classList.remove('status-ok', 'status-alert');
@@ -570,20 +585,12 @@
         const setorStatusDiv = setor.querySelector('.setor-status');
         const items = setor.querySelectorAll('.item-conferencia');
         let completedItems = 0;
-        let hasAlert = false;
 
         items.forEach(item => {
             const status = item.dataset.status;
-            const observacao = item.querySelector('textarea')?.value.trim();
-
-            if (status === 'ok') {
+            // Para ser considerado completo, C/A precisa que a observação tenha sido salva (status 'C/A' no itemStatus)
+            if (status === 'ok' || itemStatus[item.dataset.id]?.status === 'C/A') {
                 completedItems++;
-            } else if (status === 'alert') {
-                // Para ser considerado completo, C/A precisa de observação salva (ou preenchida)
-                if (itemStatus[item.dataset.id]?.status === 'C/A' || observacao.length > 0) {
-                    completedItems++;
-                }
-                hasAlert = true;
             }
         });
 
@@ -620,9 +627,7 @@
         }
     }
     
-    // Funções de Salvar Item (C/A) e Listeners de Entrada
-    
-    // Salva a alteração descrita
+    // Salva a alteração descrita (Botão Salvar)
     function salvarItem(button) {
         const item = button.closest('.item-conferencia');
         const setor = button.closest('.setor');
@@ -635,13 +640,11 @@
             return;
         }
 
-        // Atualiza o status final do item
+        // Atualiza o status final do item e o status geral
         item.dataset.status = 'alert';
         itemStatus[item.dataset.id] = { status: 'C/A', obs: observacao };
 
-        // Atualiza o visual
-        item.classList.add('status-alert');
-        item.querySelector('.status-icon').className = 'status-icon alert';
+        // Oculta o container de alteração
         item.querySelector('.alteracao-container').style.display = 'none';
         
         // Atualiza o progresso do setor e geral
@@ -649,28 +652,30 @@
         updateOverallStatus();
     }
     
-    // Listener para o campo de texto (Observação)
-    document.querySelectorAll('.setor-content').forEach(content => {
-        content.addEventListener('input', function(e) {
-            if (e.target.tagName === 'TEXTAREA') {
-                const setor = e.target.closest('.setor');
-                // Chamamos updateSetorStatus para garantir que o contador 'completed' reflita o preenchimento da observação C/A
-                updateSetorStatus(setor); 
-                updateOverallStatus();
-            }
-        });
+    // Listener para o botão Finalizar
+    document.getElementById('btn-finalizar').addEventListener('click', function() {
+        alert('Conferência Finalizada! (A lógica de submissão do formulário viria aqui)');
+        // Aqui você adicionaria o código para coletar todos os dados e enviar.
     });
 
-    // Função de inicialização no carregamento da página
+
+    // Inicialização: Garante que os status estão corretos ao carregar a página
     window.onload = function() {
-        // 1. Injeta os dados do militar no cabeçalho
+        const urlLocal = getUrlParameter('local') || 'LOCAL TESTE';
+        const urlPosto = getUrlParameter('posto') || 'Posto BRAVO';
+        
+        // 1. Injeta os dados do militar no cabeçalho (Formatação solicitada: 3º SGT QPCBM JHONATH)
         const dataConferencia = new Date().toLocaleDateString('pt-BR'); 
         const militarInfoElement = document.getElementById('militar-info');
         militarInfoElement.innerHTML = `
             <strong>Conferente:</strong> ${userInfo.postoGraduacao} ${userInfo.quadro} ${userInfo.nomeGuerra} (${dataConferencia})
         `;
         
-        // 2. Inicializa o status de todos os itens como PENDENTE
+        // 2. Injeta os dados de Local/Posto (Formatação solicitada: LOCAL TESTE - Posto BRAVO)
+        const localPostoElement = document.getElementById('local-posto-info');
+        localPostoElement.textContent = `${urlLocal} - ${urlPosto}`;
+
+        // 3. Inicializa o status de todos os itens como PENDENTE
         document.querySelectorAll('.item-conferencia').forEach(item => {
             const statusIcon = item.querySelector('.status-icon');
             statusIcon.className = 'status-icon pending';
@@ -678,13 +683,12 @@
             itemStatus[item.dataset.id] = { status: 'PENDING', obs: '' };
         });
         
-        // 3. Define o listener de salvar para os botões C/A
+        // 4. Define o listener de salvar para os botões C/A
         document.querySelectorAll('.btn-salvar-alteracao').forEach(btn => {
             btn.setAttribute('onclick', 'salvarItem(this)');
         });
 
-
-        // 4. Inicializa o status geral
+        // 5. Inicializa o status geral
         document.querySelectorAll('.setor').forEach(updateSetorStatus);
         updateOverallStatus();
     };
