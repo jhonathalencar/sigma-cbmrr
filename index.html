@@ -392,7 +392,8 @@
             </select>
         </div>
     </div>
-            <div id="step-2-content" style="display: none;">
+
+        <div id="step-2-content" style="display: none;">
         <div class="form-group">
             <label for="local">Escolha o Local</label>
             <select id="local">
@@ -400,7 +401,8 @@
             </select>
         </div>
     </div>
-            <div id="step-3-content" style="display: none;">
+
+        <div id="step-3-content" style="display: none;">
         <h2>Passo 3: Identificação</h2>
 
                 <div class="form-group">
@@ -423,7 +425,7 @@
             <label for="quadro">Quadro</label>
             <select id="quadro">
                 <option value="" disabled selected>-- Selecione --</option>
-                            </select>
+            </select>
         </div>
 
                 <div class="form-group" id="nome-guerra-group" style="display: none;">
@@ -445,276 +447,275 @@
     </span>
 </div>
 
+
 <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        // Elementos do Passo 1 e 2 (existentes)
-        const postoSelect = document.getElementById('posto-servico');
-        const localSelect = document.getElementById('local');
-        const step2Content = document.getElementById('step-2-content');
+    document.addEventListener('DOMContentLoaded', function() {
+        // Elementos do Passo 1 e 2 (existentes)
+        const postoSelect = document.getElementById('posto-servico');
+        const localSelect = document.getElementById('local');
+        const step2Content = document.getElementById('step-2-content');
 
-        // Novos Elementos do Passo 3
-        const step3Content = document.getElementById('step-3-content');
-        const postoGraduacaoSelect = document.getElementById('posto-graduacao');
-        const quadroSelect = document.getElementById('quadro');
-        const quadroGroup = document.getElementById('quadro-group');
-        const nomeGuerraInput = document.getElementById('nome-guerra');
-        const nomeGuerraGroup = document.getElementById('nome-guerra-group');
-        const btnIr = document.getElementById('btn-ir');
-        
-        // Novos elementos do passo a passo (3 passos)
-        const stepIndicator = document.getElementById('step-indicator');
-        const stepItem1 = document.getElementById('step-item-1');
-        const stepItem2 = document.getElementById('step-item-2');
-        const stepItem3 = document.getElementById('step-item-3'); // Novo elemento
+        // Novos Elementos do Passo 3
+        const step3Content = document.getElementById('step-3-content');
+        const postoGraduacaoSelect = document.getElementById('posto-graduacao');
+        const quadroSelect = document.getElementById('quadro');
+        const quadroGroup = document.getElementById('quadro-group');
+        const nomeGuerraInput = document.getElementById('nome-guerra');
+        const nomeGuerraGroup = document.getElementById('nome-guerra-group');
+        const btnIr = document.getElementById('btn-ir');
+        
+        // Novos elementos do passo a passo (3 passos)
+        const stepIndicator = document.getElementById('step-indicator');
+        const stepItem1 = document.getElementById('step-item-1');
+        const stepItem2 = document.getElementById('step-item-2');
+        const stepItem3 = document.getElementById('step-item-3'); // Novo elemento
 
-        // MAPA DE FORMULÁRIOS (Existente)
-        const formsMap = {
-            'ALFA': {
-                'ABT-17': 'https://docs.google.com/forms/d/e/1FAIpQLScaIN4xEGq0FP_5s4cyMUP-OSqLyh9QZiUUAj1v2nMzymXfwg/viewform',
-                'RESGATE': 'https://docs.google.com/forms/d/e/1FAIpQLSe2CuhwbeVTt5OCm6nqWdM-kB0Xv-rChzmkA8byBqil7kHRdg/viewform',
-                'VTR CMD SOS': 'https://docs.google.com/forms/d/e/1FAIpQLSdGEdJBqe9Qadvv5TT5QfZ3Zc2KqJcbGcqwGUut0q796TJnXg/viewform',
-                'PERMANÊNCIA': 'https://docs.google.com/forms/d/e/1FAIpQLSckUGLpBsCIM_nFFS-BCPhAKbrI4CU5p6zo0juwy0Orcu0nTg/viewform',
-                'RESGATE EXTRA': 'https://docs.google.com/forms/d/e/1FAIpQLSf5TJ8w6_6DWTr1oxXgZFPIOuC0_jvpcJMF4ciqRJloaSk5WQ/viewform'
-            },
-            'BRAVO': {
-                'ABT-18': 'https://docs.google.com/forms/d/e/1FAIpQLSctaCjNUB2gDdNDXn3h4RiGOoch94CvAC5sj15D8YgzPT8Z9w/viewform',
-                'PERMANÊNCIA': 'https://docs.google.com/forms/d/e/1FAIpQLSd4paOCzbr3mjS3DEoFOBwmVTjVOrvk6NfspYJ-p1XcNtD7bg/viewform',
-                // Usamos este link de teste para o exemplo final
-                'LOCAL TESTE': 'conferencia_teste.html' 
-            },
-            'CHARLIE': {
-                'VTR SALVAMENTO': 'https://docs.google.com/forms/d/e/1FAIpQLSfzEdboDDlJJ24oYcr3uIgWxemDzbBfIn8YqQBMJag7A-eqWA/viewform',
-                'PERMANÊNCIA': 'https://docs.google.com/forms/d/e/1FAIpQLSdEpX-ak7Lv3VQSXNkw0JeMGndJfc97Ac_3PhO95M67UHJ3Dw/viewform'
-            },
-            'CARACARAÍ': {
-                'ABT-16': 'https://docs.google.com/forms/d/e/1FAIpQLScuEX-onfOntuiCrccAj5IcPHmgijyL6bTTgFxRDH6c4VPjDg/viewform',
-                'UR 13-23': 'https://docs.google.com/forms/d/e/1FAIpQLSdPS0HfYfTcQ1w-Wd2a8r1PGsd4U3DplCA1fCf6bPNNDrogUQ/viewform',
-                'ATPS 31-21 (GBS)': 'https://docs.google.com/forms/d/e/1FAIpQLSchXqGfiGeTDC2hIpnxgxIGLkxKZziYE5go7pVcYYHGnpj9ow/viewform',
-                'ATF 01-21 (GCIF)': 'https://docs.google.com/forms/d/e/1FAIpQLSdWgjlqDH6Dt2DwM7qRgMAeC2SOSIPShCDVBZXX-T5peyu8TA/viewform',
-                'PERMANÊNCIA': 'https://docs.google.com/forms/d/e/1FAIpQLScW4_vbkqZVKtNM02BBFMkMdpZStX-FF9OIEQkhrPS0ThVVgg/viewform'
-            },
-            'RORAINÓPOLIS': {
-                'ABT-15': 'https://docs.google.com/forms/d/e/1FAIpQLSdbGEFe2CMF_56N5QyXsoNHfBWlokvYTRf5s48_T84T_srt_w/viewform',
-                'UR 09-23': 'https://docs.google.com/forms/d/e/1FAIpQLScRW_T3DEMt0OLOjBD_gGxM3gSUW_igGN0KIJPXjMYTn8C62A/viewform'
-            },
-            'PACARAIMA': {
-                'POSTO PACARAIMA': 'LINK_DO_FORMS_PACARAIMA'
-            }
-        };
-        
-        // MAPA DE QUADROS
-        const quadrosMap = {
-            'Oficiais': ['QOCBM', 'QCOBM', 'QOSBM', 'QEOBM'],
-            'Pracas': ['QPCBM', 'QPSBM', 'QEPBM']
-        };
-        
-        // ------------------------------------------------------------------
-        //  FUNÇÕES DE CONTROLE
-        // ------------------------------------------------------------------
+        // MAPA DE FORMULÁRIOS (Existente)
+        const formsMap = {
+            'ALFA': {
+                'ABT-17': 'https://docs.google.com/forms/d/e/1FAIpQLScaIN4xEGq0FP_5s4cyMUP-OSqLyh9QZiUUAj1v2nMzymXfwg/viewform',
+                'RESGATE': 'https://docs.google.com/forms/d/e/1FAIpQLSe2CuhwbeVTt5OCm6nqWdM-kB0Xv-rChzmkA8byBqil7kHRdg/viewform',
+                'VTR CMD SOS': 'https://docs.google.com/forms/d/e/1FAIpQLSdGEdJBqe9Qadvv5TT5QfZ3Zc2KqJcbGcqwGUut0q796TJnXg/viewform',
+                'PERMANÊNCIA': 'https://docs.google.com/forms/d/e/1FAIpQLSckUGLpBsCIM_nFFS-BCPhAKbrI4CU5p6zo0juwy0Orcu0nTg/viewform',
+                'RESGATE EXTRA': 'https://docs.google.com/forms/d/e/1FAIpQLSf5TJ8w6_6DWTr1oxXgZFPIOuC0_jvpcJMF4ciqRJloaSk5WQ/viewform'
+            },
+            'BRAVO': {
+                'ABT-18': 'https://docs.google.com/forms/d/e/1FAIpQLSctaCjNUB2gDdNDXn3h4RiGOoch94CvAC5sj15D8YgzPT8Z9w/viewform',
+                'PERMANÊNCIA': 'https://docs.google.com/forms/d/e/1FAIpQLSd4paOCzbr3mjS3DEoFOBwmVTjVOrvk6NfspYJ-p1XcNtD7bg/viewform',
+                'LOCAL TESTE': 'conferencia_teste.html' 
+            },
+            'CHARLIE': {
+                'VTR SALVAMENTO': 'https://docs.google.com/forms/d/e/1FAIpQLSfzEdboDDlJJ24oYcr3uIgWxemDzbBfIn8YqQBMJag7A-eqWA/viewform',
+                'PERMANÊNCIA': 'https://docs.google.com/forms/d/e/1FAIpQLSdEpX-ak7Lv3VQSXNkw0JeMGndJfc97Ac_3PhO95M67UHJ3Dw/viewform'
+            },
+            'CARACARAÍ': {
+                'ABT-16': 'https://docs.google.com/forms/d/e/1FAIpQLScuEX-onfOntuiCrccAj5IcPHmgijyL6bTTgFxRDH6c4VPjDg/viewform',
+                'UR 13-23': 'https://docs.google.com/forms/d/e/1FAIpQLSdPS0HfYfTcQ1w-Wd2a8r1PGsd4U3DplCA1fCf6bPNNDrogUQ/viewform',
+                'ATPS 31-21 (GBS)': 'https://docs.google.com/forms/d/e/1FAIpQLSchXqGfiGeTDC2hIpnxgxIGLkxKZziYE5go7pVcYYHGnpj9ow/viewform',
+                'ATF 01-21 (GCIF)': 'https://docs.google.com/forms/d/e/1FAIpQLSdWgjlqDH6Dt2DwM7qRgMAeC2SOSIPShCDVBZXX-T5peyu8TA/viewform',
+                'PERMANÊNCIA': 'https://docs.google.com/forms/d/e/1FAIpQLScW4_vbkqZVKtNM02BBFMkMdpZStX-FF9OIEQkhrPS0ThVVgg/viewform'
+            },
+            'RORAINÓPOLIS': {
+                'ABT-15': 'https://docs.google.com/forms/d/e/1FAIpQLSdbGEFe2CMF_56N5QyXsoNHfBWlokvYTRf5s48_T84T_srt_w/viewform',
+                'UR 09-23': 'https://docs.google.com/forms/d/e/1FAIpQLScRW_T3DEMt0OLOjBD_gGxM3gSUW_igGN0KIJPXjMYTn8C62A/viewform'
+            },
+            'PACARAIMA': {
+                'POSTO PACARAIMA': 'LINK_DO_FORMS_PACARAIMA'
+            }
+        };
+        
+        // MAPA DE QUADROS
+        const quadrosMap = {
+            'Oficiais': ['QOCBM', 'QCOBM', 'QOSBM', 'QEOBM'],
+            'Pracas': ['QPCBM', 'QPSBM', 'QEPBM']
+        };
+        
+        // ------------------------------------------------------------------
+        //  FUNÇÕES DE CONTROLE
+        // ------------------------------------------------------------------
 
-        // Determina o estado visual do passo a passo
-        function updateStepIndicator(step) {
-            // Reset
-            stepIndicator.className = 'step-indicator';
-            stepItem1.className = 'step-item';
-            stepItem2.className = 'step-item';
-            stepItem3.className = 'step-item';
-            
-            // Ativa os passos com base no passo atual
-            if (step >= 1) {
-                stepItem1.classList.add(step > 1 ? 'complete' : 'active');
-            }
-            if (step >= 2) {
-                stepItem2.classList.add(step > 2 ? 'complete' : 'active');
-                stepIndicator.classList.add('progress-1');
-            }
-            if (step >= 3) {
-                stepItem3.classList.add(step > 3 ? 'complete' : 'active');
-                stepIndicator.classList.add('progress-2');
-            }
-            if (step === 4) {
-                stepIndicator.classList.add('progress-3'); // Todos completos (verde)
-            }
-        }
+        // Determina o estado visual do passo a passo
+        function updateStepIndicator(step) {
+            // Reset
+            stepIndicator.className = 'step-indicator';
+            stepItem1.className = 'step-item';
+            stepItem2.className = 'step-item';
+            stepItem3.className = 'step-item';
+            
+            // Ativa os passos com base no passo atual
+            if (step >= 1) {
+                stepItem1.classList.add(step > 1 ? 'complete' : 'active');
+            }
+            if (step >= 2) {
+                stepItem2.classList.add(step > 2 ? 'complete' : 'active');
+                stepIndicator.classList.add('progress-1');
+            }
+            if (step >= 3) {
+                stepItem3.classList.add(step > 3 ? 'complete' : 'active');
+                stepIndicator.classList.add('progress-2');
+            }
+            if (step === 4) {
+                stepIndicator.classList.add('progress-3'); // Todos completos (verde)
+            }
+        }
 
-        // Função principal de navegação (AGORA REVISA OS DADOS DO PASSO 3)
-        function navigateToForms() {
-            const formsLink = localSelect.value;
-            const posto = postoSelect.value;
-            const local = localSelect.options[localSelect.selectedIndex].textContent;
-            const pGrad = postoGraduacaoSelect.value;
-            const quadro = quadroSelect.value;
-            const nomeGuerra = nomeGuerraInput.value.toUpperCase();
+        function navigateToForms() {
+            const formsLink = localSelect.value;
+            const posto = postoSelect.value;
+            const local = localSelect.options[localSelect.selectedIndex].textContent;
+            const pGrad = postoGraduacaoSelect.value;
+            const quadro = quadroSelect.value;
+            const nomeGuerra = nomeGuerraInput.value.toUpperCase();
 
-            // Verifica se todos os campos obrigatórios do Passo 3 foram preenchidos
-            if (!pGrad || !quadro || nomeGuerra.length < 2) {
-                alert("Por favor, preencha todos os campos de identificação (Passo 3) antes de continuar.");
-                return;
-            }
-            
-            localSelect.blur(); 
-            btnIr.disabled = true; // Desabilita o botão ao clicar
+            // Verifica se todos os campos obrigatórios do Passo 3 foram preenchidos
+            if (!pGrad || !quadro || nomeGuerra.length < 2) {
+                alert("Por favor, preencha todos os campos de identificação (Passo 3) antes de continuar.");
+                return;
+            }
+            
+            localSelect.blur(); 
+            btnIr.disabled = true; // Desabilita o botão ao clicar
 
-            // Constrói a URL com os Query Parameters (dados do Passo 1, 2 e 3)
-            const params = new URLSearchParams();
-            params.append('entry.PARAM_POSTO_SERV', posto);  
-            params.append('entry.PARAM_LOCAL_CONF', local);
-            params.append('entry.PARAM_POSTO_GRAD', pGrad);
-            params.append('entry.PARAM_QUADRO', quadro);
-            params.append('entry.PARAM_NOME_GUERRA', nomeGuerra);
-            
-            // OBS: Os parâmetros 'entry.PARAM_XXX' devem ser ajustados para os nomes reais dos campos no seu Google Forms
-            // Se o link for um HTML local, apenas abre (usando o JS para obter os dados se necessário)
-            const finalLink = formsLink.startsWith('http') ? `${formsLink}&${params.toString()}` : formsLink;
-            
-            if (formsLink) {
-                // Abre o link na mesma janela (ou nova, dependendo da necessidade)
-                window.open(finalLink, '_self');
-            } else {
-                console.error('Atenção: O link não foi configurado.');
-            }
-        }
-        
-        // ------------------------------------------------------------------
-        //  FUNÇÕES DE EXIBIÇÃO
-        // ------------------------------------------------------------------
+            // Constrói a URL com os Query Parameters (dados do Passo 1, 2 e 3)
+            const params = new URLSearchParams();
+            params.append('entry.PARAM_POSTO_SERV', posto);  
+            params.append('entry.PARAM_LOCAL_CONF', local);
+            params.append('entry.PARAM_POSTO_GRAD', pGrad);
+            params.append('entry.PARAM_QUADRO', quadro);
+            params.append('entry.PARAM_NOME_GUERRA', nomeGuerra);
+            
+            // OBS: Os parâmetros 'entry.PARAM_XXX' devem ser ajustados para os nomes reais dos campos no seu Google Forms
+            
+            // Se o link for um HTML local, apenas abre (usando o JS para obter os dados se necessário)
+            const finalLink = formsLink.startsWith('http') ? `${formsLink}&${params.toString()}` : formsLink;
+            
+            if (formsLink) {
+                window.open(finalLink, '_self');
+            } else {
+                console.error('Atenção: O link não foi configurado.');
+            }
+        }
+        
+        // ------------------------------------------------------------------
+        //  FUNÇÕES DE EXIBIÇÃO
+        // ------------------------------------------------------------------
 
-        // 1. Listener para o menu 'Posto de Serviço' (Passo 1)
-        postoSelect.addEventListener('change', function() {
-            // Lógica existente: Preenche opções do Passo 2
-            const selectedPosto = postoSelect.value;
-            localSelect.innerHTML = '<option value="" disabled selected>-- Selecione um Local --</option>'; 
-            postoSelect.blur(); 
-            
-            // Esconde o Passo 3, desabilita o botão final
-            step3Content.style.display = 'none';
-            btnIr.disabled = true;
+        // 1. Listener para o menu 'Posto de Serviço' (Passo 1)
+        postoSelect.addEventListener('change', function() {
+            const selectedPosto = postoSelect.value;
+            localSelect.innerHTML = '<option value="" disabled selected>-- Selecione um Local --</option>';  
+            postoSelect.blur(); 
+            
+            // Oculta Passo 2 e Passo 3, reseta o indicador
+            step2Content.style.display = 'none';
+            step3Content.style.display = 'none';
+            btnIr.disabled = true;
+            updateStepIndicator(0);
 
-            if (selectedPosto && formsMap[selectedPosto]) {
-                const locais = formsMap[selectedPosto];
-                for (const localName in locais) {
-                    const option = document.createElement('option');
-                    option.value = locais[localName];
-                    option.textContent = localName;
-                    localSelect.appendChild(option);
-                }
+            if (selectedPosto && formsMap[selectedPosto]) {
+                const locais = formsMap[selectedPosto];
+                for (const localName in locais) {
+                    const option = document.createElement('option');
+                    option.value = locais[localName];
+                    option.textContent = localName;
+                    localSelect.appendChild(option);
+                }
 
-                // MOSTRA O PASSO 2
-                step2Content.style.display = 'block';
-                updateStepIndicator(1); // Passo 1 Completo, Passo 2 Ativo
-            } else {
-                // ESCONDE PASSO 2 e 3
-                step2Content.style.display = 'none';
-                updateStepIndicator(0); // Volta ao início
-            }
+                // MOSTRA O PASSO 2
+                step2Content.style.display = 'block';
+                updateStepIndicator(1); // Passo 1 Completo, Passo 2 Ativo
+            }
+        });
+        
+        // 2. Listener para o menu 'Local' (Passo 2)
+        localSelect.addEventListener('change', function() {
+            const isLocalSelected = !!localSelect.value;
+            localSelect.blur(); 
 
-            localSelect.value = "";
-        });
-        
-        // 2. Listener para o menu 'Local' (Passo 2)
-        localSelect.addEventListener('change', function() {
-            const isLocalSelected = !!localSelect.value;
-            localSelect.blur(); 
+            if (isLocalSelected) {
+                // MOSTRA O PASSO 3
+                step3Content.style.display = 'block';
+                updateStepIndicator(2); // Passo 2 Completo, Passo 3 Ativo
+                btnIr.disabled = true; // Botão desabilitado até o Passo 3 estar completo
 
-            if (isLocalSelected) {
-                // MOSTRA O PASSO 3
-                step3Content.style.display = 'block';
-                updateStepIndicator(2); // Passo 2 Completo, Passo 3 Ativo
-                btnIr.disabled = true; // Botão desabilitado até o Passo 3 estar completo
+                // Se o Passo 3 for exibido, garante que apenas o primeiro campo (Posto/Graduação) esteja visível
+                if (!postoGraduacaoSelect.value) {
+                    quadroGroup.style.display = 'none';
+                    nomeGuerraGroup.style.display = 'none';
+                }
+            } else {
+                // ESCONDE PASSO 3
+                step3Content.style.display = 'none';
+                updateStepIndicator(1); // Volta para o Passo 2 Ativo
+                btnIr.disabled = true;
+            }
+        });
+        
+        // 3. Listener para o menu 'Posto/Graduação' (Passo 3a)
+        postoGraduacaoSelect.addEventListener('change', function() {
+            const pGrad = postoGraduacaoSelect.value;
+            postoGraduacaoSelect.blur();
+            btnIr.disabled = true; // Desabilita o botão final
 
-                // Garante que o Posto/Graduação esteja selecionado para o próximo campo
-                if (!postoGraduacaoSelect.value) {
-                    quadroGroup.style.display = 'none';
-                    nomeGuerraGroup.style.display = 'none';
-                }
+            // Define quais opções de Quadro carregar
+            let options = [];
+            if (['CAP', '1º TEN', '2º TEN'].includes(pGrad)) {
+                options = quadrosMap['Oficiais'];
+            } else if (pGrad) {
+                options = quadrosMap['Pracas'];
+            }
 
-            } else {
-                // ESCONDE PASSO 3
-                step3Content.style.display = 'none';
-                updateStepIndicator(1); // Volta para o Passo 2 Ativo
-                btnIr.disabled = true;
-            }
-        });
-        
-        // 3. Listener para o menu 'Posto/Graduação' (Passo 3a)
-        postoGraduacaoSelect.addEventListener('change', function() {
-            const pGrad = postoGraduacaoSelect.value;
-            postoGraduacaoSelect.blur();
-            btnIr.disabled = true; // Desabilita o botão final
+            // Limpa e preenche o select do Quadro
+            quadroSelect.innerHTML = '<option value="" disabled selected>-- Selecione --</option>';
+            options.forEach(quadro => {
+                const option = document.createElement('option');
+                option.value = quadro;
+                option.textContent = quadro;
+                quadroSelect.appendChild(option);
+            });
 
-            // Define quais opções de Quadro carregar
-            let options = [];
-            if (['CAP', '1º TEN', '2º TEN'].includes(pGrad)) {
-                options = quadrosMap['Oficiais'];
-            } else if (pGrad) {
-                options = quadrosMap['Pracas'];
-            }
+            // MOSTRA CAMPO QUADRO
+            quadroGroup.style.display = 'block';
+            
+            // Reseta e esconde o campo Nome de Guerra, forçando o fluxo
+            nomeGuerraGroup.style.display = 'none';
+            nomeGuerraInput.value = ''; 
 
-            // Limpa e preenche o select do Quadro
-            quadroSelect.innerHTML = '<option value="" disabled selected>-- Selecione --</option>';
-            options.forEach(quadro => {
-                const option = document.createElement('option');
-                option.value = quadro;
-                option.textContent = quadro;
-                quadroSelect.appendChild(option);
-            });
+            updateStepIndicator(2); // Mantém no Passo 3 Ativo
+        });
 
-            // MOSTRA CAMPO QUADRO e esconde o próximo
-            quadroGroup.style.display = 'block';
-            nomeGuerraGroup.style.display = 'none';
-            nomeGuerraInput.value = ''; // Limpa o nome de guerra
-            updateStepIndicator(2); // Mantém no Passo 3, pois ainda não está completo
-        });
+        // 4. Listener para o menu 'Quadro' (Passo 3b)
+        quadroSelect.addEventListener('change', function() {
+            const isQuadroSelected = !!quadroSelect.value;
+            quadroSelect.blur();
+            btnIr.disabled = true; // Desabilita o botão final
 
-        // 4. Listener para o menu 'Quadro' (Passo 3b)
-        quadroSelect.addEventListener('change', function() {
-            const isQuadroSelected = !!quadroSelect.value;
-            quadroSelect.blur();
-            btnIr.disabled = true; // Desabilita o botão final
+            if (isQuadroSelected) {
+                // MOSTRA CAMPO NOME DE GUERRA
+                nomeGuerraGroup.style.display = 'block';
+                nomeGuerraInput.focus();
+                updateStepIndicator(2); // Mantém no Passo 3 Ativo
+            } else {
+                nomeGuerraGroup.style.display = 'none';
+            }
+        });
 
-            if (isQuadroSelected) {
-                // MOSTRA CAMPO NOME DE GUERRA
-                nomeGuerraGroup.style.display = 'block';
-                nomeGuerraInput.focus();
-                updateStepIndicator(2); // Mantém no Passo 3, pois ainda não está completo
-            } else {
-                nomeGuerraGroup.style.display = 'none';
-            }
-        });
+        // 5. Listener para o campo 'Nome de Guerra' (Passo 3c - Último)
+        nomeGuerraInput.addEventListener('input', function() {
+            // Força letras maiúsculas
+            nomeGuerraInput.value = nomeGuerraInput.value.toUpperCase();
 
-        // 5. Listener para o campo 'Nome de Guerra' (Passo 3c - Último)
-        nomeGuerraInput.addEventListener('input', function() {
-            // Força letras maiúsculas
-            nomeGuerraInput.value = nomeGuerraInput.value.toUpperCase();
+            // Verifica se está preenchido (mínimo de 2 caracteres)
+            const isNomeGuerraComplete = nomeGuerraInput.value.trim().length > 1;
 
-            // Verifica se está preenchido (mínimo de 2 caracteres)
-            const isNomeGuerraComplete = nomeGuerraInput.value.trim().length > 1;
+            btnIr.disabled = !isNomeGuerraComplete; // Habilita o botão final
 
-            btnIr.disabled = !isNomeGuerraComplete; // Habilita o botão final
+            if (isNomeGuerraComplete) {
+                updateStepIndicator(3); // Passo 3 Completo (Passo 4 no indicador visual)
+            } else {
+                updateStepIndicator(2); // Volta ao Passo 3 Ativo (se estiver incompleto)
+            }
+        });
+        
+        // 6. Listener para o botão 'INICIAR CONFERÊNCIA'
+        btnIr.addEventListener('click', navigateToForms);
 
-            if (isNomeGuerraComplete) {
-                updateStepIndicator(3); // Passo 3 Completo (Todos os passos estão completos)
-            } else {
-                updateStepIndicator(2); // Volta ao Passo 3 Ativo (se estiver incompleto)
-            }
-        });
-        
-        // 6. Listener para o botão 'INICIAR CONFERÊNCIA' (ÚNICO ponto que chama a navegação)
-        btnIr.addEventListener('click', navigateToForms);
+        // ------------------------------------------------------------------
+        //  INICIALIZAÇÃO
+        // ------------------------------------------------------------------
 
-        // ------------------------------------------------------------------
-        //  INICIALIZAÇÃO
-        // ------------------------------------------------------------------
-
-        // Inicializa o estado (Garante que o passo 2 e 3 estejam ocultos)
-        postoSelect.dispatchEvent(new Event('change')); // Simula um "change" para inicializar o Passo 2
-        updateStepIndicator(0); // Garante que começa no passo 1
-
-        // Adiciona o listener para forçar maiúsculas no input de nome de guerra (garantia)
-        nomeGuerraInput.addEventListener('change', function() {
-            this.value = this.value.toUpperCase();
-        });
-    });
+        // Garante que o passo 2 e 3 estejam ocultos ao carregar
+        step2Content.style.display = 'none';
+        step3Content.style.display = 'none';
+        
+        // Adiciona o listener para forçar maiúsculas no input de nome de guerra (garantia)
+        nomeGuerraInput.addEventListener('change', function() {
+            this.value = this.value.toUpperCase();
+        });
+        
+        // Inicializa o Step Indicator no Passo 1
+        updateStepIndicator(0); 
+    });
 </script>
 
 </body>
