@@ -77,7 +77,6 @@
             box-sizing: border-box;
         }
 
-        /* CORREÇÃO: Força o tamanho do logo principal e garante centralização */
         .logo {
             width: 80px; 
             height: auto;
@@ -281,6 +280,16 @@
             display: none; 
             text-align: left;
         }
+        
+        /* NOVO ESTILO PARA EXIBIÇÃO DA OBS SALVA */
+        .descricao-salva {
+            font-style: italic;
+            color: #d90f23;
+            font-size: 0.9em;
+            margin-top: 5px;
+            display: none;
+        }
+
 
         .alteracao-container label {
             display: block;
@@ -300,6 +309,18 @@
             resize: vertical;
             min-height: 50px;
             margin-bottom: 10px;
+        }
+        
+        .btn-salvar-alteracao {
+            background-color: #800020;
+            color: white;
+            font-weight: bold;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            width: 100%;
+            transition: background-color 0.3s;
         }
         
         #btn-finalizar {
@@ -328,11 +349,10 @@
             text-align: center; /* Já estava, mas garantindo */
         }
         .footer-central strong, .footer-autor {
-             display: block; /* Garante que os elementos de texto se comportem como bloco para centralização total */
+             display: block; 
              width: 100%;
              text-align: center;
         }
-
     </style>
 </head>
 <body>
@@ -381,9 +401,11 @@
                     <button class="action-button sa-ok" onclick="setItemStatus(this, 'ok')">S/A</button>
                     <button class="action-button ca-alert" onclick="setItemStatus(this, 'alert')">C/A</button>
                 </div>
+                <p class="descricao-salva" data-text-id="1-1"></p>
                 <div class="alteracao-container">
                     <label>Observação (Obrigatória para C/A):</label>
-                    <textarea placeholder="Descreva o tipo de alteração ou falta."></textarea>
+                    <textarea data-id="1-1" placeholder="Descreva o tipo de alteração ou falta."></textarea>
+                    <button type="button" class="btn-salvar-alteracao" onclick="salvarItem(this)">SALVAR</button>
                 </div>
             </div>
 
@@ -397,9 +419,11 @@
                     <button class="action-button sa-ok" onclick="setItemStatus(this, 'ok')">S/A</button>
                     <button class="action-button ca-alert" onclick="setItemStatus(this, 'alert')">C/A</button>
                 </div>
+                <p class="descricao-salva" data-text-id="1-2"></p>
                 <div class="alteracao-container">
                     <label>Observação (Obrigatória para C/A):</label>
-                    <textarea placeholder="Descreva o tipo de alteração ou falta."></textarea>
+                    <textarea data-id="1-2" placeholder="Descreva o tipo de alteração ou falta."></textarea>
+                    <button type="button" class="btn-salvar-alteracao" onclick="salvarItem(this)">SALVAR</button>
                 </div>
             </div>
 
@@ -413,9 +437,11 @@
                     <button class="action-button sa-ok" onclick="setItemStatus(this, 'ok')">S/A</button>
                     <button class="action-button ca-alert" onclick="setItemStatus(this, 'alert')">C/A</button>
                 </div>
+                <p class="descricao-salva" data-text-id="1-3"></p>
                 <div class="alteracao-container">
                     <label>Observação (Obrigatória para C/A):</label>
-                    <textarea placeholder="Descreva o tipo de alteração ou falta."></textarea>
+                    <textarea data-id="1-3" placeholder="Descreva o tipo de alteração ou falta."></textarea>
+                    <button type="button" class="btn-salvar-alteracao" onclick="salvarItem(this)">SALVAR</button>
                 </div>
             </div>
 
@@ -441,9 +467,11 @@
                     <button class="action-button sa-ok" onclick="setItemStatus(this, 'ok')">S/A</button>
                     <button class="action-button ca-alert" onclick="setItemStatus(this, 'alert')">C/A</button>
                 </div>
+                <p class="descricao-salva" data-text-id="2-1"></p>
                 <div class="alteracao-container">
                     <label>Observação (Obrigatória para C/A):</label>
-                    <textarea placeholder="Descreva o tipo de alteração ou falta."></textarea>
+                    <textarea data-id="2-1" placeholder="Descreva o tipo de alteração ou falta."></textarea>
+                    <button type="button" class="btn-salvar-alteracao" onclick="salvarItem(this)">SALVAR</button>
                 </div>
             </div>
 
@@ -457,9 +485,11 @@
                     <button class="action-button sa-ok" onclick="setItemStatus(this, 'ok')">S/A</button>
                     <button class="action-button ca-alert" onclick="setItemStatus(this, 'alert')">C/A</button>
                 </div>
+                <p class="descricao-salva" data-text-id="2-2"></p>
                 <div class="alteracao-container">
                     <label>Observação (Obrigatória para C/A):</label>
-                    <textarea placeholder="Descreva o tipo de alteração ou falta."></textarea>
+                    <textarea data-id="2-2" placeholder="Descreva o tipo de alteração ou falta."></textarea>
+                    <button type="button" class="btn-salvar-alteracao" onclick="salvarItem(this)">SALVAR</button>
                 </div>
             </div>
 
@@ -473,9 +503,11 @@
                     <button class="action-button sa-ok" onclick="setItemStatus(this, 'ok')">S/A</button>
                     <button class="action-button ca-alert" onclick="setItemStatus(this, 'alert')">C/A</button>
                 </div>
+                <p class="descricao-salva" data-text-id="2-3"></p>
                 <div class="alteracao-container">
                     <label>Observação (Obrigatória para C/A):</label>
-                    <textarea placeholder="Descreva o tipo de alteração ou falta."></textarea>
+                    <textarea data-id="2-3" placeholder="Descreva o tipo de alteração ou falta."></textarea>
+                    <button type="button" class="btn-salvar-alteracao" onclick="salvarItem(this)">SALVAR</button>
                 </div>
             </div>
 
@@ -496,23 +528,26 @@
 </div>
 
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+
 <script>
     // Função utilitária para ler parâmetros da URL
-function getUrlParameter(name) {
-    name = name.replace(/[\[]/, '\\[').replace(/[\]]/, '\\]');
-    const regex = new RegExp('[\\?&]' + name + '=([^&#]*)');
-    const results = regex.exec(location.search);
-    // Usa decodeURIComponent para garantir que '3º SGT' ou 'LOCAL TESTE' não fiquem codificados
-    return results === null ? '' : decodeURIComponent(results[1].replace(/\+/g, ' '));
-}
-
-// Dados fixos DO MILITAR (Simulando a coleta do index.html se a URL falhar)
-const userInfo = {
-    // CORRIGIDO: Lendo 'quadro_mil' (que é o nome usado no index.html)
-    postoGraduacao: getUrlParameter('posto_grad') || "SD", 
-    quadro: getUrlParameter('quadro_mil') || "QPCBM", 
-    nomeGuerra: getUrlParameter('nome_guerra') || "PEDRO", 
-};
+    function getUrlParameter(name) {
+        name = name.replace(/[\[]/, '\\[').replace(/[\]]/, '\\]');
+        const regex = new RegExp('[\\?&]' + name + '=([^&#]*)');
+        const results = regex.exec(location.search);
+        // Usa decodeURIComponent para garantir que '3º SGT' ou 'LOCAL TESTE' não fiquem codificados
+        return results === null ? '' : decodeURIComponent(results[1].replace(/\+/g, ' '));
+    }
+    
+    // Dados do militar (LÊ DA URL. Se falhar, usa dados padrão como fallback)
+    const userInfo = {
+        postoGraduacao: getUrlParameter('posto_grad') || "CAP",
+        quadro: getUrlParameter('quadro_mil') || "QOCBM", // Espera 'quadro_mil' do index.html
+        nomeGuerra: getUrlParameter('nome_guerra') || "SOUSA", 
+    };
     
     // Variável para armazenar o status de todos os itens
     let itemStatus = {}; 
@@ -533,6 +568,12 @@ const userInfo = {
             content.classList.remove('expanded');
             arrow.textContent = '►';
         } else {
+            // Fecha todos os outros setores antes de expandir o atual
+            document.querySelectorAll('.setor-content.expanded').forEach(openContent => {
+                openContent.classList.remove('expanded');
+                openContent.previousElementSibling.querySelector('.arrow').textContent = '►';
+            });
+
             content.classList.add('expanded');
             arrow.textContent = '▼';
         }
@@ -555,29 +596,36 @@ const userInfo = {
         buttons.forEach(btn => btn.classList.remove('active'));
         button.classList.add('active');
 
+        // Oculta/limpa observação
+        item.querySelector('.descricao-salva').style.display = 'none';
+        item.querySelector('.descricao-salva').textContent = '';
+        alteracaoContainer.style.display = 'none';
+        
         if (status === 'ok') {
             // S/A (Sem Alteração)
             item.classList.add('status-ok');
             statusIcon.classList.add('ok');
-            alteracaoContainer.style.display = 'none';
-            observacaoTextarea.value = ''; // Limpa a observação
+            observacaoTextarea.value = ''; // Limpa a observação (se houver)
             itemStatus[item.dataset.id] = { status: 'S/A', obs: '' };
         } else if (status === 'alert') {
-            // C/A (Com Alteração) - Requer observação, salva só após preencher
+            // C/A (Com Alteração) - Abre a área de observação
             item.classList.add('status-alert');
             statusIcon.classList.add('alert');
             alteracaoContainer.style.display = 'block';
-            observacaoTextarea.focus();
-            // Marca como pendente/em alteração no itemStatus até salvar
+            
+            // Marca como pendente no itemStatus até salvar (Para não contar no completed)
             itemStatus[item.dataset.id] = { status: 'PENDING_CA', obs: '' };
-        } else {
-            // Caso de reset ou pendente
-            itemStatus[item.dataset.id] = { status: 'PENDING', obs: '' };
+            observacaoTextarea.focus();
+            
+            // Não atualiza o contador de 'completed' até que o botão SALVAR seja pressionado
+            updateSetorStatus(setor);
+            return;
         }
 
-        // Atualiza a exibição e o progresso
+        // Atualiza a exibição e avança
         updateSetorStatus(setor);
         updateOverallStatus();
+        checkSetorCompletion(setor, item.dataset.id);
     }
     
     // Função para atualizar o contador de um setor
@@ -588,11 +636,10 @@ const userInfo = {
         let completedItems = 0;
 
         items.forEach(item => {
-            const status = item.dataset.status;
             const itemID = item.dataset.id;
-
-            // Considera completo se for S/A ou se for C/A JÁ SALVO
-            if (status === 'ok' || itemStatus[itemID]?.status === 'C/A') {
+            
+            // Considera completo se for S/A (status 'ok') OU se tiver status 'C/A' (salvo)
+            if (item.dataset.status === 'ok' || itemStatus[itemID]?.status === 'C/A') {
                 completedItems++;
             }
         });
@@ -635,6 +682,7 @@ const userInfo = {
         const item = button.closest('.item-conferencia');
         const setor = button.closest('.setor');
         const observacaoTextarea = item.querySelector('textarea');
+        const descricaoSalvaEl = item.querySelector('.descricao-salva');
         const observacao = observacaoTextarea.value.trim();
 
         if (observacao.length < 5) {
@@ -643,38 +691,89 @@ const userInfo = {
             return;
         }
 
-        // Atualiza o status final do item e o status geral
+        // 1. Atualiza o status final do item
         item.dataset.status = 'alert';
         itemStatus[item.dataset.id] = { status: 'C/A', obs: observacao };
 
-        // Oculta o container de alteração
+        // 2. Oculta o container de alteração e exibe o texto salvo
         item.querySelector('.alteracao-container').style.display = 'none';
-        
-        // Atualiza o progresso do setor e geral
+        descricaoSalvaEl.textContent = `Observação: ${observacao}`;
+        descricaoSalvaEl.style.display = 'block';
+
+        // 3. Atualiza o progresso do setor e avança
         updateSetorStatus(setor);
         updateOverallStatus();
+        checkSetorCompletion(setor, item.dataset.id);
     }
     
-    // Listener para o botão Finalizar
-    document.getElementById('btn-finalizar').addEventListener('click', function() {
-        alert('Conferência Finalizada! (A lógica de submissão do formulário viria aqui)');
-        // Aqui você adicionaria o código para coletar todos os dados e enviar.
-    });
+    // Verifica se o setor terminou e avança
+    function checkSetorCompletion(currentSetor, currentItemId) {
+        const totalItems = parseInt(currentSetor.dataset.totalItems);
+        const completedItems = parseInt(currentSetor.querySelector('.setor-status').dataset.completed);
+
+        if (completedItems === totalItems) {
+            // Setor atual completo, avança para o próximo
+            autoAdvanceSetor(currentSetor.dataset.id);
+        } else {
+            // Avança o foco para o próximo item dentro do mesmo setor
+            focusNextItem(currentItemId);
+        }
+    }
+    
+    // Lógica para avançar o foco para o próximo item
+    function focusNextItem(currentItemId) {
+        const allItems = Array.from(document.querySelectorAll('.item-conferencia'));
+        const currentIndex = allItems.findIndex(item => item.dataset.id === currentItemId);
+
+        for (let i = currentIndex + 1; i < allItems.length; i++) {
+            const nextItem = allItems[i];
+            
+            // Só avança o foco se o item não estiver conferido
+            if (nextItem.dataset.status === 'pending') {
+                nextItem.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                return;
+            }
+            // Se já estiver marcado, continua procurando o próximo PENDENTE
+        }
+        // Se chegou ao fim, rola para o botão finalizar (se aplicável)
+        document.getElementById('btn-finalizar').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+
+    // Lógica para retrair o setor atual e expandir o próximo
+    function autoAdvanceSetor(currentSetorId) {
+        const currentSetorEl = document.querySelector(`.setor[data-id="${currentSetorId}"]`);
+        
+        // 1. Retrai o setor atual
+        currentSetorEl.querySelector('.setor-header').click(); 
+
+        const currentSetorIndex = setorIds.indexOf(currentSetorId);
+        const nextSetorId = setorIds[currentSetorIndex + 1];
+
+        if (nextSetorId) {
+            // 2. Expande o próximo setor
+            const nextSetorEl = document.querySelector(`.setor[data-id="${nextSetorId}"]`);
+            nextSetorEl.querySelector('.setor-header').click(); 
+        }
+    }
 
 
     // Inicialização: Garante que os status estão corretos ao carregar a página
     window.onload = function() {
+        // Leitura e fallback dos dados do militar (uso de userInfo atualizado)
+        const militarCompleto = `${userInfo.postoGraduacao} ${userInfo.quadro} ${userInfo.nomeGuerra}`;
+        const dataConferencia = new Date().toLocaleDateString('pt-BR'); 
+        
+        // Leitura e fallback dos dados de local
         const urlLocal = getUrlParameter('local') || '**LOCAL TESTE**';
         const urlPosto = getUrlParameter('posto') || 'Posto BRAVO';
         
-        // 1. Injeta os dados do militar no cabeçalho (Formatação solicitada)
-        const dataConferencia = new Date().toLocaleDateString('pt-BR'); 
+        // 1. Injeta os dados do militar no cabeçalho
         const militarInfoElement = document.getElementById('militar-info');
         militarInfoElement.innerHTML = `
-            <strong>Conferente:</strong> ${userInfo.postoGraduacao} ${userInfo.quadro} ${userInfo.nomeGuerra} (${dataConferencia})
+            <strong>Conferente:</strong> ${militarCompleto} (${dataConferencia})
         `;
         
-        // 2. Injeta os dados de Local/Posto (Formatação solicitada)
+        // 2. Injeta os dados de Local/Posto (Formatação solicitada: LOCAL TESTE - Posto BRAVO)
         const localPostoElement = document.getElementById('local-posto-info');
         localPostoElement.textContent = `${urlLocal} - ${urlPosto}`;
 
@@ -683,17 +782,12 @@ const userInfo = {
             const statusIcon = item.querySelector('.status-icon');
             statusIcon.className = 'status-icon pending';
             item.dataset.status = 'pending';
-            itemStatus[item.dataset.id] = { status: 'PENDING', obs: '' };
+            // Preenche o itemStatus com PENDENTE para que o contador comece em 0/Total
+            itemStatus[item.dataset.id] = { status: 'PENDING', obs: '' }; 
         });
         
-        // 4. Define o listener de salvar para os botões C/A
-        document.querySelectorAll('.btn-salvar-alteracao').forEach(btn => {
-            btn.setAttribute('onclick', 'salvarItem(this)');
-        });
-
-        // 5. Inicializa o status geral
+        // 4. Inicializa o status geral
         document.querySelectorAll('.setor').forEach(updateSetorStatus);
         updateOverallStatus();
     };
 </script>
-
