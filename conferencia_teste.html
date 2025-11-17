@@ -330,6 +330,7 @@
         .footer-central strong, .footer-autor {
              display: block; /* Garante que os elementos de texto se comportem como bloco para centralização total */
              width: 100%;
+             text-align: center;
         }
 
     </style>
@@ -354,7 +355,7 @@
           onerror="this.onerror=null; this.src='https://placehold.co/80x80/d90f23/ffffff?text=SIGMA'">
     
     <h1>Conferência de Materiais</h1>
-    <p class="subtitulo" id="local-posto-info">Local: **LOCAL TESTE**</p>
+    <p class="subtitulo" id="local-posto-info">Carregando Local - Posto...</p>
     
     <p id="militar-info" class="user-info-display">
         Carregando dados do conferente...
@@ -501,16 +502,15 @@
         name = name.replace(/[\[]/, '\\[').replace(/[\]]/, '\\]');
         const regex = new RegExp('[\\?&]' + name + '=([^&#]*)');
         const results = regex.exec(location.search);
+        // Usa decodeURIComponent para garantir que '3º SGT' ou 'LOCAL TESTE' não fiquem codificados
         return results === null ? '' : decodeURIComponent(results[1].replace(/\+/g, ' '));
     }
     
-    // Dados fixos do militar (Simulando a coleta do index.html)
+    // Dados fixos DO MILITAR (Simulando a coleta do index.html se a URL falhar)
     const userInfo = {
-        // Estes valores viriam da URL do index.html se estivessem ativos,
-        // mas aqui são fixos para o contexto do teste.
-        postoGraduacao: "3º SGT",
-        quadro: "QPCBM",
-        nomeGuerra: "JHONATH", 
+        postoGraduacao: getUrlParameter('posto_grad') || "3º SGT",
+        quadro: getUrlParameter('quadro') || "QPCBM",
+        nomeGuerra: getUrlParameter('nome_guerra') || "JHONATH", 
     };
     
     // Variável para armazenar o status de todos os itens
@@ -588,8 +588,10 @@
 
         items.forEach(item => {
             const status = item.dataset.status;
-            // Para ser considerado completo, C/A precisa que a observação tenha sido salva (status 'C/A' no itemStatus)
-            if (status === 'ok' || itemStatus[item.dataset.id]?.status === 'C/A') {
+            const itemID = item.dataset.id;
+
+            // Considera completo se for S/A ou se for C/A JÁ SALVO
+            if (status === 'ok' || itemStatus[itemID]?.status === 'C/A') {
                 completedItems++;
             }
         });
@@ -661,17 +663,17 @@
 
     // Inicialização: Garante que os status estão corretos ao carregar a página
     window.onload = function() {
-        const urlLocal = getUrlParameter('local') || 'LOCAL TESTE';
+        const urlLocal = getUrlParameter('local') || '**LOCAL TESTE**';
         const urlPosto = getUrlParameter('posto') || 'Posto BRAVO';
         
-        // 1. Injeta os dados do militar no cabeçalho (Formatação solicitada: 3º SGT QPCBM JHONATH)
+        // 1. Injeta os dados do militar no cabeçalho (Formatação solicitada)
         const dataConferencia = new Date().toLocaleDateString('pt-BR'); 
         const militarInfoElement = document.getElementById('militar-info');
         militarInfoElement.innerHTML = `
             <strong>Conferente:</strong> ${userInfo.postoGraduacao} ${userInfo.quadro} ${userInfo.nomeGuerra} (${dataConferencia})
         `;
         
-        // 2. Injeta os dados de Local/Posto (Formatação solicitada: LOCAL TESTE - Posto BRAVO)
+        // 2. Injeta os dados de Local/Posto (Formatação solicitada)
         const localPostoElement = document.getElementById('local-posto-info');
         localPostoElement.textContent = `${urlLocal} - ${urlPosto}`;
 
