@@ -346,8 +346,8 @@
         
         /* Descrição salva individual por tombamento */
         .tombamento-descricao-salva {
-            font-size: 0.85em;
-            margin-top: 10px;
+            font-size: 0.9em;
+            margin-top: 5px;
             display: none;
             padding-top: 5px;
             border-top: 1px dashed #ddd;
@@ -807,7 +807,7 @@
         descricaoSalvaEl.innerHTML = `
             <span class="obs-titulo">Alteração encontrada:</span> 
             <span class="obs-texto">${observacao}</span>
-            <span class="obs-titulo"> (Tomb.: ${tombId})</span> `;
+        `;
         descricaoSalvaEl.style.display = 'block';
 
         // 3. Atualiza o status do item principal e do setor
@@ -873,7 +873,7 @@
 
     // Função para atualizar o contador de um setor
     function updateSetorStatus(setor) {
-        const totalItems = parseInt(setor.dataset.totalItems);
+        // A contagem real de itens é a soma de itens únicos + tombamentos individuais
         const setorStatusDiv = setor.querySelector('.setor-status');
         const items = setor.querySelectorAll('.item-conferencia');
         let completedItems = 0;
@@ -882,18 +882,39 @@
 
         items.forEach(item => {
             const itemID = item.dataset.id;
-            totalItemsInSetor++; 
             
-            const itemStatusData = itemStatus[itemID];
+            if (item.dataset.type === 'single') {
+                 // Lógica para item ÚNICO
+                 totalItemsInSetor++; 
+                 const itemStatusData = itemStatus[itemID];
+                 if (itemStatusData?.status === 'S/A') {
+                     completedItems++;
+                 } else if (itemStatusData?.status === 'C/A') {
+                      completedItems++;
+                      alteredItems++;
+                 }
 
-            // Verifica o status final (S/A ou C/A (salvo)) do item principal
-            if (itemStatusData?.status === 'S/A') {
-                 completedItems++;
-            } else if (itemStatusData?.status === 'C/A') {
-                 completedItems++;
-                 alteredItems++;
+            } else if (item.dataset.type === 'multi') {
+                 // Lógica para item MULTI-TOMBAMENTO: Contagem por TOMBAMENTO
+                 const tombamentos = item.querySelectorAll('.tombamento-container');
+                 
+                 tombamentos.forEach(tomb => {
+                     totalItemsInSetor++; // Conta cada tombamento como um item
+                     const uniqueId = `${itemID}-${tomb.dataset.tomb}`;
+                     const tombStatus = itemStatus[uniqueId]?.status;
+
+                     if (tombStatus === 'S/A') {
+                         completedItems++;
+                     } else if (tombStatus === 'C/A') {
+                          completedItems++;
+                          alteredItems++;
+                     }
+                 });
             }
         });
+        
+        // CORREÇÃO: Atualiza o atributo data-total-items do setor
+        setor.dataset.totalItems = totalItemsInSetor;
 
         // Atualiza a exibição do status (0/3, S/A ou X C/A)
         setorStatusDiv.dataset.completed = completedItems;
@@ -920,7 +941,8 @@
         let totalCompleted = 0;
 
         todosSetores.forEach(setor => {
-            totalItems += parseInt(setor.dataset.totalItems);
+            // Usa o novo totalItems calculado em updateSetorStatus
+            totalItems += parseInt(setor.dataset.totalItems); 
             totalCompleted += parseInt(setor.querySelector('.setor-status').dataset.completed);
         });
 
@@ -998,23 +1020,27 @@
             const itemData = itemStatus[nextItemId];
 
             // 1. Verifica se o item está PENDENTE DE CONFERÊNCIA (PENDING)
-            if (!itemData || itemData.status === 'PENDING') {
+            if (nextItem.dataset.type === 'single' && (!itemData || itemData.status === 'PENDING')) {
                  nextItem.scrollIntoView({ behavior: 'smooth', block: 'center' });
                  return;
             } 
             
             // 2. Verifica se o item MULTI-TOMBAMENTO está PENDENTE DE OBSERVAÇÃO INDIVIDUAL (PENDING_CA)
             if (nextItem.dataset.type === 'multi') {
-                // Procura um tombamento pendente de observação dentro do item
+                // Procura um tombamento pendente de conferência (PENDING) ou pendente de observação (PENDING_CA)
                 const pendingTombamento = Array.from(nextItem.querySelectorAll('.tombamento-container')).find(tomb => {
                     const uniqueId = `${nextItemId}-${tomb.dataset.tomb}`;
-                    return itemStatus[uniqueId]?.status === 'PENDING_CA';
+                    const status = itemStatus[uniqueId]?.status;
+                    return status === 'PENDING' || status === 'PENDING_CA';
                 });
 
                 if (pendingTombamento) {
-                    // Se encontrar um tombamento C/A sem observação salva, rola para ele e foca no textarea.
                     pendingTombamento.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                    pendingTombamento.querySelector('textarea').focus();
+                    
+                    // Se estiver PENDING_CA, foca no textarea
+                    if (itemStatus[`${nextItemId}-${pendingTombamento.dataset.tomb}`]?.status === 'PENDING_CA') {
+                        pendingTombamento.querySelector('textarea').focus();
+                    }
                     return;
                 }
             }
