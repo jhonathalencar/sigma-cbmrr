@@ -498,20 +498,21 @@
 
 <script>
     // Função utilitária para ler parâmetros da URL
-    function getUrlParameter(name) {
-        name = name.replace(/[\[]/, '\\[').replace(/[\]]/, '\\]');
-        const regex = new RegExp('[\\?&]' + name + '=([^&#]*)');
-        const results = regex.exec(location.search);
-        // Usa decodeURIComponent para garantir que '3º SGT' ou 'LOCAL TESTE' não fiquem codificados
-        return results === null ? '' : decodeURIComponent(results[1].replace(/\+/g, ' '));
-    }
-    
-    // Dados fixos DO MILITAR (Simulando a coleta do index.html se a URL falhar)
-    const userInfo = {
-        postoGraduacao: getUrlParameter('posto_grad') || "3º SGT",
-        quadro: getUrlParameter('quadro') || "QPCBM",
-        nomeGuerra: getUrlParameter('nome_guerra') || "JHONATH", 
-    };
+function getUrlParameter(name) {
+    name = name.replace(/[\[]/, '\\[').replace(/[\]]/, '\\]');
+    const regex = new RegExp('[\\?&]' + name + '=([^&#]*)');
+    const results = regex.exec(location.search);
+    // Usa decodeURIComponent para garantir que '3º SGT' ou 'LOCAL TESTE' não fiquem codificados
+    return results === null ? '' : decodeURIComponent(results[1].replace(/\+/g, ' '));
+}
+
+// Dados fixos DO MILITAR (Simulando a coleta do index.html se a URL falhar)
+const userInfo = {
+    // CORRIGIDO: Lendo 'quadro_mil' (que é o nome usado no index.html)
+    postoGraduacao: getUrlParameter('posto_grad') || "SD", 
+    quadro: getUrlParameter('quadro_mil') || "QPCBM", 
+    nomeGuerra: getUrlParameter('nome_guerra') || "PEDRO", 
+};
     
     // Variável para armazenar o status de todos os itens
     let itemStatus = {}; 
@@ -695,3 +696,4 @@
         updateOverallStatus();
     };
 </script>
+
