@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="icon" type="image/png" href="logo_sigma.png" onerror="this.href='https://placehold.co/16x16/800020/ffffff?text=S'">
+    <link rel="icon" type="image/png" href="logo_sigma.png" onerror="this.onerror=null; this.src='https://placehold.co/16x16/800020/ffffff?text=S'">
     <title>SIGMA - Conferência de Materiais</title>
     <style>
         /* BASE & RESET */
@@ -120,7 +120,7 @@
             font-weight: 600;
         }
         
-        /* Estilo para os títulos dos passos (Identificação) */
+        /* Estilo para os títulos dos passos (Nova Conferência) */
         .step-title {
             font-size: 1.2em;
             color: #d90f23;
@@ -154,10 +154,10 @@
             font-weight: bold;
         }
         
-        /* --- CORREÇÕES NO CSS PARA SUPORTAR 3 PASSOS (MANTENDO O ESTILO) --- */
+        /* --- CORREÇÕES CRÍTICAS NO CSS PARA SUPORTAR 3 PASSOS --- */
         .step-indicator {
             display: flex;
-            justify-content: space-between; /* Ajustado para espaçar 3 itens */
+            justify-content: space-between; /* Garante que os 3 itens se separem */
             align-items: center;
             margin: 15px 0 30px;
             padding: 0 10px;
@@ -166,10 +166,11 @@
 
         .step-item {
             text-align: center;
-            flex-grow: 0;
+            flex-grow: 1; 
+            flex-basis: 0; 
             position: relative;
             z-index: 2;
-            margin: 0; 
+            margin: 0; 
         }
 
         .step-circle {
@@ -204,7 +205,7 @@
             display: none;
         }
 
-        /* LINHAS DE CONEXÃO: AJUSTADAS PARA 3 PASSOS */
+        /* LINHAS DE CONEXÃO: AJUSTADAS COM NOVA MATEMÁTICA */
         .step-line {
             position: absolute;
             top: 15px; /* Metade da altura do circle */
@@ -212,18 +213,18 @@
             background-color: #ccc;
             z-index: 1;
         }
-        
-        /* Linha 1: 1 -> 2 */
-        #line-1-2 {
-            left: 10px; 
-            width: calc(50% - 15px); 
-        }
+        
+        /* Linha 1: 1 -> 2 */
+        #line-1-2 {
+            left: 10px; 
+            width: calc(50% - 15px); /* Correção para cobrir o espaço até o meio do circulo 2 */
+        }
 
-        /* Linha 2: 2 -> 3 */
-        #line-2-3 {
-            right: 10px; 
-            width: calc(50% - 15px); 
-        }
+        /* Linha 2: 2 -> 3 */
+        #line-2-3 {
+            right: 10px; 
+            width: calc(50% - 15px); /* Correção para cobrir o espaço do meio do circulo 2 até o 3 */
+        }
         
         /* Linha de progresso (a parte que muda de cor) */
         .step-line::after {
