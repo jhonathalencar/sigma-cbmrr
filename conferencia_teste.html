@@ -3,10 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="icon" type="image/png" href="logo_sigma.png" onerror="this.href='https://placehold.co/16x16/800020/ffffff?text=S'">
+    <link rel="icon" type="image/png" href="logo_sigma.png" onerror="this.onerror=null; this.src='https://placehold.co/16x16/800020/ffffff?text=S'">
     <title>Conferência - LOCAL TESTE</title>
     <style>
-        /* ESTILOS BASE REUTILIZADOS (IDÊNTICOS AO SEU LAYOUT) */
+        /* ESTILOS BASE REUTILIZADOS */
         body {
             font-family: Arial, sans-serif;
             background-color: #f4f4f9;
@@ -77,6 +77,16 @@
             box-sizing: border-box;
         }
 
+        /* CORREÇÃO: Força o tamanho do logo principal e garante centralização */
+        .logo {
+            width: 80px; 
+            height: auto;
+            margin-bottom: 10px;
+            display: block;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        
         h1 {
             color: #d90f23;
             margin-bottom: 3px;
@@ -93,7 +103,24 @@
             font-weight: 600;
         }
         
-        /* --- ESTILOS PARA SETORES (COLLAPSIBLE) --- */
+        /* --- ESTILOS DE FORMULÁRIO E ITENS --- */
+        .form-group {
+            margin-bottom: 15px;
+        }
+        
+        .user-info-display {
+            font-size: 0.85em; 
+            color: #333; 
+            text-align: left; 
+            margin-top: -10px;
+            margin-bottom: 15px;
+            padding-bottom: 5px;
+            border-bottom: 1px solid #eee;
+        }
+
+
+        /* Outros estilos de conferência (mantidos) */
+        
         .setor-header {
             background-color: #800020; 
             color: white;
@@ -151,7 +178,6 @@
             transition: transform 0.4s;
         }
 
-        /* --- ESTILOS DO ITEM DE CONFERÊNCIA --- */
         .item-conferencia {
             border: 1px solid #e0e0e0;
             border-left: 5px solid #ccc;
@@ -325,8 +351,8 @@
     <h1>Conferência de Materiais</h1>
     <p class="subtitulo">Local: **LOCAL TESTE**</p>
     
-    <p style="font-size: 0.85em; color: #888; text-align: left; margin-top: -10px;">
-        **Conferente:** CAP QOCBM SOUSA (05/11/2025) - *(Simulação de dados de identificação)*
+    <p id="militar-info" class="user-info-display">
+        Carregando dados do conferente...
     </p>
 
     <div class="setor" data-total-items="3" data-id="1">
@@ -465,6 +491,23 @@
 
 
 <script>
+    // Dados fixos do militar (simulando a coleta do index.html)
+    const userInfo = {
+        postoGraduacao: "3º SGT",
+        quadro: "QPCBM",
+        nomeGuerra: "JHONY",
+    };
+    
+    // Variável para armazenar o status de todos os itens
+    let itemStatus = {}; 
+
+    // Mapeamento dos setores (usado para auto-avançar)
+    const setorIds = ['1', '2']; 
+    const setorContentMap = {
+        '1': 'DEPÓSITO CENTRAL',
+        '2': 'VIATURA 13-1'
+    };
+
     // Função para expandir/recolher o setor
     function toggleSetor(headerElement) {
         const content = headerElement.nextElementSibling;
@@ -502,27 +545,25 @@
             statusIcon.classList.add('ok');
             alteracaoContainer.style.display = 'none';
             observacaoTextarea.value = ''; // Limpa a observação
+            itemStatus[item.dataset.id] = { status: 'S/A', obs: '' };
         } else if (status === 'alert') {
-            // C/A (Com Alteração)
+            // C/A (Com Alteração) - Requer observação, salva só após preencher
             item.classList.add('status-alert');
             statusIcon.classList.add('alert');
             alteracaoContainer.style.display = 'block';
             observacaoTextarea.focus();
+            // Marca como pendente/em alteração no itemStatus até salvar
+            itemStatus[item.dataset.id] = { status: 'PENDING_CA', obs: '' };
+        } else {
+            // Caso de reset ou pendente
+            itemStatus[item.dataset.id] = { status: 'PENDING', obs: '' };
         }
 
-        // 1. Atualiza o status do item no item-conferencia
-        updateItemDisplay(item);
-
-        // 2. Recalcula o progresso do setor e do total
+        // Atualiza a exibição e o progresso
         updateSetorStatus(setor);
         updateOverallStatus();
     }
     
-    // Função auxiliar para garantir que o visual do item reflete o status
-    function updateItemDisplay(item) {
-        // Nada extra necessário por enquanto, mas útil para futuras validações.
-    }
-
     // Função para atualizar o contador de um setor
     function updateSetorStatus(setor) {
         const totalItems = parseInt(setor.dataset.totalItems);
@@ -538,8 +579,8 @@
             if (status === 'ok') {
                 completedItems++;
             } else if (status === 'alert') {
-                // Para ser considerado completo, C/A precisa de observação
-                if (observacao.length > 0) {
+                // Para ser considerado completo, C/A precisa de observação salva (ou preenchida)
+                if (itemStatus[item.dataset.id]?.status === 'C/A' || observacao.length > 0) {
                     completedItems++;
                 }
                 hasAlert = true;
@@ -579,23 +620,71 @@
         }
     }
     
+    // Funções de Salvar Item (C/A) e Listeners de Entrada
+    
+    // Salva a alteração descrita
+    function salvarItem(button) {
+        const item = button.closest('.item-conferencia');
+        const setor = button.closest('.setor');
+        const observacaoTextarea = item.querySelector('textarea');
+        const observacao = observacaoTextarea.value.trim();
+
+        if (observacao.length < 5) {
+            alert("A descrição da alteração é muito curta. Por favor, detalhe.");
+            observacaoTextarea.focus();
+            return;
+        }
+
+        // Atualiza o status final do item
+        item.dataset.status = 'alert';
+        itemStatus[item.dataset.id] = { status: 'C/A', obs: observacao };
+
+        // Atualiza o visual
+        item.classList.add('status-alert');
+        item.querySelector('.status-icon').className = 'status-icon alert';
+        item.querySelector('.alteracao-container').style.display = 'none';
+        
+        // Atualiza o progresso do setor e geral
+        updateSetorStatus(setor);
+        updateOverallStatus();
+    }
+    
     // Listener para o campo de texto (Observação)
-    document.querySelectorAll('.alteracao-container textarea').forEach(textarea => {
-        textarea.addEventListener('input', function() {
-            const setor = this.closest('.setor');
-            updateSetorStatus(setor);
-            updateOverallStatus();
+    document.querySelectorAll('.setor-content').forEach(content => {
+        content.addEventListener('input', function(e) {
+            if (e.target.tagName === 'TEXTAREA') {
+                const setor = e.target.closest('.setor');
+                // Chamamos updateSetorStatus para garantir que o contador 'completed' reflita o preenchimento da observação C/A
+                updateSetorStatus(setor); 
+                updateOverallStatus();
+            }
         });
     });
 
-    // Listener para o botão Finalizar
-    document.getElementById('btn-finalizar').addEventListener('click', function() {
-        alert('Conferência Finalizada! (A lógica de submissão do formulário viria aqui)');
-        // Aqui você adicionaria o código para coletar todos os dados e enviar.
-    });
-
-    // Inicialização: Garante que os status estão corretos ao carregar a página
+    // Função de inicialização no carregamento da página
     window.onload = function() {
+        // 1. Injeta os dados do militar no cabeçalho
+        const dataConferencia = new Date().toLocaleDateString('pt-BR'); 
+        const militarInfoElement = document.getElementById('militar-info');
+        militarInfoElement.innerHTML = `
+            <strong>Conferente:</strong> ${userInfo.postoGraduacao} ${userInfo.quadro} ${userInfo.nomeGuerra} (${dataConferencia})
+        `;
+        
+        // 2. Inicializa o status de todos os itens como PENDENTE
+        document.querySelectorAll('.item-conferencia').forEach(item => {
+            const statusIcon = item.querySelector('.status-icon');
+            statusIcon.className = 'status-icon pending';
+            item.dataset.status = 'pending';
+            itemStatus[item.dataset.id] = { status: 'PENDING', obs: '' };
+        });
+        
+        // 3. Define o listener de salvar para os botões C/A
+        document.querySelectorAll('.btn-salvar-alteracao').forEach(btn => {
+            btn.setAttribute('onclick', 'salvarItem(this)');
+        });
+
+
+        // 4. Inicializa o status geral
         document.querySelectorAll('.setor').forEach(updateSetorStatus);
         updateOverallStatus();
     };
