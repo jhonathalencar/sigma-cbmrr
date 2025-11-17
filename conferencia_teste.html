@@ -194,14 +194,16 @@
             flex-wrap: wrap;
         }
 
-        .item-main-label {
-             font-weight: bold;
-             color: #333;
-             flex-grow: 1;
-             text-align: left;
-             font-size: 0.95em;
+        /* CLASSE PADRÃO PARA TODOS OS NOMES DE ITEM PRINCIPAL */
+        .item-label { 
+            font-weight: bold;
+            color: #333;
+            flex-grow: 1;
+            margin-right: 10px;
+            text-align: left;
+            font-size: 0.95em;
         }
-
+        
         .item-quantidade {
             font-size: 0.9em;
             color: #800020;
@@ -268,11 +270,11 @@
             text-align: left; 
         }
         .descricao-salva .obs-texto {
-            color: #d90f23; /* Cor vermelha para o texto do usuário */
+            color: #d90f23; 
             font-weight: bold;
         }
         .descricao-salva .obs-titulo {
-             color: #333; /* Cor preta para o título */
+             color: #333; 
              font-weight: bold;
         }
 
@@ -388,7 +390,7 @@
             <div class="item-conferencia" data-type="single" data-status="pending" data-id="1-1">
                 <div class="item-header">
                     <span class="status-icon"></span>
-                    <span class="item-main-label">KIT PRIMEIROS SOCORROS</span>
+                    <span class="item-label">KIT PRIMEIROS SOCORROS</span>
                     <span class="item-quantidade">Qtd. Esperada: 5</span>
                 </div>
                 <div class="item-options">
@@ -406,8 +408,7 @@
             <div class="item-conferencia item-has-tombamentos" data-type="multi" data-total-tombamentos="2" data-status="pending" data-id="1-2">
                 <div class="item-header">
                     <span class="status-icon"></span>
-                    <span class="item-main-label">LANTERNA TÁTICA</span>
-                    <span class="item-quantidade">Qtd. Esperada: 2</span>
+                    <span class="item-label">LANTERNA TÁTICA</span> <span class="item-quantidade">Qtd. Esperada: 2</span>
                 </div>
                 
                 <div class="tombamento-container" data-tomb="123.456" data-item-id="1-2">
@@ -545,6 +546,7 @@
         name = name.replace(/[\[]/, '\\[').replace(/[\]]/, '\\]');
         const regex = new RegExp('[\\?&]' + name + '=([^&#]*)');
         const results = regex.exec(location.search);
+        // Usa decodeURIComponent para garantir que '3º SGT' ou 'LOCAL TESTE' não fiquem codificados
         return results === null ? '' : decodeURIComponent(results[1].replace(/\+/g, ' '));
     }
     
@@ -555,9 +557,8 @@
         nomeGuerra: getUrlParameter('nome_guerra') || "SOUSA", 
     };
     
-    // Variável para armazenar o status de todos os itens e tombamentos
-    // Ex: itemStatus['1-2'] = { type: 'multi', total: 2, conferidos: 1, alterados: 0, obs: '' }
-    // Ex: itemStatus['1-2-123.456'] = { status: 'S/A' }
+    // Variável para armazenar o status de todos os itens
+    // Para itens multi-tombamento, armazena { '1-2': { status: 'PENDING', total_ok: 0, total_ca: 0 }, '1-2-123.456': { status: 'S/A', obs: '' } }
     let itemStatus = {}; 
 
     // Mapeamento dos setores (usado para auto-avançar)
@@ -566,8 +567,6 @@
         '1': 'DEPÓSITO CENTRAL',
         '2': 'VIATURA 13-1'
     };
-
-    // --- LÓGICA GERAL DE SETORES E FLUXO ---
 
     // Função para expandir/recolher o setor
     function toggleSetor(headerElement) {
@@ -589,10 +588,17 @@
         }
     }
 
-    // Marca o status de um item único (sem tombamento)
+    // --- LÓGICA DE STATUS PARA ITEM ÚNICO ---
     function setItemStatus(button, status) {
         const item = button.closest('.item-conferencia');
         const setor = button.closest('.setor');
+        
+        // Verifica se é item multi-tombamento
+        if (item.dataset.type === 'multi') {
+            console.error("Erro: setItemStatus não deve ser chamado em itens com tombamento. Use setTombamentoStatus.");
+            return;
+        }
+        
         const alteracaoContainer = item.querySelector('.alteracao-container');
         const observacaoTextarea = alteracaoContainer.querySelector('textarea');
         const buttons = item.querySelectorAll('.action-button');
@@ -615,7 +621,7 @@
             // S/A (Sem Alteração)
             item.classList.add('status-ok');
             statusIcon.classList.add('ok');
-            observacaoTextarea.value = ''; 
+            observacaoTextarea.value = ''; // Limpa a observação (se houver)
             itemStatus[item.dataset.id] = { status: 'S/A', obs: '' };
         } else if (status === 'alert') {
             // C/A (Com Alteração) - Abre a área de observação
@@ -623,6 +629,7 @@
             statusIcon.classList.add('alert');
             alteracaoContainer.style.display = 'block';
             
+            // Marca como pendente no itemStatus até salvar (Para não contar no completed)
             itemStatus[item.dataset.id] = { status: 'PENDING_CA', obs: '' };
             observacaoTextarea.focus();
             
@@ -636,7 +643,8 @@
         checkSetorCompletion(setor, item.dataset.id);
     }
     
-    // Marca o status de um tombamento (item com múltiplos tombamentos)
+    // --- LÓGICA DE STATUS PARA TOMBAMENTOS ---
+
     function setTombamentoStatus(button, status) {
         const tombamentoEl = button.closest('.tombamento-container');
         const item = button.closest('.item-conferencia');
@@ -645,7 +653,7 @@
         const itemId = item.dataset.id;
         const uniqueId = `${itemId}-${tombId}`; // Ex: 1-2-123.456
 
-        const statusIcon = item.querySelector('.status-icon');
+        const itemStatusIcon = item.querySelector('.status-icon');
         const buttons = tombamentoEl.querySelectorAll('.action-button');
 
         buttons.forEach(btn => btn.classList.remove('active'));
@@ -654,82 +662,86 @@
         // Atualiza o status individual do tombamento
         itemStatus[uniqueId] = { status: status, obs: '' };
         
-        // Se C/A, abre a área de alteração no item principal e marca o item como PENDENTE_CA
+        // --- Atualização do Item Principal (Item 1.2) ---
+        
+        // 1. Oculta/limpa a descrição salva do item principal
+        item.querySelector('.descricao-salva').style.display = 'none';
+        item.querySelector('.descricao-salva').textContent = '';
+        
+        // 2. Se for C/A, abre a área de alteração no item principal e marca o item principal como PENDENTE_CA
         if (status === 'alert') {
             item.dataset.status = 'alert';
             item.querySelector('.alteracao-container').style.display = 'block';
-            statusIcon.classList.remove('ok');
-            statusIcon.classList.add('alert');
-            itemStatus[itemId] = { status: 'PENDING_CA', obs: '' };
+            itemStatus[itemId] = { status: 'PENDING_CA', obs: '' }; // Item principal fica pendente de observação
+            itemStatusIcon.classList.remove('ok', 'pending');
+            itemStatusIcon.classList.add('alert');
         } else {
-            // Se S/A, garante que a área de alteração esteja escondida (se não houver outro C/A)
-            const hasOtherCA = Array.from(item.querySelectorAll('.tombamento-container')).some(t => {
+            // 3. Se S/A, verificamos se há outros C/A pendentes
+            const hasOtherPendingCA = Array.from(item.querySelectorAll('.tombamento-container')).some(t => {
                 const id = `${itemId}-${t.dataset.tomb}`;
-                return itemStatus[id]?.status === 'alert';
+                return itemStatus[id]?.status === 'alert'; // Se outro tombamento for C/A, não fecha o container de obs
             });
 
-            if (!hasOtherCA) {
+            if (!hasOtherPendingCA) {
                  item.querySelector('.alteracao-container').style.display = 'none';
-                 item.dataset.status = 'pending'; // Volta ao status pendente se todos são S/A ou pendentes
+                 item.dataset.status = 'pending'; 
+                 itemStatus[itemId] = { status: 'PENDING', obs: '' };
             }
         }
         
-        // 1. Recalcula o status do item principal (1-2)
-        updateMultiItemStatus(item);
-
-        // 2. Atualiza o progresso do setor e geral
+        // 4. Recalcula o status do item principal e do setor
+        updateItemMainStatus(item); // Atualiza o status visual principal do item
         updateSetorStatus(setor);
         updateOverallStatus();
     }
     
-    // Lógica para atualizar o status de um item com tombamentos
-    function updateMultiItemStatus(item) {
+    // Atualiza o ícone e status principal de um item (ex: Item 1.2)
+    function updateItemMainStatus(item) {
         const itemId = item.dataset.id;
         const total = parseInt(item.dataset.totalTombamentos);
         const tombamentos = item.querySelectorAll('.tombamento-container');
         let conferidos = 0;
         let alterados = 0;
-        let requiresObservation = false;
 
         tombamentos.forEach(tomb => {
             const uniqueId = `${itemId}-${tomb.dataset.tomb}`;
             const status = itemStatus[uniqueId]?.status;
 
-            if (status === 'ok') {
+            if (status === 'ok' || status === 'alert') {
                 conferidos++;
-            } else if (status === 'alert') {
-                // Conta como conferido se for C/A, mas só se a observação for salva (C/A no item principal)
-                if (itemStatus[itemId]?.status === 'C/A' || itemStatus[itemId]?.status === 'PENDING_CA') {
-                    conferidos++;
-                }
-                alterados++;
-                requiresObservation = true;
+                if (status === 'alert') alterados++;
             }
         });
         
-        // Determina o status final do item principal (1-2)
+        const statusIcon = item.querySelector('.status-icon');
+        statusIcon.className = 'status-icon'; // Reset
+
         if (conferidos === total) {
+            // 100% dos tombamentos conferidos
             if (alterados > 0) {
-                 // 100% conferido com alterações. O status é C/A, mas o item principal é marcado como tal
-                 item.dataset.status = (itemStatus[itemId]?.status === 'C/A') ? 'alert' : 'pending';
+                 // 100% conferido com alterações. Requer salvamento da OBS principal.
+                 if (itemStatus[itemId]?.status === 'C/A') {
+                     statusIcon.classList.add('alert');
+                 } else {
+                     statusIcon.classList.add('alert'); // Temporariamente alert/red dots
+                     item.dataset.status = 'alert'; // Item principal está pronto para ser salvo
+                 }
             } else {
+                 // 100% conferido sem alterações
+                 statusIcon.classList.add('ok');
                  item.dataset.status = 'ok';
-                 itemStatus[itemId] = { status: 'S/A', obs: '' };
+                 itemStatus[itemId] = { status: 'S/A', obs: '' }; // Salva o status S/A no item principal
+                 checkSetorCompletion(item.closest('.setor'), itemId); // Tenta avançar
             }
         } else {
+            // Conferência incompleta
+            statusIcon.classList.add('pending');
             item.dataset.status = 'pending';
-            itemStatus[itemId] = { status: 'PENDING', obs: '' };
         }
-        
-        // Atualiza o ícone principal
-        const statusIcon = item.querySelector('.status-icon');
-        statusIcon.className = 'status-icon';
-        if (item.dataset.status === 'ok') statusIcon.classList.add('ok');
-        if (item.dataset.status === 'alert') statusIcon.classList.add('alert');
-        if (item.dataset.status === 'pending') statusIcon.classList.add('pending');
     }
-    
-    // Função para atualizar o contador de um setor (MODIFICADA AQUI)
+
+
+    // Função para atualizar o contador de um setor
     function updateSetorStatus(setor) {
         const totalItems = parseInt(setor.dataset.totalItems);
         const setorStatusDiv = setor.querySelector('.setor-status');
@@ -740,22 +752,16 @@
 
         items.forEach(item => {
             const itemID = item.dataset.id;
-            totalItemsInSetor++; // Conta cada item principal
+            totalItemsInSetor++; 
             
             const itemStatusData = itemStatus[itemID];
 
-            if (item.dataset.type === 'multi') {
-                // Para itens com tombamento, verificamos se o status principal é OK ou C/A (salvo)
-                if (itemStatusData?.status === 'ok' || itemStatusData?.status === 'C/A') {
-                     completedItems++;
-                     if (itemStatusData?.status === 'C/A') alteredItems++;
-                }
-            } else {
-                // Item único
-                if (item.dataset.status === 'ok' || itemStatusData?.status === 'C/A') {
-                    completedItems++;
-                    if (itemStatusData?.status === 'C/A') alteredItems++;
-                }
+            if (item.dataset.status === 'ok') {
+                 completedItems++;
+            } else if (itemStatusData?.status === 'C/A') {
+                // Item principal está C/A e salvo
+                 completedItems++;
+                 alteredItems++;
             }
         });
 
@@ -771,7 +777,7 @@
             setorStatusDiv.textContent = `${alteredItems} C/A`;
             setorStatusDiv.classList.remove('ok');
         } else {
-            // Conferência incompleta ou 100% S/A
+            // Conferência incompleta 
             setorStatusDiv.textContent = `${completedItems}/${totalItemsInSetor}`;
             setorStatusDiv.classList.remove('ok');
         }
@@ -816,7 +822,7 @@
         item.dataset.status = 'alert';
         itemStatus[item.dataset.id] = { status: 'C/A', obs: observacao };
 
-        // 2. Oculta o container de alteração e exibe o texto salvo
+        // 2. Oculta o container de alteração e exibe o texto salvo (MODIFICADO AQUI)
         item.querySelector('.alteracao-container').style.display = 'none';
         descricaoSalvaEl.innerHTML = `
             <span class="obs-titulo">Alteração encontrada:</span> 
@@ -853,11 +859,10 @@
             const nextItem = allItems[i];
             
             // Só avança o foco se o item não estiver conferido
-            if (nextItem.dataset.status === 'pending') {
+            if (itemStatus[nextItem.dataset.id]?.status === 'PENDING') {
                 nextItem.scrollIntoView({ behavior: 'smooth', block: 'center' });
                 return;
             }
-            // Se já estiver marcado, continua procurando o próximo PENDENTE
         }
         // Se chegou ao fim, rola para o botão finalizar (se aplicável)
         document.getElementById('btn-finalizar').scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -885,7 +890,7 @@
     window.onload = function() {
         
         // Leitura e fallback dos dados de local
-        const urlLocal = getUrlParameter('local') || '**LOCAL TESTE**';
+        const urlLocal = getUrlParameter('local') || 'LOCAL TESTE';
         const urlPosto = getUrlParameter('posto') || 'Posto BRAVO';
         
         // 1. Injeta os dados do militar no cabeçalho
@@ -907,6 +912,12 @@
             item.dataset.status = 'pending';
             // Preenche o itemStatus com PENDENTE para que o contador comece em 0/Total
             itemStatus[item.dataset.id] = { status: 'PENDING', obs: '' }; 
+            
+            // Inicializa Tombamentos se existirem
+            item.querySelectorAll('.tombamento-container').forEach(tomb => {
+                const uniqueId = `${item.dataset.id}-${tomb.dataset.tomb}`;
+                itemStatus[uniqueId] = { status: 'pending', obs: '' };
+            });
         });
         
         // 4. Inicializa o status geral
