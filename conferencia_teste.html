@@ -347,7 +347,7 @@
         /* Estilo para botão desativado durante a geração do PDF */
         #btn-finalizar:disabled {
             background-color: #999;
-            cursor: wait;
+            cursor: not-allowed;
             box-shadow: none;
         }
     </style>
@@ -371,7 +371,6 @@
     <h1>CONFERÊNCIA DE MATERIAL</h1>
     <p class="subtitulo">LOCAL TESTE (Posto BRAVO)</p>
     
-        
     <form id="form-conferencia">
 
         <div class="setor-header" onclick="toggleSetor('deposito-content')">
@@ -497,7 +496,7 @@
             </div>
         </div>
         
-        <button type="submit" id="btn-finalizar">FINALIZAR CONFERÊNCIA (TESTE)</button>
+        <button type="submit" id="btn-finalizar" disabled>FINALIZAR CONFERÊNCIA (TESTE)</button>
     </form>
 
 </div>
@@ -510,11 +509,11 @@
 <script>
     // Variáveis globais (não dependem do DOM)
     let itemStatus = {};
-    // userInfo: Definido com valores padrão/fixos, pois a coleta foi removida.
+    // DADOS PADRÃO/FIXOS DO MILITAR RESPONSÁVEL APÓS A REMOÇÃO DOS CAMPOS DE COLETA
     let userInfo = {
         postoGraduacao: "3º SGT",
         quadro: "QPCBM",
-        nomeGuerra: "JHONY",
+        nomeGuerra: "JHONY", // Exemplo, ajuste conforme necessário
     };
     
     // Variáveis constantes que não dependem das bibliotecas PDF
@@ -658,6 +657,7 @@
         
         // --- 3. MILITAR RESPONSÁVEL (Com dados fixos/padrão) ---
         
+        doc.setDrawColor(204, 204, 204); 
         doc.setLineWidth(0.2);
         doc.line(marginX, yOffset, docWidth - marginX, yOffset);
         yOffset += 5; 
@@ -832,8 +832,6 @@
     // ------------------------------------------
     // FUNÇÕES DE MANIPULAÇÃO (Simplificadas)
     // ------------------------------------------
-    
-    // Funções de identificação removidas ou simplificadas para não afetar o fluxo
     
     function toggleSetor(contentId) {
         const content = document.getElementById(contentId);
@@ -1022,7 +1020,7 @@
         btnFinalizar.textContent = 'GERANDO PDF...';
 
         try {
-            // REMOVIDO: if (!validateAndSaveUserInfo()) return;
+            // Validação do usuário removida daqui
             
             const todosItens = ['lanterna', 'kit', 'radio', 'cordas', 'colete'];
             let pendente = false;
