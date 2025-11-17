@@ -94,19 +94,15 @@
         }
 
         /* TIPOGRAFIA E ELEMENTOS PRINCIPAIS */
-        /* CORREÇÃO CRÍTICA: Limita o tamanho das imagens para evitar quebras de layout */
-        .container img {
-            max-width: 100%;
-            height: auto;
-        }
-
+        /* CORREÇÃO: Garante que o logo seja dimensionado corretamente */
         .logo {
-            width: 80px; /* Mantém o tamanho pretendido para o logo SIGMA */
+            width: 80px;
             height: auto;
             margin-bottom: 10px;
             display: block;
             margin-left: auto;
             margin-right: auto;
+            max-width: 100%; /* Segurança contra imagens grandes */
         }
 
         h1 {
@@ -425,40 +421,9 @@
                 <option value="" disabled selected>-- Selecione um Local --</option>
             </select>
         </div>
-     </div>
-
-    <div id="step-3-content" style="display: none;">
-        <h2 class="step-title">Identificação do Militar</h2>
-
-        <div class="form-group">
-            <label for="posto-graduacao">Posto/Graduação</label>
-            <select id="posto-graduacao">
-                <option value="" disabled selected>-- Selecione --</option>
-                <option value="CAP">CAP</option>
-                <option value="1º TEN">1º TEN</option>
-                <option value="2º TEN">2º TEN</option>
-                <option value="ST">ST</option>
-                <option value="1º SGT">1º SGT</option>
-                <option value="2º SGT">2º SGT</option>
-                <option value="3º SGT">3º SGT</option>
-                <option value="CB">CB</option>
-                <option value="SD">SD</option>
-            </select>
-        </div>
-
-        <div class="form-group" id="quadro-group" style="display: none;">
-            <label for="quadro">Quadro</label>
-            <select id="quadro">
-                <option value="" disabled selected>-- Selecione --</option>
-                </select>
-        </div>
-
-        <div class="form-group" id="nome-guerra-group" style="display: none;">
-            <label for="nome-guerra">Nome de Guerra (Todas as letras maiúsculas)</label>
-            <input type="text" id="nome-guerra" class="uppercase-input" placeholder="Seu Nome de Guerra (Ex: SOUSA)">
-        </div>
-        
     </div>
+    
+        
     <button id="btn-ir" disabled>INICIAR CONFERÊNCIA</button>
 
 </div>
@@ -486,23 +451,14 @@
         const stepIndicator = document.getElementById('step-indicator');
         const stepItem1 = document.getElementById('step-item-1');
         const stepItem2 = document.getElementById('step-item-2');
-        const stepItem3 = document.getElementById('step-item-3');
+        const stepItem3 = document.getElementById('step-item-3'); // O passo 3 visualmente permanece
 
-        // IDENTIFICAÇÃO DO MILITAR: Removendo o conteúdo da tela, mas mantendo a lógica para o fluxo.
-        const step3Content = document.getElementById('step-3-content');
-        const postoGraduacaoSelect = document.getElementById('posto-graduacao');
-        const quadroSelect = document.getElementById('quadro');
-        const quadroGroup = document.getElementById('quadro-group');
-        const nomeGuerraInput = document.getElementById('nome-guerra');
-        const nomeGuerraGroup = document.getElementById('nome-guerra-group');
-        
-        // DADOS FIXOS PARA O PDF (Removendo a coleta da tela)
+        // DADOS FIXOS PARA O PDF (Simulação do militar)
         const userInfo = {
             postoGraduacao: "3º SGT",
             quadro: "QPCBM",
             nomeGuerra: "JHONY", 
         };
-
 
         // MAPA DE FORMULÁRIOS (Existente)
         const formsMap = {
@@ -539,7 +495,7 @@
         };
         
         // ------------------------------------------------------------------
-        //  FUNÇÕES DE CONTROLE DE FLUXO
+        //  FUNÇÕES DE CONTROLE DE FLUXO (SIMPLIFICADAS)
         // ------------------------------------------------------------------
 
         // Função para atualizar o status visual dos passos (3 passos)
@@ -556,18 +512,13 @@
             }
             // Passo 2
             if (currentStep >= 2) {
-                stepItem2.classList.add(currentStep > 2 ? 'complete' : 'active');
-                stepIndicator.classList.add('progress-1'); // Linha 1 ativa/completa
+                stepItem2.classList.add('complete'); // Completo no passo 2
+                stepIndicator.classList.add('progress-1'); 
             }
             // Passo 3 (VISUAL)
             if (currentStep >= 3) {
-                stepItem3.classList.add(currentStep > 3 ? 'complete' : 'active');
-                stepIndicator.classList.add('progress-2'); // Linha 2 ativa/completa
-            }
-            // Passo Finalizado (Todos os campos válidos e pronto para clicar)
-            if (currentStep >= 4) {
-                stepIndicator.classList.add('progress-3'); // Todas as linhas verdes
-                stepItem3.classList.add('complete');
+                stepItem3.classList.add('complete'); // Completo assim que o botão é habilitado
+                stepIndicator.classList.add('progress-3'); // Finalizado visualmente
             }
         }
 
@@ -582,7 +533,7 @@
                 alert("Por favor, selecione o Posto e o Local.");
                 return;
             }
-            
+
             // Dados da Identificação do Militar (FIXOS)
             const pGrad = userInfo.postoGraduacao;
             const quadro = userInfo.quadro;
