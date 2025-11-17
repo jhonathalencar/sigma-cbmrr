@@ -282,13 +282,20 @@
             text-align: left;
         }
         
-        /* NOVO ESTILO PARA EXIBIÇÃO DA OBS SALVA */
+        /* NOVO ESTILO PARA EXIBIÇÃO DA OBS SALVA (Alterado) */
         .descricao-salva {
-            font-style: italic;
-            color: #d90f23;
             font-size: 0.9em;
             margin-top: 5px;
             display: none;
+            text-align: left; /* Garante alinhamento à esquerda */
+        }
+        .descricao-salva .obs-texto {
+            color: #d90f23; /* Cor vermelha para o texto do usuário */
+            font-weight: bold;
+        }
+        .descricao-salva .obs-titulo {
+             color: #333; /* Cor preta para o título */
+             font-weight: bold;
         }
 
 
@@ -354,6 +361,7 @@
              width: 100%;
              text-align: center;
         }
+
     </style>
 </head>
 <body>
@@ -706,9 +714,12 @@
         item.dataset.status = 'alert';
         itemStatus[item.dataset.id] = { status: 'C/A', obs: observacao };
 
-        // 2. Oculta o container de alteração e exibe o texto salvo
+        // 2. Oculta o container de alteração e exibe o texto salvo (MODIFICADO AQUI)
         item.querySelector('.alteracao-container').style.display = 'none';
-        descricaoSalvaEl.textContent = `Observação: ${observacao}`;
+        descricaoSalvaEl.innerHTML = `
+            <span class="obs-titulo">Alteração encontrada:</span> 
+            <span class="obs-texto">${observacao}</span>
+        `;
         descricaoSalvaEl.style.display = 'block';
 
         // 3. Atualiza o progresso do setor e avança
