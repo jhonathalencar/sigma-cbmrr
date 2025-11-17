@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="icon" type="image/png" href="logo_sigma.png" onerror="this.href='https://placehold.co/16x16/800020/ffffff?text=S'">
+        <link rel="icon" type="image/png" href="logo_sigma.png" onerror="this.href='https://placehold.co/16x16/800020/ffffff?text=S'">
     <title>SIGMA - Conferência de Materiais</title>
     <style>
         /* BASE & RESET */
@@ -112,28 +112,50 @@
             margin-bottom: 10px; /* Espaçamento após a linha */
         }
         
-        /* --- NOVOS ESTILOS DE CORREÇÃO PARA O PASSO 3 --- */
-        #step-3-content h2 {
-            font-size: 1.2em;
-            color: #d90f23;
-            margin-top: 5px;
-            margin-bottom: 20px;
-            border-bottom: 1px solid #e0e0e0; 
-            padding-bottom: 5px;
-            font-weight: 600;
-        }
-        
         .subtitulo {
             font-size: 0.8em;
             color: #666;
             margin-bottom: 15px;  
             font-weight: 600;
         }
+
+        /* Estilo para o título do Passo 3 */
+        .step-3-title {
+            font-size: 1.2em;
+            color: #d90f23;
+            margin-top: 5px;
+            margin-bottom: 20px;
+            border-bottom: 1px solid #e0e0e0; 
+            padding-bottom: 5px;
+            font-weight: 600;
+        }
+
+        /* Estilo para o input de texto (Nome de Guerra) que foi adicionado */
+        input[type="text"] {
+            width: 100%;
+            padding: 10px;
+            border-radius: 6px;
+            border: 1px solid #ccc;
+            box-sizing: border-box;
+            font-size: 1em;
+            background-color: #fff;
+            cursor: text;
+            -webkit-appearance: none; 
+            appearance: none;
+            margin-top: 0;
+            text-transform: none;
+        }
+
+        /* Classe para forçar todas as letras maiúsculas no campo NOME DE GUERRA */
+        .uppercase-input {
+            text-transform: uppercase;
+            font-weight: bold;
+        }
         
-        /* --- NOVOS ESTILOS PARA STEP INDICATOR (PASSO A PASSO) --- */
+        /* --- AJUSTE NO STEP INDICATOR (3 Passos) --- */
         .step-indicator {
             display: flex;
-            justify-content: space-between; /* Ajustado para 3 itens */
+            justify-content: space-between; /* Espaçamento para 3 itens */
             align-items: center;
             margin: 15px 0 30px; 
             padding: 0 10px;
@@ -145,7 +167,7 @@
             flex-grow: 0;
             position: relative;
             z-index: 2;
-            margin: 0; /* Remove margens fixas */
+            margin: 0; /* Removendo margens fixas para usar space-between */
         }
 
         .step-circle {
@@ -179,54 +201,50 @@
         .step-label {
             display: none;
         }
-        
-        /* LINHAS DE CONEXÃO */
-        .step-line {
-            position: absolute;
-            top: 15px; 
-            height: 2px;
-            background-color: #ccc;
-            z-index: 1;
-            transition: background-color 0.4s;
-        }
+        
+        /* LINHAS DE CONEXÃO: Ajustadas para 3 passos */
+        .step-line {
+            position: absolute;
+            top: 15px; 
+            height: 2px;
+            background-color: #ccc;
+            z-index: 1;
+        }
 
-        /* Linha entre Passo 1 e Passo 2 */
-        #line-1-2 {
-            left: 10px; /* Começa após o padding de 10px */
-            width: calc(50% - 25px); /* Ajuste de largura (metade - espaço do círculo) */
-        }
+        /* Linha 1: 1 -> 2 */
+        #line-1-2 {
+            left: 10px;
+            width: calc(50% - 15px); /* metade da largura - espaço */
+        }
 
-        /* Linha entre Passo 2 e Passo 3 */
-        #line-2-3 {
-            right: 10px; /* Termina antes do padding de 10px */
-            width: calc(50% - 25px);
-        }
-        
-        /* Linha de progresso (a parte que muda de cor) */
-        .step-line::after {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            height: 100%;
-            width: 0%; /* Será controlado pelo JS */
-            background-color: #d90f23;
-            transition: width 0.4s ease, background-color 0.4s;
-        }
-        
-        /* CLASSES DE PROGRESSO NO JAVASCRIPT */
-        .step-indicator.progress-1 #line-1-2::after { width: 100%; }
-        .step-indicator.progress-2 #line-1-2::after,
-        .step-indicator.progress-2 #line-2-3::after {
-            width: 100%;
-            background-color: #1b8a3e; /* Cor da linha de progresso concluído (verde) */
-        }
-        .step-indicator.progress-3 #line-1-2::after,
-        .step-indicator.progress-3 #line-2-3::after {
-            width: 100%;
-            background-color: #1b8a3e;
-        }
-        
+        /* Linha 2: 2 -> 3 */
+        #line-2-3 {
+            right: 10px;
+            width: calc(50% - 15px); 
+        }
+
+        /* Linha de progresso (a parte que muda de cor) */
+        .step-line::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            height: 100%;
+            width: 0%; /* Será controlado pelo JS */
+            background-color: #d90f23;
+            transition: width 0.4s ease;
+        }
+
+        /* Classes de Progresso */
+        .step-indicator.progress-1 #line-1-2::after { width: 100%; }
+        .step-indicator.progress-2 #line-1-2::after { background-color: #1b8a3e; width: 100%; }
+        .step-indicator.progress-2 #line-2-3::after { width: 100%; } 
+        .step-indicator.progress-3 #line-1-2::after,
+        .step-indicator.progress-3 #line-2-3::after { 
+            width: 100%;
+            background-color: #1b8a3e;
+        }
+
         /* --- FIM DOS ESTILOS STEP INDICATOR --- */
 
         .form-group {
@@ -241,9 +259,8 @@
             color: #555;
             font-size: 0.9em;
         }
-        
-        /* Estilos unificados para inputs e selects */
-        input[type="text"], select, button {
+
+        select, button {
             width: 100%;
             padding: 10px;
             border-radius: 6px;
@@ -254,22 +271,8 @@
             cursor: pointer;
             -webkit-appearance: none; 
             appearance: none;
-            margin-top: 0;
-            text-transform: none; /* Reset */
         }
         
-        input[type="text"] {
-            cursor: text;
-            -webkit-appearance: none; 
-            appearance: none;
-        }
-        
-        /* Classe para forçar todas as letras maiúsculas no campo NOME DE GUERRA */
-        .uppercase-input {
-            text-transform: uppercase;
-            font-weight: bold;
-        }
-
         select {
             font-family: 'Trebuchet MS', Helvetica, sans-serif; 
         }
@@ -350,8 +353,8 @@
 <body>
 
 <header class="main-header">
-    <img src="cbmrr.png" alt="Ícone CBM-RR" class="header-icon" 
-            onerror="this.onerror=null; this.src='https://placehold.co/40x40/ffffff/800020/fff?text=CBM'">
+        <img src="cbmrr.png" alt="Ícone CBM-RR" class="header-icon" 
+         onerror="this.onerror=null; this.src='https://placehold.co/40x40/ffffff/800020/fff?text=CBM'">
     
     <div class="header-title-desktop">
         <span class="text-white">CORPO DE BOMBEIROS MILITAR </span><span class="text-red">RORAIMA</span>
@@ -363,28 +366,28 @@
 </header>
 <div class="container">
     
-    <img src="logo_sigma.png" alt="Logo do Sistema SIGMA" class="logo" 
-            onerror="this.onerror=null; this.src='https://placehold.co/80x80/d90f23/ffffff?text=SIGMA'">
+        <img src="logo_sigma.png" alt="Logo do Sistema SIGMA" class="logo" 
+         onerror="this.onerror=null; this.src='https://placehold.co/80x80/d90f23/ffffff?text=SIGMA'">
     
     <h1>SIGMA</h1>
     <p class="subtitulo">Sistema Integrado de Gestão de Materiais</p>
     
         <div class="step-indicator progress-0" id="step-indicator">
-        <div class="step-item active" id="step-item-1">
+                <div class="step-item active" id="step-item-1">
             <div class="step-circle">1</div>
             <div class="step-label">Posto de Serviço</div> 
         </div>
         
         <div class="step-line" id="line-1-2"></div>
 
-        <div class="step-item" id="step-item-2">
+                <div class="step-item" id="step-item-2">
             <div class="step-circle">2</div>
             <div class="step-label">Local de Conferência</div> 
         </div>
-        
-        <div class="step-line" id="line-2-3"></div>
-        
-        <div class="step-item" id="step-item-3">
+        
+        <div class="step-line" id="line-2-3"></div>
+        
+        <div class="step-item" id="step-item-3">
             <div class="step-circle">3</div>
             <div class="step-label">Identificação</div> 
         </div>
@@ -402,7 +405,6 @@
                 <option value="RORAINÓPOLIS">RORAINÓPOLIS</option>
                 <option value="PACARAIMA">PACARAIMA</option>
             </select>
-            
         </div>
     </div>
 
@@ -414,41 +416,42 @@
             </select>
         </div>
     </div>
+    
+    <div id="step-3-content" style="display: none;">
+        <h2 class="step-3-title">Passo 3: Identificação</h2>
 
-        <div id="step-3-content" style="display: none;">
-        <h2>Passo 3: Identificação</h2>
+        <div class="form-group">
+            <label for="posto-graduacao">Posto/Graduação</label>
+            <select id="posto-graduacao">
+                <option value="" disabled selected>-- Selecione --</option>
+                <option value="CAP">CAP</option>
+                <option value="1º TEN">1º TEN</option>
+                <option value="2º TEN">2º TEN</option>
+                <option value="ST">ST</option>
+                <option value="1º SGT">1º SGT</option>
+                <option value="2º SGT">2º SGT</option>
+                <option value="3º SGT">3º SGT</option>
+                <option value="CB">CB</option>
+                <option value="SD">SD</option>
+            </select>
+        </div>
 
-                <div class="form-group">
-            <label for="posto-graduacao">Posto/Graduação</label>
-            <select id="posto-graduacao">
-                <option value="" disabled selected>-- Selecione --</option>
-                <option value="CAP">CAP</option>
-                <option value="1º TEN">1º TEN</option>
-                <option value="2º TEN">2º TEN</option>
-                <option value="ST">ST</option>
-                <option value="1º SGT">1º SGT</option>
-                <option value="2º SGT">2º SGT</option>
-                <option value="3º SGT">3º SGT</option>
-                <option value="CB">CB</option>
-                <option value="SD">SD</option>
-            </select>
-        </div>
+        <div class="form-group" id="quadro-group" style="display: none;">
+            <label for="quadro">Quadro</label>
+            <select id="quadro">
+                <option value="" disabled selected>-- Selecione --</option>
+                </select>
+        </div>
 
-                <div class="form-group" id="quadro-group" style="display: none;">
-            <label for="quadro">Quadro</label>
-            <select id="quadro">
-                <option value="" disabled selected>-- Selecione --</option>
-            </select>
-        </div>
+        <div class="form-group" id="nome-guerra-group" style="display: none;">
+            <label for="nome-guerra">Nome de Guerra (Todas as letras maiúsculas)</label>
+            <input type="text" id="nome-guerra" class="uppercase-input" placeholder="Seu Nome de Guerra (Ex: SOUSA)">
+        </div>
 
-                <div class="form-group" id="nome-guerra-group" style="display: none;">
-            <label for="nome-guerra">Nome de Guerra (Somente letras maiúsculas)</label>
-            <input type="text" id="nome-guerra" class="uppercase-input" placeholder="Seu Nome de Guerra (Ex: SOUSA)">
-        </div>
-        
-                <button id="btn-ir" disabled>INICIAR CONFERÊNCIA</button>
+        <button id="btn-ir" disabled>INICIAR CONFERÊNCIA</button>
     </div>
-    </div>
+
+</div>
 
 <div class="footer-central">
     <strong>GOVERNO DE RORAIMA</strong><br>
@@ -462,96 +465,67 @@
 
 
 <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        // Elementos do Passo 1 e 2 (existentes)
-        const postoSelect = document.getElementById('posto-servico');
-        const localSelect = document.getElementById('local');
-        const step2Content = document.getElementById('step-2-content');
-
-        // Novos Elementos do Passo 3
-        const step3Content = document.getElementById('step-3-content');
+    document.addEventListener('DOMContentLoaded', function() {
+        const postoSelect = document.getElementById('posto-servico');
+        const localSelect = document.getElementById('local');
+        const btnIr = document.getElementById('btn-ir');
+        const step2Content = document.getElementById('step-2-content');
+        const step3Content = document.getElementById('step-3-content'); // Novo
+        
+        // Elementos do Passo 3
         const postoGraduacaoSelect = document.getElementById('posto-graduacao');
         const quadroSelect = document.getElementById('quadro');
         const quadroGroup = document.getElementById('quadro-group');
         const nomeGuerraInput = document.getElementById('nome-guerra');
         const nomeGuerraGroup = document.getElementById('nome-guerra-group');
-        const btnIr = document.getElementById('btn-ir');
-        
-        // Novos elementos do passo a passo (3 passos)
-        const stepIndicator = document.getElementById('step-indicator');
-        const stepItem1 = document.getElementById('step-item-1');
-        const stepItem2 = document.getElementById('step-item-2');
-        const stepItem3 = document.getElementById('step-item-3'); // Novo elemento
+        
+        // Novos elementos do passo a passo
+        const stepIndicator = document.getElementById('step-indicator');
+        const stepItem1 = document.getElementById('step-item-1');
+        const stepItem2 = document.getElementById('step-item-2');
+        const stepItem3 = document.getElementById('step-item-3'); // Novo
 
-        // MAPA DE FORMULÁRIOS (Existente)
-        const formsMap = {
-            'ALFA': {
-                'ABT-17': 'https://docs.google.com/forms/d/e/1FAIpQLScaIN4xEGq0FP_5s4cyMUP-OSqLyh9QZiUUAj1v2nMzymXfwg/viewform',
-                'RESGATE': 'https://docs.google.com/forms/d/e/1FAIpQLSe2CuhwbeVTt5OCm6nqWdM-kB0Xv-rChzmkA8byBqil7kHRdg/viewform',
-                'VTR CMD SOS': 'https://docs.google.com/forms/d/e/1FAIpQLSdGEdJBqe9Qadvv5TT5QfZ3Zc2KqJcbGcqwGUut0q796TJnXg/viewform',
-                'PERMANÊNCIA': 'https://docs.google.com/forms/d/e/1FAIpQLSckUGLpBsCIM_nFFS-BCPhAKbrI4CU5p6zo0juwy0Orcu0nTg/viewform',
-                'RESGATE EXTRA': 'https://docs.google.com/forms/d/e/1FAIpQLSf5TJ8w6_6DWTr1oxXgZFPIOuC0_jvpcJMF4ciqRJloaSk5WQ/viewform'
-            },
-            'BRAVO': {
-                'ABT-18': 'https://docs.google.com/forms/d/e/1FAIpQLSctaCjNUB2gDdNDXn3h4RiGOoch94CvAC5sj15D8YgzPT8Z9w/viewform',
-                'PERMANÊNCIA': 'https://docs.google.com/forms/d/e/1FAIpQLSd4paOCzbr3mjS3DEoFOBwmVTjVOrvk6NfspYJ-p1XcNtD7bg/viewform',
-                'LOCAL TESTE': 'conferencia_teste.html' 
-            },
-            'CHARLIE': {
-                'VTR SALVAMENTO': 'https://docs.google.com/forms/d/e/1FAIpQLSfzEdboDDlJJ24oYcr3uIgWxemDzbBfIn8YqQBMJag7A-eqWA/viewform',
-                'PERMANÊNCIA': 'https://docs.google.com/forms/d/e/1FAIpQLSdEpX-ak7Lv3VQSXNkw0JeMGndJfc97Ac_3PhO95M67UHJ3Dw/viewform'
-            },
-            'CARACARAÍ': {
-                'ABT-16': 'https://docs.google.com/forms/d/e/1FAIpQLScuEX-onfOntuiCrccAj5IcPHmgijyL6bTTgFxRDH6c4VPjDg/viewform',
-                'UR 13-23': 'https://docs.google.com/forms/d/e/1FAIpQLSdPS0HfYfTcQ1w-Wd2a8r1PGsd4U3DplCA1fCf6bPNNDrogUQ/viewform',
-                'ATPS 31-21 (GBS)': 'https://docs.google.com/forms/d/e/1FAIpQLSchXqGfiGeTDC2hIpnxgxIGLkxKZziYE5go7pVcYYHGnpj9ow/viewform',
-                'ATF 01-21 (GCIF)': 'https://docs.google.com/forms/d/e/1FAIpQLSdWgjlqDH6Dt2DwM7qRgMAeC2SOSIPShCDVBZXX-T5peyu8TA/viewform',
-                'PERMANÊNCIA': 'https://docs.google.com/forms/d/e/1FAIpQLScW4_vbkqZVKtNM02BBFMkMdpZStX-FF9OIEQkhrPS0ThVVgg/viewform'
-            },
-            'RORAINÓPOLIS': {
-                'ABT-15': 'https://docs.google.com/forms/d/e/1FAIpQLSdbGEFe2CMF_56N5QyXsoNHfBWlokvYTRf5s48_T84T_srt_w/viewform',
-                'UR 09-23': 'https://docs.google.com/forms/d/e/1FAIpQLScRW_T3DEMt0OLOjBD_gGxM3gSUW_igGN0KIJPXjMYTn8C62A/viewform'
-            },
-            'PACARAIMA': {
-                'POSTO PACARAIMA': 'LINK_DO_FORMS_PACARAIMA'
-            }
-        };
-        
         // MAPA DE QUADROS
         const quadrosMap = {
             'Oficiais': ['QOCBM', 'QCOBM', 'QOSBM', 'QEOBM'],
             'Pracas': ['QPCBM', 'QPSBM', 'QEPBM']
         };
+
+        const formsMap = {
+            'ALFA': {
+                'ABT-17': 'https://docs.google.com/forms/d/e/1FAIpQLScaIN4xEGq0FP_5s4cyMUP-OSqLyh9QZiUUAj1v2nMzymXfwg/viewform',
+                'RESGATE': 'https://docs.google.com/forms/d/e/1FAIpQLSe2CuhwbeVTt5OCm6nqWdM-kB0Xv-rChzmkA8byBqil7kHRdg/viewform',
+                'VTR CMD SOS': 'https://docs.google.com/forms/d/e/1FAIpQLSdGEdJBqe9Qadvv5TT5QfZ3Zc2KqJcbGcqwGUut0q796TJnXg/viewform',
+                'PERMANÊNCIA': 'https://docs.google.com/forms/d/e/1FAIpQLSckUGLpBsCIM_nFFS-BCPhAKbrI4CU5p6zo0juwy0Orcu0nTg/viewform',
+                'RESGATE EXTRA': 'https://docs.google.com/forms/d/e/1FAIpQLSf5TJ8w6_6DWTr1oxXgZFPIOuC0_jvpcJMF4ciqRJloaSk5WQ/viewform'
+            },
+            'BRAVO': {
+                'ABT-18': 'https://docs.google.com/forms/d/e/1FAIpQLSctaCjNUB2gDdNDXn3h4RiGOoch94CvAC5sj15D8YgzPT8Z9w/viewform',
+                'PERMANÊNCIA': 'https://docs.google.com/forms/d/e/1FAIpQLSd4paOCzbr3mjS3DEoFOBwmVTjVOrvk6NfspYJ-p1XcNtD7bg/viewform'
+            },
+            'CHARLIE': {
+                'VTR SALVAMENTO': 'https://docs.google.com/forms/d/e/1FAIpQLSfzEdboDDlJJ24oYcr3uIgWxemDzbBfIn8YqQBMJag7A-eqWA/viewform',
+                'PERMANÊNCIA': 'https://docs.google.com/forms/d/e/1FAIpQLSdEpX-ak7Lv3VQSXNkw0JeMGndJfc97Ac_3PhO95M67UHJ3Dw/viewform'
+            },
+            'CARACARAÍ': {
+                'ABT-16': 'https://docs.google.com/forms/d/e/1FAIpQLScuEX-onfOntuiCrccAj5IcPHmgijyL6bTTgFxRDH6c4VPjDg/viewform',
+                'UR 13-23': 'https://docs.google.com/forms/d/e/1FAIpQLSdPS0HfYfTcQ1w-Wd2a8r1PGsd4U3DplCA1fCf6bPNNDrogUQ/viewform',
+                'ATPS 31-21 (GBS)': 'https://docs.google.com/forms/d/e/1FAIpQLSchXqGfiGeTDC2hIpnxgxIGLkxKZziYE5go7pVcYYHGnpj9ow/viewform',
+                'ATF 01-21 (GCIF)': 'https://docs.google.com/forms/d/e/1FAIpQLSdWgjlqDH6Dt2DwM7qRgMAeC2SOSIPShCDVBZXX-T5peyu8TA/viewform',
+                'PERMANÊNCIA': 'https://docs.google.com/forms/d/e/1FAIpQLScW4_vbkqZVKtNM02BBFMkMdpZStX-FF9OIEQkhrPS0ThVVgg/viewform'
+            },
+            'RORAINÓPOLIS': {
+                'ABT-15': 'https://docs.google.com/forms/d/e/1FAIpQLSdbGEFe2CMF_56N5QyXsoNHfBWlokvYTRf5s48_T84T_srt_w/viewform',
+                'UR 09-23': 'https://docs.google.com/forms/d/e/1FAIpQLScRW_T3DEMt0OLOjBD_gGxM3gSUW_igGN0KIJPXjMYTn8C62A/viewform'
+            },
+            'PACARAIMA': {
+                'POSTO PACARAIMA': 'LINK_DO_FORMS_PACARAIMA'
+            }
+        };
         
-        // ------------------------------------------------------------------
-        //  FUNÇÕES DE CONTROLE
-        // ------------------------------------------------------------------
-
-        // Determina o estado visual do passo a passo
-        function updateStepIndicator(step) {
-            // Reset
-            stepIndicator.className = 'step-indicator';
-            stepItem1.className = 'step-item';
-            stepItem2.className = 'step-item';
-            stepItem3.className = 'step-item';
-            
-            // Ativa os passos com base no passo atual
-            if (step >= 1) {
-                stepItem1.classList.add(step > 1 ? 'complete' : 'active');
-            }
-            if (step >= 2) {
-                stepItem2.classList.add(step > 2 ? 'complete' : 'active');
-                stepIndicator.classList.add('progress-1');
-            }
-            if (step >= 3) {
-                stepItem3.classList.add(step > 3 ? 'complete' : 'active');
-                stepIndicator.classList.add('progress-2');
-            }
-            if (step === 4) {
-                stepIndicator.classList.add('progress-3'); // Todos completos (verde)
-            }
-        }
-
+        // --- FUNÇÕES DE CONTROLE DE FLUXO ---
+        
+        // Função que lida com a navegação/submissão
         function navigateToForms() {
             const formsLink = localSelect.value;
             const posto = postoSelect.value;
@@ -566,20 +540,14 @@
                 return;
             }
             
-            localSelect.blur(); 
-            btnIr.disabled = true; // Desabilita o botão ao clicar
-
-            // Constrói a URL com os Query Parameters (dados do Passo 1, 2 e 3)
+            // Aqui você constrói o link com os dados para o Forms/Script PDF
             const params = new URLSearchParams();
-            // Estes nomes de campos (entry.PARAM_XXX) precisam ser ajustados para os nomes reais dos campos do seu Google Forms!
             params.append('entry.PARAM_POSTO_SERV', posto);  
             params.append('entry.PARAM_LOCAL_CONF', local);
             params.append('entry.PARAM_POSTO_GRAD', pGrad);
             params.append('entry.PARAM_QUADRO', quadro);
             params.append('entry.PARAM_NOME_GUERRA', nomeGuerra);
             
-            
-            // Se o link for um HTML local, apenas abre (usando o JS para obter os dados se necessário)
             const finalLink = formsLink.startsWith('http') ? `${formsLink}&${params.toString()}` : formsLink;
             
             if (formsLink) {
@@ -588,78 +556,125 @@
                 console.error('Atenção: O link não foi configurado.');
             }
         }
-        
-        // ------------------------------------------------------------------
-        //  FUNÇÕES DE EXIBIÇÃO
-        // ------------------------------------------------------------------
+        
+        // Função para atualizar o status visual dos passos (agora com 3 passos)
+        function updateStepIndicator(currentStep) {
+            // Reset de todas as classes de status
+            stepItem1.className = 'step-item';
+            stepItem2.className = 'step-item';
+            stepItem3.className = 'step-item';
+            stepIndicator.className = 'step-indicator';
 
-        // 1. Listener para o menu 'Posto de Serviço' (Passo 1)
-        postoSelect.addEventListener('change', function() {
-            const selectedPosto = postoSelect.value;
-            localSelect.innerHTML = '<option value="" disabled selected>-- Selecione um Local --</option>';  
-            postoSelect.blur(); 
+            // Passo 1
+            if (currentStep >= 1) {
+                stepItem1.classList.add(currentStep > 1 ? 'complete' : 'active');
+            }
+            // Passo 2
+            if (currentStep >= 2) {
+                stepItem2.classList.add(currentStep > 2 ? 'complete' : 'active');
+                stepIndicator.classList.add('progress-1');
+            }
+            // Passo 3
+            if (currentStep >= 3) {
+                stepItem3.classList.add(currentStep > 3 ? 'complete' : 'active');
+                stepIndicator.classList.add('progress-2');
+            }
+            // Passo Finalizado (Todos os campos válidos e pronto para clicar)
+            if (currentStep >= 4) {
+                stepIndicator.classList.add('progress-3');
+                stepItem3.classList.add('complete');
+            }
+        }
+
+        // Função que atualiza as opções do Local (Passo 2)
+        function updateLocalOptions() {
+            const selectedPosto = postoSelect.value;
+            localSelect.innerHTML = '<option value="" disabled selected>-- Selecione um Local --</option>'; 
+            postoSelect.blur(); 
             
-            // Oculta Passo 2 e Passo 3, reseta o indicador
+            // Oculta Passo 2 e 3 se o Passo 1 for deselecionado/resetado
             step2Content.style.display = 'none';
             step3Content.style.display = 'none';
             btnIr.disabled = true;
-            updateStepIndicator(0);
 
-            if (selectedPosto && formsMap[selectedPosto]) {
-                const locais = formsMap[selectedPosto];
-                for (const localName in locais) {
-                    const option = document.createElement('option');
-                    option.value = locais[localName];
-                    option.textContent = localName;
-                    localSelect.appendChild(option);
-                }
+            if (selectedPosto && formsMap[selectedPosto]) {
+                const locais = formsMap[selectedPosto];
+                for (const localName in locais) {
+                    const option = document.createElement('option');
+                    option.value = locais[localName];
+                    option.textContent = localName;
+                    localSelect.appendChild(option);
+                }
 
-                // MOSTRA O PASSO 2
-                step2Content.style.display = 'block';
-                updateStepIndicator(1); // Passo 1 Completo, Passo 2 Ativo
-            }
-        });
+                // MOSTRA O PASSO 2
+                step2Content.style.display = 'block';
+                updateStepIndicator(1); // Passo 1 Completo, Passo 2 Ativo
+            } else {
+                updateStepIndicator(0); // Volta ao início
+            }
+
+            localSelect.value = "";
+            btnIr.disabled = true;
+        }
         
-        // 2. Listener para o menu 'Local' (Passo 2) - CORRIGIDO
-        localSelect.addEventListener('change', function() {
-            const isLocalSelected = !!localSelect.value;
-            localSelect.blur(); 
+        // Função que verifica o preenchimento total do Passo 3
+        function checkStep3Completion() {
+            const isPGradSelected = !!postoGraduacaoSelect.value;
+            const isQuadroSelected = !!quadroSelect.value;
+            const isNomeGuerraComplete = nomeGuerraInput.value.trim().length > 1;
 
-            if (isLocalSelected) {
-                // MOSTRA O PASSO 3
-                step3Content.style.display = 'block';
-                updateStepIndicator(2); // Passo 2 Completo, Passo 3 Ativo
-                btnIr.disabled = true; // Botão desabilitado até o Passo 3 estar completo
-
-                // Se o Passo 3 for exibido, garante que apenas o primeiro campo (Posto/Graduação) esteja visível
-                // Os outros campos são ocultados para forçar a sequência de preenchimento.
-                if (!postoGraduacaoSelect.value) {
-                    quadroGroup.style.display = 'none';
-                    nomeGuerraGroup.style.display = 'none';
-                }
+            if (isPGradSelected && isQuadroSelected && isNomeGuerraComplete) {
+                btnIr.disabled = false;
+                updateStepIndicator(4); // Passo 4 = Pronto para clicar (finalizado)
             } else {
-                // ESCONDE PASSO 3
+                btnIr.disabled = true;
+                updateStepIndicator(3); // Passo 3 Ativo (em preenchimento)
+            }
+        }
+        
+        // --- LISTENERS DE AÇÃO ---
+
+        // 1. Listener para o menu 'Posto de Serviço' (Passo 1)
+        postoSelect.addEventListener('change', updateLocalOptions);
+
+        // 2. Listener para o menu 'Local' (Passo 2)
+        localSelect.addEventListener('change', function() {
+            const isLocalSelected = !!localSelect.value;
+            localSelect.blur(); 
+
+            if (isLocalSelected) {
+                // MOSTRA o CONTEÚDO do PASSO 3
+                step3Content.style.display = 'block';
+                updateStepIndicator(3); // Passo 2 Completo, Passo 3 Ativo
+                
+                // Reseta a exibição dos campos do Passo 3, mostrando apenas o primeiro (Posto/Graduação)
+                // Oculta Quadro e Nome de Guerra, forçando a sequência
+                quadroGroup.style.display = 'none';
+                nomeGuerraGroup.style.display = 'none';
+                postoGraduacaoSelect.value = ''; // Reseta o Posto/Graduação
+                
+                btnIr.disabled = true;
+            } else {
+                // ESCONDE Passo 3
                 step3Content.style.display = 'none';
-                updateStepIndicator(1); // Volta para o Passo 2 Ativo
+                updateStepIndicator(2);
                 btnIr.disabled = true;
             }
-        });
+        });
         
-        // 3. Listener para o menu 'Posto/Graduação' (Passo 3a)
+        // 3a. Listener para Posto/Graduação (Passo 3 - Campo 1)
         postoGraduacaoSelect.addEventListener('change', function() {
             const pGrad = postoGraduacaoSelect.value;
-            postoGraduacaoSelect.blur();
-            btnIr.disabled = true; // Desabilita o botão final
-
-            // Define quais opções de Quadro carregar
+            
             let options = [];
+            // Lógica para determinar o Quadro (Oficiais/Praças)
             if (['CAP', '1º TEN', '2º TEN'].includes(pGrad)) {
                 options = quadrosMap['Oficiais'];
             } else if (pGrad) {
                 options = quadrosMap['Pracas'];
             }
 
-            // Limpa e preenche o select do Quadro
+            // Preenche o campo Quadro
             quadroSelect.innerHTML = '<option value="" disabled selected>-- Selecione --</option>';
             options.forEach(quadro => {
                 const option = document.createElement('option');
@@ -667,69 +682,48 @@
                 option.textContent = quadro;
                 quadroSelect.appendChild(option);
             });
-
-            // MOSTRA CAMPO QUADRO
-            quadroGroup.style.display = 'block';
             
-            // Reseta e esconde o campo Nome de Guerra, forçando o fluxo
+            // MOSTRA o campo QUADRO, esconde o Nome de Guerra
+            quadroGroup.style.display = 'block';
             nomeGuerraGroup.style.display = 'none';
-            nomeGuerraInput.value = ''; 
-
-            updateStepIndicator(2); // Mantém no Passo 3 Ativo
+            nomeGuerraInput.value = '';
+            
+            postoGraduacaoSelect.blur();
+            checkStep3Completion();
         });
-
-        // 4. Listener para o menu 'Quadro' (Passo 3b)
+        
+        // 3b. Listener para Quadro (Passo 3 - Campo 2)
         quadroSelect.addEventListener('change', function() {
             const isQuadroSelected = !!quadroSelect.value;
-            quadroSelect.blur();
-            btnIr.disabled = true; // Desabilita o botão final
-
+            
             if (isQuadroSelected) {
-                // MOSTRA CAMPO NOME DE GUERRA
+                // MOSTRA o campo NOME DE GUERRA
                 nomeGuerraGroup.style.display = 'block';
                 nomeGuerraInput.focus();
-                updateStepIndicator(2); // Mantém no Passo 3 Ativo
             } else {
                 nomeGuerraGroup.style.display = 'none';
             }
+            
+            quadroSelect.blur();
+            checkStep3Completion();
         });
-
-        // 5. Listener para o campo 'Nome de Guerra' (Passo 3c - Último)
+        
+        // 3c. Listener para Nome de Guerra (Passo 3 - Campo 3)
         nomeGuerraInput.addEventListener('input', function() {
-            // Força letras maiúsculas
+            // Força maiúsculas
             nomeGuerraInput.value = nomeGuerraInput.value.toUpperCase();
-
-            // Verifica se está preenchido (mínimo de 2 caracteres)
-            const isNomeGuerraComplete = nomeGuerraInput.value.trim().length > 1;
-
-            btnIr.disabled = !isNomeGuerraComplete; // Habilita o botão final
-
-            if (isNomeGuerraComplete) {
-                updateStepIndicator(3); // Passo 3 Completo (Passo 4 no indicador visual)
-            } else {
-                updateStepIndicator(2); // Volta ao Passo 3 Ativo (se estiver incompleto)
-            }
+            checkStep3Completion();
         });
-        
-        // 6. Listener para o botão 'INICIAR CONFERÊNCIA'
-        btnIr.addEventListener('click', navigateToForms);
 
-        // ------------------------------------------------------------------
-        //  INICIALIZAÇÃO
-        // ------------------------------------------------------------------
+        // 4. Listener para o botão 'INICIAR CONFERÊNCIA'
+        btnIr.addEventListener('click', navigateToForms);
 
-        // Garante que o passo 2 e 3 estejam ocultos ao carregar
-        step2Content.style.display = 'none';
-        step3Content.style.display = 'none';
-        
-        // Adiciona o listener para forçar maiúsculas no input de nome de guerra (garantia)
-        nomeGuerraInput.addEventListener('change', function() {
-            this.value = this.value.toUpperCase();
-        });
-        
-        // Inicializa o Step Indicator no Passo 1
-        updateStepIndicator(0); 
-    });
+        // --- INICIALIZAÇÃO ---
+        
+        // Garante que o estado inicial (Passo 1 Ativo) está correto
+        updateLocalOptions();
+        updateStepIndicator(1); // Inicia no Passo 1 Ativo (Posto de Serviço)
+    });
 </script>
 
 </body>
