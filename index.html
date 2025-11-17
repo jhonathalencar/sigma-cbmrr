@@ -112,6 +112,17 @@
             margin-bottom: 10px; /* Espaçamento após a linha */
         }
         
+        /* --- NOVOS ESTILOS DE CORREÇÃO PARA O PASSO 3 --- */
+        #step-3-content h2 {
+            font-size: 1.2em;
+            color: #d90f23;
+            margin-top: 5px;
+            margin-bottom: 20px;
+            border-bottom: 1px solid #e0e0e0; 
+            padding-bottom: 5px;
+            font-weight: 600;
+        }
+        
         .subtitulo {
             font-size: 0.8em;
             color: #666;
@@ -231,6 +242,7 @@
             font-size: 0.9em;
         }
         
+        /* Estilos unificados para inputs e selects */
         input[type="text"], select, button {
             width: 100%;
             padding: 10px;
@@ -390,6 +402,7 @@
                 <option value="RORAINÓPOLIS">RORAINÓPOLIS</option>
                 <option value="PACARAIMA">PACARAIMA</option>
             </select>
+            
         </div>
     </div>
 
@@ -558,13 +571,13 @@
 
             // Constrói a URL com os Query Parameters (dados do Passo 1, 2 e 3)
             const params = new URLSearchParams();
+            // Estes nomes de campos (entry.PARAM_XXX) precisam ser ajustados para os nomes reais dos campos do seu Google Forms!
             params.append('entry.PARAM_POSTO_SERV', posto);  
             params.append('entry.PARAM_LOCAL_CONF', local);
             params.append('entry.PARAM_POSTO_GRAD', pGrad);
             params.append('entry.PARAM_QUADRO', quadro);
             params.append('entry.PARAM_NOME_GUERRA', nomeGuerra);
             
-            // OBS: Os parâmetros 'entry.PARAM_XXX' devem ser ajustados para os nomes reais dos campos no seu Google Forms
             
             // Se o link for um HTML local, apenas abre (usando o JS para obter os dados se necessário)
             const finalLink = formsLink.startsWith('http') ? `${formsLink}&${params.toString()}` : formsLink;
@@ -607,7 +620,7 @@
             }
         });
         
-        // 2. Listener para o menu 'Local' (Passo 2)
+        // 2. Listener para o menu 'Local' (Passo 2) - CORRIGIDO
         localSelect.addEventListener('change', function() {
             const isLocalSelected = !!localSelect.value;
             localSelect.blur(); 
@@ -619,6 +632,7 @@
                 btnIr.disabled = true; // Botão desabilitado até o Passo 3 estar completo
 
                 // Se o Passo 3 for exibido, garante que apenas o primeiro campo (Posto/Graduação) esteja visível
+                // Os outros campos são ocultados para forçar a sequência de preenchimento.
                 if (!postoGraduacaoSelect.value) {
                     quadroGroup.style.display = 'none';
                     nomeGuerraGroup.style.display = 'none';
