@@ -243,12 +243,12 @@
             color: white;
         }
         
-        /* NOVO ESTILO: Container para os botões C/A e S/A - Alinha à direita */
+        /* Container para os botões C/A e S/A - Alinha à direita (Item Único)*/
         .item-options {
             display: flex;
-            justify-content: flex-end; /* ALINHA OS BOTÕES À DIREITA */
+            justify-content: flex-end; 
             margin-top: 5px;
-            gap: 10px; /* Espaçamento entre os botões */
+            gap: 10px; 
             padding-top: 5px;
             border-top: 1px solid #f0f0f0;
         }
@@ -281,19 +281,22 @@
         
         /* Novo estilo para o container de tombamento */
         .tombamento-container {
+            border-top: 1px dotted #eee;
+            margin-top: 5px;
+            padding-top: 5px;
+            text-align: left;
+            padding-bottom: 5px; /* Para dar espaço */
+        }
+        
+        /* NOVO CONTAINER DE CONTROLE DENTRO DO TOMBAMENTO */
+        .tombamento-controls {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 5px 0;
-            border-top: 1px dotted #eee;
-            margin-top: 5px;
             font-size: 0.85em;
-            text-align: left;
         }
-        .tombamento-container:first-of-type {
-            border-top: none; 
-        }
-
+        
+        /* NOVO: Container de opções (botões S/A e C/A do tombamento) */
         .tombamento-options {
             display: flex;
             gap: 5px;
@@ -306,22 +309,73 @@
              margin: 0;
         }
         
-        .descricao-salva {
+        /* Estilo da observação individual do tombamento */
+        .tombamento-obs-container {
+            margin-top: 10px;
+            padding-top: 10px;
+            border-top: 1px dashed #d90f23;
+            display: none; /* Começa escondido */
+            text-align: left;
+        }
+        
+        .tombamento-obs-container label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #d90f23;
+            font-size: 0.85em;
+        }
+
+        .tombamento-obs-container textarea {
+            width: 100%;
+            padding: 8px;
+            border-radius: 4px;
+            border: 1px solid #d90f23;
+            box-sizing: border-box;
+            font-size: 0.85em;
+            resize: vertical;
+            min-height: 40px;
+            margin-bottom: 5px;
+        }
+        
+        .tombamento-obs-container .btn-salvar-alteracao {
+            width: 100%;
+            padding: 6px 10px;
+            font-size: 0.85em;
+        }
+        
+        /* Descrição salva individual por tombamento */
+        .tombamento-descricao-salva {
+            font-size: 0.85em;
+            margin-top: 10px;
+            display: none;
+            padding-top: 5px;
+            border-top: 1px dashed #ddd;
+        }
+        
+        .descricao-salva, .tombamento-descricao-salva {
             font-size: 0.9em;
             margin-top: 5px;
             display: none;
             text-align: left; 
         }
-        .descricao-salva .obs-texto {
+        .descricao-salva .obs-texto, .tombamento-descricao-salva .obs-texto {
             color: #d90f23; 
             font-weight: bold;
         }
-        .descricao-salva .obs-titulo {
+        .descricao-salva .obs-titulo, .tombamento-descricao-salva .obs-titulo {
              color: #333; 
              font-weight: bold;
         }
 
 
+        /* Esconder o container de alteração do item principal (agora inútil para multi-tombamento) */
+        .item-has-tombamentos > .alteracao-container {
+            display: none !important;
+        }
+
+
+        /* O container de alteração do item ÚNICO continua como antes */
         .alteracao-container {
             margin-top: 10px;
             padding-top: 10px;
@@ -337,18 +391,8 @@
             color: #d90f23;
             font-size: 0.9em;
         }
-
-        .alteracao-container textarea {
-            width: 100%;
-            padding: 8px;
-            border-radius: 4px;
-            border: 1px solid #d90f23;
-            box-sizing: border-box;
-            font-size: 0.9em;
-            resize: vertical;
-            min-height: 50px;
-            margin-bottom: 10px;
-        }
+        
+        /* ... outros estilos de botão/rodapé ... */
         
         .btn-salvar-alteracao {
             background-color: #800020;
@@ -455,28 +499,38 @@
                 </div>
                 
                 <div class="tombamento-container" data-tomb="123.456" data-item-id="1-2">
-                    <span>Tomb.: 123.456</span>
-                    <div class="tombamento-options">
-                        <button class="action-button sa-ok" onclick="setTombamentoStatus(this, 'ok')">S/A</button>
-                        <button class="action-button ca-alert" onclick="setTombamentoStatus(this, 'alert')">C/A</button>
+                    <div class="tombamento-controls">
+                        <span>Tomb.: 123.456</span>
+                        <div class="tombamento-options">
+                            <button class="action-button sa-ok" onclick="setTombamentoStatus(this, 'ok')">S/A</button>
+                            <button class="action-button ca-alert" onclick="setTombamentoStatus(this, 'alert')">C/A</button>
+                        </div>
+                    </div>
+                    <p class="tombamento-descricao-salva"></p>
+                    <div class="tombamento-obs-container">
+                        <label>Obs. (Obrigatória para C/A no Tomb. 123.456):</label>
+                        <textarea placeholder="Detalhe a alteração para este tombamento."></textarea>
+                        <button type="button" class="btn-salvar-alteracao" onclick="salvarTombamento(this)">SALVAR OBSERVAÇÃO</button>
                     </div>
                 </div>
                 
                 <div class="tombamento-container" data-tomb="678.910" data-item-id="1-2">
-                    <span>Tomb.: 678.910</span>
-                    <div class="tombamento-options">
-                         <button class="action-button sa-ok" onclick="setTombamentoStatus(this, 'ok')">S/A</button>
-                        <button class="action-button ca-alert" onclick="setTombamentoStatus(this, 'alert')">C/A</button>
+                    <div class="tombamento-controls">
+                        <span>Tomb.: 678.910</span>
+                        <div class="tombamento-options">
+                            <button class="action-button sa-ok" onclick="setTombamentoStatus(this, 'ok')">S/A</button>
+                            <button class="action-button ca-alert" onclick="setTombamentoStatus(this, 'alert')">C/A</button>
+                        </div>
+                    </div>
+                    <p class="tombamento-descricao-salva"></p>
+                    <div class="tombamento-obs-container">
+                        <label>Obs. (Obrigatória para C/A no Tomb. 678.910):</label>
+                        <textarea placeholder="Detalhe a alteração para este tombamento."></textarea>
+                        <button type="button" class="btn-salvar-alteracao" onclick="salvarTombamento(this)">SALVAR OBSERVAÇÃO</button>
                     </div>
                 </div>
-
-                <p class="descricao-salva" data-text-id="1-2"></p>
-                <div class="alteracao-container">
-                    <label>Observação (Obrigatória para C/A):</label>
-                    <textarea data-id="1-2" placeholder="Descreva o tipo de alteração no(s) tombamento(s)"></textarea>
-                    <button type="button" class="btn-salvar-alteracao" onclick="salvarItem(this)">SALVAR</button>
+                
                 </div>
-            </div>
 
             <div class="item-conferencia" data-type="single" data-status="pending" data-id="1-3">
                 <div class="item-header">
@@ -485,13 +539,13 @@
                     <span class="item-quantidade">Qtd. Esperada: 3</span>
                 </div>
                 <div class="item-options">
-                     <button class="action-button sa-ok" onclick="setItemStatus(this, 'ok')">S/A</button>
+                    <button class="action-button sa-ok" onclick="setItemStatus(this, 'ok')">S/A</button>
                     <button class="action-button ca-alert" onclick="setItemStatus(this, 'alert')">C/A</button>
                 </div>
                 <p class="descricao-salva" data-text-id="1-3"></p>
                 <div class="alteracao-container">
                     <label>Observação (Obrigatória para C/A):</label>
-                    <textarea placeholder="Descreva o tipo de alteração ou falta."></textarea>
+                    <textarea data-id="1-3" placeholder="Descreva o tipo de alteração ou falta."></textarea>
                     <button type="button" class="btn-salvar-alteracao" onclick="salvarItem(this)">SALVAR</button>
                 </div>
             </div>
@@ -521,7 +575,7 @@
                 <p class="descricao-salva" data-text-id="2-1"></p>
                 <div class="alteracao-container">
                     <label>Observação (Obrigatória para C/A):</label>
-                    <textarea placeholder="Descreva o tipo de alteração ou falta."></textarea>
+                    <textarea data-id="2-1" placeholder="Descreva o tipo de alteração ou falta."></textarea>
                     <button type="button" class="btn-salvar-alteracao" onclick="salvarItem(this)">SALVAR</button>
                 </div>
             </div>
@@ -539,7 +593,7 @@
                 <p class="descricao-salva" data-text-id="2-2"></p>
                 <div class="alteracao-container">
                     <label>Observação (Obrigatória para C/A):</label>
-                    <textarea placeholder="Descreva o tipo de alteração ou falta."></textarea>
+                    <textarea data-id="2-2" placeholder="Descreva o tipo de alteração ou falta."></textarea>
                     <button type="button" class="btn-salvar-alteracao" onclick="salvarItem(this)">SALVAR</button>
                 </div>
             </div>
@@ -557,7 +611,7 @@
                 <p class="descricao-salva" data-text-id="2-3"></p>
                 <div class="alteracao-container">
                     <label>Observação (Obrigatória para C/A):</label>
-                    <textarea placeholder="Descreva o tipo de alteração ou falta."></textarea>
+                    <textarea data-id="2-3" placeholder="Descreva o tipo de alteração ou falta."></textarea>
                     <button type="button" class="btn-salvar-alteracao" onclick="salvarItem(this)">SALVAR</button>
                 </div>
             </div>
@@ -589,19 +643,18 @@
         name = name.replace(/[\[]/, '\\[').replace(/[\]]/, '\\]');
         const regex = new RegExp('[\\?&]' + name + '=([^&#]*)');
         const results = regex.exec(location.search);
-        // Usa decodeURIComponent para garantir que '3º SGT' ou 'LOCAL TESTE' não fiquem codificados
         return results === null ? '' : decodeURIComponent(results[1].replace(/\+/g, ' '));
     }
     
-    // Dados do militar (LÊ DA URL. Se falhar, usa dados padrão como fallback)
+    // Dados do militar
     const userInfo = {
         postoGraduacao: getUrlParameter('posto_grad') || "CAP",
-        quadro: getUrlParameter('quadro_mil') || "QOCBM", // Espera 'quadro_mil' do index.html
+        quadro: getUrlParameter('quadro_mil') || "QOCBM", 
         nomeGuerra: getUrlParameter('nome_guerra') || "SOUSA", 
     };
     
-    // Variável para armazenar o status de todos os itens
-    // Para itens multi-tombamento, armazena { '1-2': { status: 'PENDING', total_ok: 0, total_ca: 0 }, '1-2-123.456': { status: 'S/A', obs: '' } }
+    // Variável para armazenar o status de todos os itens e tombamentos.
+    // Chave: 'item-id' (ex: 1-2) ou 'item-id-tomb-id' (ex: 1-2-123.456)
     let itemStatus = {}; 
 
     // Mapeamento dos setores (usado para auto-avançar)
@@ -636,27 +689,23 @@
         const item = button.closest('.item-conferencia');
         const setor = button.closest('.setor');
         
-        // Verifica se é item multi-tombamento
         if (item.dataset.type === 'multi') {
-            console.error("Erro: setItemStatus não deve ser chamado em itens com tombamento. Use setTombamentoStatus.");
+            console.error("Erro: setItemStatus não deve ser chamado em itens com tombamento.");
             return;
         }
         
         const alteracaoContainer = item.querySelector('.alteracao-container');
         const observacaoTextarea = alteracaoContainer.querySelector('textarea');
-        const buttons = item.querySelectorAll('.action-button');
+        const buttons = item.querySelectorAll('.item-options .action-button');
         const statusIcon = item.querySelector('.status-icon');
 
-        // Limpa classes e status anterior
         item.classList.remove('status-ok', 'status-alert');
         statusIcon.className = 'status-icon';
         item.dataset.status = status;
         
-        // AQUI: Remove a classe 'active' de TODOS os botões e adiciona ao clicado
         buttons.forEach(btn => btn.classList.remove('active'));
         button.classList.add('active');
 
-        // Oculta/limpa observação salva
         item.querySelector('.descricao-salva').style.display = 'none';
         item.querySelector('.descricao-salva').textContent = '';
         alteracaoContainer.style.display = 'none';
@@ -665,7 +714,7 @@
             // S/A (Sem Alteração)
             item.classList.add('status-ok');
             statusIcon.classList.add('ok');
-            observacaoTextarea.value = ''; // Limpa a observação (se houver)
+            observacaoTextarea.value = ''; 
             itemStatus[item.dataset.id] = { status: 'S/A', obs: '' };
         } else if (status === 'alert') {
             // C/A (Com Alteração) - Abre a área de observação
@@ -673,12 +722,12 @@
             statusIcon.classList.add('alert');
             alteracaoContainer.style.display = 'block';
             
-            // Marca como pendente no itemStatus até salvar (Para não contar no completed)
+            // Marca como PENDING_CA (pendente de salvamento)
             itemStatus[item.dataset.id] = { status: 'PENDING_CA', obs: '' };
             observacaoTextarea.focus();
             
             updateSetorStatus(setor);
-            return;
+            return; // Não avança, pois precisa da observação
         }
 
         // Atualiza a exibição e o progresso
@@ -697,57 +746,92 @@
         const itemId = item.dataset.id;
         const uniqueId = `${itemId}-${tombId}`; // Ex: 1-2-123.456
 
-        const itemStatusIcon = item.querySelector('.status-icon');
-        const buttons = tombamentoEl.querySelectorAll('.action-button');
-        
-        // AQUI: Remove a classe 'active' de TODOS os botões e adiciona ao clicado
+        const buttons = tombamentoEl.querySelectorAll('.tombamento-options .action-button');
+        const obsContainer = tombamentoEl.querySelector('.tombamento-obs-container');
+        const descricaoSalvaEl = tombamentoEl.querySelector('.tombamento-descricao-salva');
+
         buttons.forEach(btn => btn.classList.remove('active'));
         button.classList.add('active');
         
-        // Atualiza o status individual do tombamento
-        itemStatus[uniqueId] = { status: status, obs: '' };
+        // 1. Oculta/limpa a área de observação
+        obsContainer.style.display = 'none';
+        descricaoSalvaEl.style.display = 'none';
+        descricaoSalvaEl.textContent = '';
         
-        // --- Atualização do Item Principal (Item 1.2) ---
-        
-        // 1. Oculta/limpa a descrição salva do item principal
-        item.querySelector('.descricao-salva').style.display = 'none';
-        item.querySelector('.descricao-salva').textContent = '';
-        
-        // 2. Se for C/A, abre a área de alteração no item principal e marca o item principal como PENDENTE_CA
-        if (status === 'alert') {
-            item.classList.add('status-alert');
-            item.classList.remove('status-ok');
-            item.dataset.status = 'alert';
-            item.querySelector('.alteracao-container').style.display = 'block';
-            itemStatus[itemId] = { status: 'PENDING_CA', obs: '' }; // Item principal fica pendente de observação
-            itemStatusIcon.classList.remove('ok', 'pending');
-            itemStatusIcon.classList.add('alert');
-        } else {
-            // 3. Se S/A, verificamos se há outros C/A pendentes
-            const hasOtherPendingCA = Array.from(item.querySelectorAll('.tombamento-container')).some(t => {
-                const id = `${itemId}-${t.dataset.tomb}`;
-                return itemStatus[id]?.status === 'alert'; // Se outro tombamento for C/A, não fecha o container de obs
-            });
-
-            if (!hasOtherPendingCA) {
-                 item.querySelector('.alteracao-container').style.display = 'none';
-                 item.dataset.status = 'pending'; 
-                 itemStatus[itemId] = { status: 'PENDING', obs: '' };
-                 item.classList.remove('status-alert'); // Remove o highlight vermelho se não houver C/A
-            }
+        if (status === 'ok') {
+            // S/A - Status final
+            itemStatus[uniqueId] = { status: 'S/A', obs: '' };
+            updateItemMainStatus(item); // Recalcula o status do item pai
+        } else if (status === 'alert') {
+            // C/A - Abre a área de observação
+            obsContainer.style.display = 'block';
+            obsContainer.querySelector('textarea').focus();
+            
+            // Marca como PENDENTE DE SALVAMENTO
+            itemStatus[uniqueId] = { status: 'PENDING_CA', obs: '' };
+            updateItemMainStatus(item); // Recalcula o status do item pai
+            return; // Não avança, pois requer salvamento
         }
         
-        // 4. Recalcula o status do item principal e do setor
-        updateItemMainStatus(item); // Atualiza o status visual principal do item
         updateSetorStatus(setor);
         updateOverallStatus();
+        checkSetorCompletion(setor, itemId); // Tenta avançar se o item principal estiver completo
     }
     
-    // Atualiza o ícone e status principal de um item (ex: Item 1.2)
+    // NOVO: Função para salvar a observação de um tombamento
+    function salvarTombamento(button) {
+        const tombamentoEl = button.closest('.tombamento-container');
+        const item = button.closest('.item-conferencia');
+        const setor = button.closest('.setor');
+        
+        const tombId = tombamentoEl.dataset.tomb;
+        const itemId = item.dataset.id;
+        const uniqueId = `${itemId}-${tombId}`;
+        
+        const observacaoTextarea = tombamentoEl.querySelector('textarea');
+        const descricaoSalvaEl = tombamentoEl.querySelector('.tombamento-descricao-salva');
+        const obsContainer = tombamentoEl.querySelector('.tombamento-obs-container');
+        const observacao = observacaoTextarea.value.trim();
+
+        if (observacao.length < 5) {
+            alert("A descrição da alteração é muito curta. Por favor, detalhe.");
+            observacaoTextarea.focus();
+            return;
+        }
+
+        // 1. Atualiza o status final do tombamento
+        itemStatus[uniqueId] = { status: 'C/A', obs: observacao };
+
+        // 2. Oculta o container de observação e exibe o texto salvo
+        obsContainer.style.display = 'none';
+        descricaoSalvaEl.innerHTML = `
+            <span class="obs-titulo">Obs. Tomb. ${tombId}:</span> 
+            <span class="obs-texto">${observacao}</span>
+        `;
+        descricaoSalvaEl.style.display = 'block';
+
+        // 3. Atualiza o status do item principal e do setor
+        updateItemMainStatus(item);
+        updateSetorStatus(setor);
+        updateOverallStatus();
+        checkSetorCompletion(setor, itemId);
+    }
+    
+    // Atualiza o ícone e status principal de um item (para item único e multi-tombamento)
     function updateItemMainStatus(item) {
         const itemId = item.dataset.id;
-        const total = parseInt(item.dataset.totalTombamentos);
+        const statusIcon = item.querySelector('.status-icon');
+        statusIcon.className = 'status-icon'; // Reset
+        
+        if (item.dataset.type === 'single') {
+             // Lógica para item single (mantida do setItemStatus, mas aqui é redundante)
+             return;
+        }
+
+        // Lógica para ITENS COM TOMBAMENTO (MULTI)
+        
         const tombamentos = item.querySelectorAll('.tombamento-container');
+        const total = tombamentos.length;
         let conferidos = 0;
         let alterados = 0;
 
@@ -755,41 +839,34 @@
             const uniqueId = `${itemId}-${tomb.dataset.tomb}`;
             const status = itemStatus[uniqueId]?.status;
 
-            if (status === 'ok' || status === 'alert') {
+            if (status === 'S/A' || status === 'C/A') {
                 conferidos++;
-                if (status === 'alert') alterados++;
+                if (status === 'C/A') alterados++;
             }
         });
         
-        const statusIcon = item.querySelector('.status-icon');
-        statusIcon.className = 'status-icon'; // Reset
-
         if (conferidos === total) {
-            // 100% dos tombamentos conferidos
+            // Item principal 100% conferido
             if (alterados > 0) {
-                 // 100% conferido com alterações. Requer salvamento da OBS principal.
-                 if (itemStatus[itemId]?.status === 'C/A') {
-                     statusIcon.classList.add('alert'); // Já foi salvo
-                 } else {
-                     statusIcon.classList.add('alert'); // Temporariamente alert/red dots
-                     item.dataset.status = 'alert'; // Item principal está pronto para ser salvo
-                 }
+                 statusIcon.classList.add('alert');
+                 item.dataset.status = 'alert';
                  item.classList.add('status-alert');
                  item.classList.remove('status-ok');
+                 // O status no itemStatus principal serve apenas para o contador de setor/total
+                 itemStatus[itemId] = { status: 'C/A', obs: 'Ver tombamentos' }; 
             } else {
-                 // 100% conferido sem alterações
                  statusIcon.classList.add('ok');
                  item.dataset.status = 'ok';
-                 itemStatus[itemId] = { status: 'S/A', obs: '' }; // Salva o status S/A no item principal
+                 itemStatus[itemId] = { status: 'S/A', obs: '' }; 
                  item.classList.add('status-ok');
                  item.classList.remove('status-alert');
-                 checkSetorCompletion(item.closest('.setor'), itemId); // Tenta avançar
             }
         } else {
-            // Conferência incompleta
+            // Conferência incompleta ou pendente de observação
             statusIcon.classList.add('pending');
             item.dataset.status = 'pending';
             item.classList.remove('status-ok', 'status-alert');
+            // itemStatus[itemId] permanece como 'PENDING'
         }
     }
 
@@ -809,10 +886,10 @@
             
             const itemStatusData = itemStatus[itemID];
 
-            if (item.dataset.status === 'ok') {
+            // Verifica o status final (S/A ou C/A (salvo)) do item principal
+            if (itemStatusData?.status === 'S/A') {
                  completedItems++;
             } else if (itemStatusData?.status === 'C/A') {
-                // Item principal está C/A e salvo
                  completedItems++;
                  alteredItems++;
             }
@@ -857,13 +934,14 @@
         }
     }
     
-    // Salva a alteração descrita (Botão Salvar)
+    // Salva a alteração descrita (Botão Salvar do ITEM ÚNICO)
     function salvarItem(button) {
         const item = button.closest('.item-conferencia');
         const setor = button.closest('.setor');
         const observacaoTextarea = item.querySelector('textarea');
         const descricaoSalvaEl = item.querySelector('.descricao-salva');
         const observacao = observacaoTextarea.value.trim();
+        const itemId = item.dataset.id;
 
         if (observacao.length < 5) {
             alert("A descrição da alteração é muito curta. Por favor, detalhe.");
@@ -874,14 +952,14 @@
         // 1. Atualiza o status final do item e o status geral
         item.dataset.status = 'alert';
         item.classList.add('status-alert');
-        itemStatus[item.dataset.id] = { status: 'C/A', obs: observacao };
+        itemStatus[itemId] = { status: 'C/A', obs: observacao };
         
         // Garante que o ícone de status está correto após o salvamento
         const statusIcon = item.querySelector('.status-icon');
         statusIcon.className = 'status-icon alert';
 
 
-        // 2. Oculta o container de alteração e exibe o texto salvo (MODIFICADO AQUI)
+        // 2. Oculta o container de alteração e exibe o texto salvo
         item.querySelector('.alteracao-container').style.display = 'none';
         descricaoSalvaEl.innerHTML = `
             <span class="obs-titulo">Alteração encontrada:</span> 
@@ -892,7 +970,7 @@
         // 3. Atualiza o progresso do setor e avança
         updateSetorStatus(setor);
         updateOverallStatus();
-        checkSetorCompletion(setor, item.dataset.id);
+        checkSetorCompletion(setor, itemId);
     }
     
     // Verifica se o setor terminou e avança
@@ -916,32 +994,29 @@
 
         for (let i = currentIndex + 1; i < allItems.length; i++) {
             const nextItem = allItems[i];
-            
-            // Só avança o foco se o item não estiver conferido
             const nextItemId = nextItem.dataset.id;
             const itemData = itemStatus[nextItemId];
 
-            // Verifica se o item está pendente ou pendente de observação (multi-tombamento)
-            const isPending = !itemData || itemData.status === 'PENDING';
-            const isPendingCA = itemData && itemData.status === 'PENDING_CA';
-
-            // Para item tipo 'single', só avançamos se estiver 'PENDING'
-            if (nextItem.dataset.type === 'single' && isPending) {
+            // Verifica se o item está PENDENTE DE CONFERÊNCIA (PENDING)
+            if (!itemData || itemData.status === 'PENDING') {
                  nextItem.scrollIntoView({ behavior: 'smooth', block: 'center' });
                  return;
             } 
-            // Para item tipo 'multi', avançamos se estiver 'PENDING' ou 'PENDING_CA' (só se todos os tombamentos estiverem preenchidos)
-            else if (nextItem.dataset.type === 'multi' && (isPending || isPendingCA)) {
-                 // Verificação extra para item multi: só deve focar se NENHUM tombamento foi clicado ou se todos foram clicados e o item principal é PENDING_CA
-                 const allTombamentosClicked = Array.from(nextItem.querySelectorAll('.tombamento-container')).every(tomb => {
-                     const uniqueId = `${nextItemId}-${tomb.dataset.tomb}`;
-                     return itemStatus[uniqueId] && itemStatus[uniqueId].status !== 'pending';
-                 });
+            
+            // Verifica se o item MULTI-TOMBAMENTO está PENDENTE DE OBSERVAÇÃO INDIVIDUAL (PENDING_CA)
+            if (nextItem.dataset.type === 'multi') {
+                // Procura um tombamento pendente de observação dentro do item
+                const pendingTombamento = Array.from(nextItem.querySelectorAll('.tombamento-container')).find(tomb => {
+                    const uniqueId = `${nextItemId}-${tomb.dataset.tomb}`;
+                    return itemStatus[uniqueId]?.status === 'PENDING_CA';
+                });
 
-                 if (isPending || (isPendingCA && allTombamentosClicked)) {
-                      nextItem.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                      return;
-                 }
+                if (pendingTombamento) {
+                    // Se encontrar um tombamento C/A sem observação salva, rola para ele e foca no textarea.
+                    pendingTombamento.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    pendingTombamento.querySelector('textarea').focus();
+                    return;
+                }
             }
         }
         // Se chegou ao fim, rola para o botão finalizar (se aplicável)
@@ -952,7 +1027,6 @@
     function autoAdvanceSetor(currentSetorId) {
         const currentSetorEl = document.querySelector(`.setor[data-id="${currentSetorId}"]`);
         
-        // 1. Retrai o setor atual
         if (currentSetorEl) {
            toggleSetor(currentSetorEl.querySelector('.setor-header')); 
         }
@@ -988,7 +1062,7 @@
             <strong>Conferente:</strong> ${militarCompleto} (${dataConferencia})
         `;
         
-        // 2. Injeta os dados de Local/Posto (Formatação solicitada: LOCAL TESTE - Posto BRAVO)
+        // 2. Injeta os dados de Local/Posto
         const localPostoElement = document.getElementById('local-posto-info');
         localPostoElement.textContent = `${urlLocal} - ${urlPosto}`;
 
@@ -997,16 +1071,22 @@
             const statusIcon = item.querySelector('.status-icon');
             statusIcon.className = 'status-icon pending';
             item.dataset.status = 'pending';
-            // Preenche o itemStatus com PENDENTE para que o contador comece em 0/Total
+            
+            // Item principal inicia PENDENTE
             itemStatus[item.dataset.id] = { status: 'PENDING', obs: '' }; 
             
             // Inicializa Tombamentos se existirem
             item.querySelectorAll('.tombamento-container').forEach(tomb => {
                 const uniqueId = `${item.dataset.id}-${tomb.dataset.tomb}`;
-                itemStatus[uniqueId] = { status: 'pending', obs: '' };
+                itemStatus[uniqueId] = { status: 'PENDING', obs: '' }; // Tombamento individual inicia PENDENTE
                 
                 // Remove a classe 'active' de todos os botões de tombamento
                 tomb.querySelectorAll('.action-button').forEach(btn => btn.classList.remove('active'));
+                
+                // Limpa a observação
+                tomb.querySelector('textarea').value = '';
+                tomb.querySelector('.tombamento-obs-container').style.display = 'none';
+                tomb.querySelector('.tombamento-descricao-salva').style.display = 'none';
             });
 
             // Remove a classe 'active' de todos os botões de item único
