@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <link rel="icon" type="image/png" href="logo_sigma.png" onerror="this.href='https://placehold.co/16x16/800020/ffffff?text=S'">
+    <link rel="icon" type="image/png" href="logo_sigma.png" onerror="this.href='https://placehold.co/16x16/800020/ffffff?text=S'">
     <title>SIGMA - Conferência de Materiais</title>
     <style>
         /* BASE & RESET */
@@ -118,9 +118,9 @@
             margin-bottom: 15px;  
             font-weight: 600;
         }
-
-        /* Estilo para o título do Passo 3 */
-        .step-3-title {
+        
+        /* NOVO: Estilo para o cabeçalho "Identificação" */
+        .step-title {
             font-size: 1.2em;
             color: #d90f23;
             margin-top: 5px;
@@ -130,7 +130,7 @@
             font-weight: 600;
         }
 
-        /* Estilo para o input de texto (Nome de Guerra) que foi adicionado */
+        /* NOVO: Estilo para o campo de texto (Nome de Guerra) */
         input[type="text"] {
             width: 100%;
             padding: 10px;
@@ -145,19 +145,19 @@
             margin-top: 0;
             text-transform: none;
         }
-
-        /* Classe para forçar todas as letras maiúsculas no campo NOME DE GUERRA */
+        
+        /* NOVO: Classe para forçar todas as letras maiúsculas no campo NOME DE GUERRA */
         .uppercase-input {
             text-transform: uppercase;
             font-weight: bold;
         }
         
-        /* --- AJUSTE NO STEP INDICATOR (3 Passos) --- */
+        /* --- CORREÇÕES NO CSS PARA SUPORTAR 3 PASSOS --- */
         .step-indicator {
             display: flex;
-            justify-content: space-between; /* Espaçamento para 3 itens */
+            justify-content: space-between; /* Ajustado para espaçar 3 itens */
             align-items: center;
-            margin: 15px 0 30px; 
+            margin: 15px 0 30px;
             padding: 0 10px;
             position: relative;
         }
@@ -201,50 +201,51 @@
         .step-label {
             display: none;
         }
-        
-        /* LINHAS DE CONEXÃO: Ajustadas para 3 passos */
-        .step-line {
-            position: absolute;
-            top: 15px; 
-            height: 2px;
-            background-color: #ccc;
-            z-index: 1;
-        }
 
+        /* LINHAS DE CONEXÃO: AJUSTADAS PARA 3 PASSOS */
+        .step-line {
+            position: absolute;
+            top: 15px; /* Metade da altura do circle */
+            height: 2px;
+            background-color: #ccc;
+            z-index: 1;
+        }
+        
         /* Linha 1: 1 -> 2 */
         #line-1-2 {
-            left: 10px;
-            width: calc(50% - 15px); /* metade da largura - espaço */
-        }
-
-        /* Linha 2: 2 -> 3 */
-        #line-2-3 {
-            right: 10px;
+            left: 10px; 
             width: calc(50% - 15px); 
         }
 
-        /* Linha de progresso (a parte que muda de cor) */
-        .step-line::after {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            height: 100%;
-            width: 0%; /* Será controlado pelo JS */
-            background-color: #d90f23;
-            transition: width 0.4s ease;
+        /* Linha 2: 2 -> 3 (NOVA) */
+        #line-2-3 {
+            right: 10px; 
+            width: calc(50% - 15px); 
         }
+        
+        /* Linha de progresso (a parte que muda de cor) */
+        .step-line::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            height: 100%;
+            width: 0%; /* Será controlado pelo JS */
+            background-color: #d90f23;
+            transition: width 0.4s ease;
+        }
 
-        /* Classes de Progresso */
-        .step-indicator.progress-1 #line-1-2::after { width: 100%; }
+        /* Ajustes para o novo estado de 3 passos no JS (progress-1 -> 1-2 ativo; progress-2 -> 1-2 completo e 2-3 ativo; progress-3 -> tudo completo) */
+        .step-indicator.progress-1 #line-1-2::after { width: 100%; }
+        
         .step-indicator.progress-2 #line-1-2::after { background-color: #1b8a3e; width: 100%; }
-        .step-indicator.progress-2 #line-2-3::after { width: 100%; } 
-        .step-indicator.progress-3 #line-1-2::after,
-        .step-indicator.progress-3 #line-2-3::after { 
-            width: 100%;
-            background-color: #1b8a3e;
-        }
-
+        .step-indicator.progress-2 #line-2-3::after { width: 100%; }
+        
+        .step-indicator.progress-3 #line-1-2::after,
+        .step-indicator.progress-3 #line-2-3::after {
+            width: 100%; 
+            background-color: #1b8a3e; /* Cor da linha de progresso concluído */
+        }
         /* --- FIM DOS ESTILOS STEP INDICATOR --- */
 
         .form-group {
@@ -418,7 +419,7 @@
     </div>
     
     <div id="step-3-content" style="display: none;">
-        <h2 class="step-3-title">Passo 3: Identificação</h2>
+        <h2 class="step-title">Identificação do Conferente</h2>
 
         <div class="form-group">
             <label for="posto-graduacao">Posto/Graduação</label>
@@ -447,9 +448,9 @@
             <label for="nome-guerra">Nome de Guerra (Todas as letras maiúsculas)</label>
             <input type="text" id="nome-guerra" class="uppercase-input" placeholder="Seu Nome de Guerra (Ex: SOUSA)">
         </div>
-
-        <button id="btn-ir" disabled>INICIAR CONFERÊNCIA</button>
-    </div>
+        
+    </div>
+        <button id="btn-ir" disabled>INICIAR CONFERÊNCIA</button>
 
 </div>
 
@@ -465,82 +466,133 @@
 
 
 <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        const postoSelect = document.getElementById('posto-servico');
-        const localSelect = document.getElementById('local');
-        const btnIr = document.getElementById('btn-ir');
-        const step2Content = document.getElementById('step-2-content');
-        const step3Content = document.getElementById('step-3-content'); // Novo
+    document.addEventListener('DOMContentLoaded', function() {
+        // Elementos principais
+        const postoSelect = document.getElementById('posto-servico');
+        const localSelect = document.getElementById('local');
+        const btnIr = document.getElementById('btn-ir');
+        const step2Content = document.getElementById('step-2-content');
         
-        // Elementos do Passo 3
+        // Novos Elementos de Identificação (Passo 3)
+        const step3Content = document.getElementById('step-3-content');
         const postoGraduacaoSelect = document.getElementById('posto-graduacao');
         const quadroSelect = document.getElementById('quadro');
         const quadroGroup = document.getElementById('quadro-group');
         const nomeGuerraInput = document.getElementById('nome-guerra');
         const nomeGuerraGroup = document.getElementById('nome-guerra-group');
-        
-        // Novos elementos do passo a passo
-        const stepIndicator = document.getElementById('step-indicator');
-        const stepItem1 = document.getElementById('step-item-1');
-        const stepItem2 = document.getElementById('step-item-2');
-        const stepItem3 = document.getElementById('step-item-3'); // Novo
+        
+        // Elementos do passo a passo visual (3 passos)
+        const stepIndicator = document.getElementById('step-indicator');
+        const stepItem1 = document.getElementById('step-item-1');
+        const stepItem2 = document.getElementById('step-item-2');
+        const stepItem3 = document.getElementById('step-item-3');
 
+        // MAPA DE FORMULÁRIOS (Existente)
+        const formsMap = {
+            'ALFA': {
+                'ABT-17': 'https://docs.google.com/forms/d/e/1FAIpQLScaIN4xEGq0FP_5s4cyMUP-OSqLyh9QZiUUAj1v2nMzymXfwg/viewform',
+                'RESGATE': 'https://docs.google.com/forms/d/e/1FAIpQLSe2CuhwbeVTt5OCm6nqWdM-kB0Xv-rChzmkA8byBqil7kHRdg/viewform',
+                'VTR CMD SOS': 'https://docs.google.com/forms/d/e/1FAIpQLSdGEdJBqe9Qadvv5TT5QfZ3Zc2KqJcbGcqwGUut0q796TJnXg/viewform',
+                'PERMANÊNCIA': 'https://docs.google.com/forms/d/e/1FAIpQLSckUGLpBsCIM_nFFS-BCPhAKbrI4CU5p6zo0juwy0Orcu0nTg/viewform',
+                'RESGATE EXTRA': 'https://docs.google.com/forms/d/e/1FAIpQLSf5TJ8w6_6DWTr1oxXgZFPIOuC0_jvpcJMF4ciqRJloaSk5WQ/viewform'
+            },
+            'BRAVO': {
+                'ABT-18': 'https://docs.google.com/forms/d/e/1FAIpQLSctaCjNUB2gDdNDXn3h4RiGOoch94CvAC5sj15D8YgzPT8Z9w/viewform',
+                'PERMANÊNCIA': 'https://docs.google.com/forms/d/e/1FAIpQLSd4paOCzbr3mjS3DEoFOBwmVTjVOrvk6NfspYJ-p1XcNtD7bg/viewform',
+                'LOCAL TESTE': 'conferencia_teste.html' 
+            },
+            'CHARLIE': {
+                'VTR SALVAMENTO': 'https://docs.google.com/forms/d/e/1FAIpQLSfzEdboDDlJJ24oYcr3uIgWxemDzbBfIn8YqQBMJag7A-eqWA/viewform',
+                'PERMANÊNCIA': 'https://docs.google.com/forms/d/e/1FAIpQLSdEpX-ak7Lv3VQSXNkw0JeMGndJfc97Ac_3PhO95M67UHJ3Dw/viewform'
+            },
+            'CARACARAÍ': {
+                'ABT-16': 'https://docs.google.com/forms/d/e/1FAIpQLScuEX-onfOntuiCrccAj5IcPHmgijyL6bTTgFxRDH6c4VPjDg/viewform',
+                'UR 13-23': 'https://docs.google.com/forms/d/e/1FAIpQLSdPS0HfYfTcQ1w-Wd2a8r1PGsd4U3DplCA1fCf6bPNNDrogUQ/viewform',
+                'ATPS 31-21 (GBS)': 'https://docs.google.com/forms/d/e/1FAIpQLSchXqGfiGeTDC2hIpnxgxIGLkxKZziYE5go7pVcYYHGnpj9ow/viewform',
+                'ATF 01-21 (GCIF)': 'https://docs.google.com/forms/d/e/1FAIpQLSdWgjlqDH6Dt2DwM7qRgMAeC2SOSIPShCDVBZXX-T5peyu8TA/viewform',
+                'PERMANÊNCIA': 'https://docs.google.com/forms/d/e/1FAIpQLScW4_vbkqZVKtNM02BBFMkMdpZStX-FF9OIEQkhrPS0ThVVgg/viewform'
+            },
+            'RORAINÓPOLIS': {
+                'ABT-15': 'https://docs.google.com/forms/d/e/1FAIpQLSdbGEFe2CMF_56N5QyXsoNHfBWlokvYTRf5s48_T84T_srt_w/viewform',
+                'UR 09-23': 'https://docs.google.com/forms/d/e/1FAIpQLScRW_T3DEMt0OLOjBD_gGxM3gSUW_igGN0KIJPXjMYTn8C62A/viewform'
+            },
+            'PACARAIMA': {
+                'POSTO PACARAIMA': 'LINK_DO_FORMS_PACARAIMA'
+            }
+        };
+        
         // MAPA DE QUADROS
         const quadrosMap = {
             'Oficiais': ['QOCBM', 'QCOBM', 'QOSBM', 'QEOBM'],
             'Pracas': ['QPCBM', 'QPSBM', 'QEPBM']
         };
+        
+        // ------------------------------------------------------------------
+        //  FUNÇÕES DE CONTROLE DE FLUXO E VALIDAÇÃO
+        // ------------------------------------------------------------------
 
-        const formsMap = {
-            'ALFA': {
-                'ABT-17': 'https://docs.google.com/forms/d/e/1FAIpQLScaIN4xEGq0FP_5s4cyMUP-OSqLyh9QZiUUAj1v2nMzymXfwg/viewform',
-                'RESGATE': 'https://docs.google.com/forms/d/e/1FAIpQLSe2CuhwbeVTt5OCm6nqWdM-kB0Xv-rChzmkA8byBqil7kHRdg/viewform',
-                'VTR CMD SOS': 'https://docs.google.com/forms/d/e/1FAIpQLSdGEdJBqe9Qadvv5TT5QfZ3Zc2KqJcbGcqwGUut0q796TJnXg/viewform',
-                'PERMANÊNCIA': 'https://docs.google.com/forms/d/e/1FAIpQLSckUGLpBsCIM_nFFS-BCPhAKbrI4CU5p6zo0juwy0Orcu0nTg/viewform',
-                'RESGATE EXTRA': 'https://docs.google.com/forms/d/e/1FAIpQLSf5TJ8w6_6DWTr1oxXgZFPIOuC0_jvpcJMF4ciqRJloaSk5WQ/viewform'
-            },
-            'BRAVO': {
-                'ABT-18': 'https://docs.google.com/forms/d/e/1FAIpQLSctaCjNUB2gDdNDXn3h4RiGOoch94CvAC5sj15D8YgzPT8Z9w/viewform',
-                'PERMANÊNCIA': 'https://docs.google.com/forms/d/e/1FAIpQLSd4paOCzbr3mjS3DEoFOBwmVTjVOrvk6NfspYJ-p1XcNtD7bg/viewform'
-            },
-            'CHARLIE': {
-                'VTR SALVAMENTO': 'https://docs.google.com/forms/d/e/1FAIpQLSfzEdboDDlJJ24oYcr3uIgWxemDzbBfIn8YqQBMJag7A-eqWA/viewform',
-                'PERMANÊNCIA': 'https://docs.google.com/forms/d/e/1FAIpQLSdEpX-ak7Lv3VQSXNkw0JeMGndJfc97Ac_3PhO95M67UHJ3Dw/viewform'
-            },
-            'CARACARAÍ': {
-                'ABT-16': 'https://docs.google.com/forms/d/e/1FAIpQLScuEX-onfOntuiCrccAj5IcPHmgijyL6bTTgFxRDH6c4VPjDg/viewform',
-                'UR 13-23': 'https://docs.google.com/forms/d/e/1FAIpQLSdPS0HfYfTcQ1w-Wd2a8r1PGsd4U3DplCA1fCf6bPNNDrogUQ/viewform',
-                'ATPS 31-21 (GBS)': 'https://docs.google.com/forms/d/e/1FAIpQLSchXqGfiGeTDC2hIpnxgxIGLkxKZziYE5go7pVcYYHGnpj9ow/viewform',
-                'ATF 01-21 (GCIF)': 'https://docs.google.com/forms/d/e/1FAIpQLSdWgjlqDH6Dt2DwM7qRgMAeC2SOSIPShCDVBZXX-T5peyu8TA/viewform',
-                'PERMANÊNCIA': 'https://docs.google.com/forms/d/e/1FAIpQLScW4_vbkqZVKtNM02BBFMkMdpZStX-FF9OIEQkhrPS0ThVVgg/viewform'
-            },
-            'RORAINÓPOLIS': {
-                'ABT-15': 'https://docs.google.com/forms/d/e/1FAIpQLSdbGEFe2CMF_56N5QyXsoNHfBWlokvYTRf5s48_T84T_srt_w/viewform',
-                'UR 09-23': 'https://docs.google.com/forms/d/e/1FAIpQLScRW_T3DEMt0OLOjBD_gGxM3gSUW_igGN0KIJPXjMYTn8C62A/viewform'
-            },
-            'PACARAIMA': {
-                'POSTO PACARAIMA': 'LINK_DO_FORMS_PACARAIMA'
-            }
-        };
+        // Função para atualizar o status visual dos passos (3 passos)
+        function updateStepIndicator(currentStep) {
+            // Reset de todas as classes de status
+            stepItem1.className = 'step-item';
+            stepItem2.className = 'step-item';
+            stepItem3.className = 'step-item';
+            stepIndicator.className = 'step-indicator';
+
+            // Passo 1
+            if (currentStep >= 1) {
+                stepItem1.classList.add(currentStep > 1 ? 'complete' : 'active');
+            }
+            // Passo 2
+            if (currentStep >= 2) {
+                stepItem2.classList.add(currentStep > 2 ? 'complete' : 'active');
+                stepIndicator.classList.add('progress-1'); // Linha 1 ativa/completa
+            }
+            // Passo 3 (Identificação em andamento)
+            if (currentStep >= 3) {
+                stepItem3.classList.add(currentStep > 3 ? 'complete' : 'active');
+                stepIndicator.classList.add('progress-2'); // Linha 2 ativa/completa
+            }
+            // Passo Finalizado (Todos os campos válidos e pronto para clicar)
+            if (currentStep >= 4) {
+                stepIndicator.classList.add('progress-3'); // Todas as linhas verdes
+                stepItem3.classList.add('complete');
+            }
+        }
         
-        // --- FUNÇÕES DE CONTROLE DE FLUXO ---
-        
-        // Função que lida com a navegação/submissão
+        // Função que verifica o preenchimento total do formulário de Identificação
+        function checkIdentificationCompletion() {
+            const isPGradSelected = !!postoGraduacaoSelect.value;
+            const isQuadroSelected = !!quadroSelect.value;
+            const isNomeGuerraComplete = nomeGuerraInput.value.trim().length > 1;
+
+            if (isPGradSelected && isQuadroSelected && isNomeGuerraComplete) {
+                btnIr.disabled = false;
+                updateStepIndicator(4); // Completo (Habilita o botão final e deixa os círculos verdes)
+            } else {
+                btnIr.disabled = true;
+                updateStepIndicator(3); // Passo 3 Ativo (em preenchimento)
+            }
+        }
+
+        // Função que prepara a navegação/submissão
         function navigateToForms() {
             const formsLink = localSelect.value;
             const posto = postoSelect.value;
             const local = localSelect.options[localSelect.selectedIndex].textContent;
+            
+            // Dados da Identificação (coletados antes de clicar)
             const pGrad = postoGraduacaoSelect.value;
             const quadro = quadroSelect.value;
             const nomeGuerra = nomeGuerraInput.value.toUpperCase();
 
-            // Verifica se todos os campos obrigatórios do Passo 3 foram preenchidos
-            if (!pGrad || !quadro || nomeGuerra.length < 2) {
-                alert("Por favor, preencha todos os campos de identificação (Passo 3) antes de continuar.");
+            // Validação de segurança antes de navegar (Embora o botão esteja desabilitado)
+            if (btnIr.disabled) {
+                alert("Por favor, preencha a identificação antes de iniciar a conferência.");
                 return;
             }
-            
-            // Aqui você constrói o link com os dados para o Forms/Script PDF
+
+            // Constrói a URL com os Query Parameters
             const params = new URLSearchParams();
             params.append('entry.PARAM_POSTO_SERV', posto);  
             params.append('entry.PARAM_LOCAL_CONF', local);
@@ -556,125 +608,74 @@
                 console.error('Atenção: O link não foi configurado.');
             }
         }
-        
-        // Função para atualizar o status visual dos passos (agora com 3 passos)
-        function updateStepIndicator(currentStep) {
-            // Reset de todas as classes de status
-            stepItem1.className = 'step-item';
-            stepItem2.className = 'step-item';
-            stepItem3.className = 'step-item';
-            stepIndicator.className = 'step-indicator';
 
-            // Passo 1
-            if (currentStep >= 1) {
-                stepItem1.classList.add(currentStep > 1 ? 'complete' : 'active');
-            }
-            // Passo 2
-            if (currentStep >= 2) {
-                stepItem2.classList.add(currentStep > 2 ? 'complete' : 'active');
-                stepIndicator.classList.add('progress-1');
-            }
-            // Passo 3
-            if (currentStep >= 3) {
-                stepItem3.classList.add(currentStep > 3 ? 'complete' : 'active');
-                stepIndicator.classList.add('progress-2');
-            }
-            // Passo Finalizado (Todos os campos válidos e pronto para clicar)
-            if (currentStep >= 4) {
-                stepIndicator.classList.add('progress-3');
-                stepItem3.classList.add('complete');
-            }
-        }
+        // ------------------------------------------------------------------
+        //  LISTENERS
+        // ------------------------------------------------------------------
 
-        // Função que atualiza as opções do Local (Passo 2)
-        function updateLocalOptions() {
-            const selectedPosto = postoSelect.value;
-            localSelect.innerHTML = '<option value="" disabled selected>-- Selecione um Local --</option>'; 
-            postoSelect.blur(); 
+        // 1. Listener para o menu 'Posto de Serviço' (Passo 1)
+        postoSelect.addEventListener('change', function() {
+            const selectedPosto = postoSelect.value;
+            localSelect.innerHTML = '<option value="" disabled selected>-- Selecione um Local --</option>';  
+            postoSelect.blur(); 
             
-            // Oculta Passo 2 e 3 se o Passo 1 for deselecionado/resetado
+            // Oculta Local e Identificação
             step2Content.style.display = 'none';
             step3Content.style.display = 'none';
             btnIr.disabled = true;
+            updateStepIndicator(0); // Reseta para Passo 1 Ativo
 
-            if (selectedPosto && formsMap[selectedPosto]) {
-                const locais = formsMap[selectedPosto];
-                for (const localName in locais) {
-                    const option = document.createElement('option');
-                    option.value = locais[localName];
-                    option.textContent = localName;
-                    localSelect.appendChild(option);
-                }
+            if (selectedPosto && formsMap[selectedPosto]) {
+                const locais = formsMap[selectedPosto];
+                for (const localName in locais) {
+                    const option = document.createElement('option');
+                    option.value = locais[localName];
+                    option.textContent = localName;
+                    localSelect.appendChild(option);
+                }
 
-                // MOSTRA O PASSO 2
-                step2Content.style.display = 'block';
-                updateStepIndicator(1); // Passo 1 Completo, Passo 2 Ativo
-            } else {
-                updateStepIndicator(0); // Volta ao início
-            }
-
-            localSelect.value = "";
-            btnIr.disabled = true;
-        }
-        
-        // Função que verifica o preenchimento total do Passo 3
-        function checkStep3Completion() {
-            const isPGradSelected = !!postoGraduacaoSelect.value;
-            const isQuadroSelected = !!quadroSelect.value;
-            const isNomeGuerraComplete = nomeGuerraInput.value.trim().length > 1;
-
-            if (isPGradSelected && isQuadroSelected && isNomeGuerraComplete) {
-                btnIr.disabled = false;
-                updateStepIndicator(4); // Passo 4 = Pronto para clicar (finalizado)
-            } else {
-                btnIr.disabled = true;
-                updateStepIndicator(3); // Passo 3 Ativo (em preenchimento)
+                // MOSTRA O CONTEÚDO DO PASSO 2
+                step2Content.style.display = 'block';
+                updateStepIndicator(1); // Passo 1 Completo, Passo 2 Ativo
             }
-        }
+        });
         
-        // --- LISTENERS DE AÇÃO ---
+        // 2. Listener para o menu 'Local' (Passo 2)
+        localSelect.addEventListener('change', function() {
+            const isLocalSelected = !!localSelect.value;
+            localSelect.blur(); 
 
-        // 1. Listener para o menu 'Posto de Serviço' (Passo 1)
-        postoSelect.addEventListener('change', updateLocalOptions);
-
-        // 2. Listener para o menu 'Local' (Passo 2)
-        localSelect.addEventListener('change', function() {
-            const isLocalSelected = !!localSelect.value;
-            localSelect.blur(); 
-
-            if (isLocalSelected) {
-                // MOSTRA o CONTEÚDO do PASSO 3
+            if (isLocalSelected) {
+                // MOSTRA O CONTEÚDO DO PASSO 3 (Identificação)
                 step3Content.style.display = 'block';
-                updateStepIndicator(3); // Passo 2 Completo, Passo 3 Ativo
                 
-                // Reseta a exibição dos campos do Passo 3, mostrando apenas o primeiro (Posto/Graduação)
-                // Oculta Quadro e Nome de Guerra, forçando a sequência
+                // Reseta/Oculta os campos sequenciais do Passo 3, mostrando apenas o primeiro
                 quadroGroup.style.display = 'none';
                 nomeGuerraGroup.style.display = 'none';
-                postoGraduacaoSelect.value = ''; // Reseta o Posto/Graduação
+                postoGraduacaoSelect.value = ''; // Reseta P/G
                 
-                btnIr.disabled = true;
-            } else {
-                // ESCONDE Passo 3
+                checkIdentificationCompletion(); // Garante que o botão esteja desabilitado
+                updateStepIndicator(2); // Passo 2 Completo, Passo 3 Ativo
+                
+            } else {
+                // ESCONDE IDENTIFICAÇÃO
                 step3Content.style.display = 'none';
-                updateStepIndicator(2);
+                updateStepIndicator(1); // Volta para o Passo 2 Ativo
                 btnIr.disabled = true;
             }
-        });
+        });
         
         // 3a. Listener para Posto/Graduação (Passo 3 - Campo 1)
         postoGraduacaoSelect.addEventListener('change', function() {
             const pGrad = postoGraduacaoSelect.value;
             
             let options = [];
-            // Lógica para determinar o Quadro (Oficiais/Praças)
             if (['CAP', '1º TEN', '2º TEN'].includes(pGrad)) {
                 options = quadrosMap['Oficiais'];
             } else if (pGrad) {
                 options = quadrosMap['Pracas'];
             }
 
-            // Preenche o campo Quadro
             quadroSelect.innerHTML = '<option value="" disabled selected>-- Selecione --</option>';
             options.forEach(quadro => {
                 const option = document.createElement('option');
@@ -689,7 +690,7 @@
             nomeGuerraInput.value = '';
             
             postoGraduacaoSelect.blur();
-            checkStep3Completion();
+            checkIdentificationCompletion();
         });
         
         // 3b. Listener para Quadro (Passo 3 - Campo 2)
@@ -705,14 +706,14 @@
             }
             
             quadroSelect.blur();
-            checkStep3Completion();
+            checkIdentificationCompletion();
         });
         
         // 3c. Listener para Nome de Guerra (Passo 3 - Campo 3)
         nomeGuerraInput.addEventListener('input', function() {
             // Força maiúsculas
             nomeGuerraInput.value = nomeGuerraInput.value.toUpperCase();
-            checkStep3Completion();
+            checkIdentificationCompletion();
         });
 
         // 4. Listener para o botão 'INICIAR CONFERÊNCIA'
@@ -721,8 +722,8 @@
         // --- INICIALIZAÇÃO ---
         
         // Garante que o estado inicial (Passo 1 Ativo) está correto
-        updateLocalOptions();
-        updateStepIndicator(1); // Inicia no Passo 1 Ativo (Posto de Serviço)
+        postoSelect.dispatchEvent(new Event('change')); // Chama o listener para inicializar
+        updateStepIndicator(0); 
     });
 </script>
 
