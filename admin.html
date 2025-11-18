@@ -4,8 +4,39 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SIGMA - Gerenciador de Conferências</title>
+    <link rel="icon" href="logo_sigma.png" type="image/png">
     <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
     <style>
+        /* Estilos do Cabeçalho SIGMA (novo) */
+        .header-sigma {
+            background-color: #800020; /* Cor bordô */
+            color: white;
+            padding: 15px 20px;
+            text-align: center;
+            margin: -20px -20px 20px -20px; /* Expande para as bordas */
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+        .header-sigma h1 {
+            margin: 0;
+            font-size: 2.2em;
+            color: white;
+            border-bottom: none;
+            padding-bottom: 0;
+        }
+        .header-sigma p {
+            margin: 5px 0 0;
+            font-size: 1em;
+            opacity: 0.8;
+        }
+
+        /* Estilo para a logo centralizada */
+        .logo-admin {
+            display: block;
+            margin: 20px auto 10px auto; /* Centraliza e adiciona margem */
+            max-width: 100px; /* Tamanho da logo */
+            height: auto;
+        }
+
         /* ESTILOS DE ADMIN (MANTIDOS E ADAPTADOS) */
         body {
             font-family: Arial, sans-serif;
@@ -15,11 +46,13 @@
             max-width: 800px;
             margin: 0 auto;
         }
-        h1 {
+        /* Ajuste para o H1 principal do ADMIN, já que o novo cabeçalho já tem um */
+        body > h1 { /* Seleciona apenas o H1 direto do body */
             color: #d90f23;
             border-bottom: 2px solid #e0e0e0;
             padding-bottom: 10px;
             margin-bottom: 25px;
+            margin-top: 20px; /* Adiciona um espaço após a logo */
         }
         h2 {
             color: #800020;
@@ -98,42 +131,34 @@
             cursor: grab;
             color: #ccc;
             font-size: 1.2em;
-            flex-shrink: 0; /* Não encolhe */
+            flex-shrink: 0;
         }
-        
-        /* CORREÇÃO PRINCIPAL: Alinha o conteúdo e os botões horizontalmente */
         .item-list > div {
             background-color: #fff;
             padding: 8px 10px;
             border: 1px solid #eee;
             margin: 5px 0;
             border-left: 4px solid #800020;
-            display: flex; /* Habilita flexbox */
+            display: flex;
             justify-content: space-between;
             align-items: center;
         }
-        
-        /* Contêiner do texto do material - Permite encolher, mas cresce o máximo possível */
         .item-list > div > div:nth-child(2) { 
             flex-grow: 1; 
-            min-width: 0; /* Permite que o texto quebre a linha dentro do espaço disponível */
+            min-width: 0;
             margin-right: 10px;
         }
-
-        /* Contêiner dos botões - Impede a quebra de linha interna */
         .item-actions {
             display: flex;
             gap: 5px;
-            flex-shrink: 0; /* Garante que os botões não encolham */
-            white-space: nowrap; /* Impede que os botões fiquem um abaixo do outro */
+            flex-shrink: 0;
+            white-space: nowrap;
         }
-
         .tombamentos-info {
             font-size: 0.9em;
             color: #555;
             padding-top: 5px;
         }
-        /* Classe fantasma que aparece durante o arrasto */
         .sortable-ghost {
             opacity: 0.4;
             background-color: #fff0f0 !important;
@@ -150,6 +175,13 @@
     </style>
 </head>
 <body>
+    <div class="header-sigma">
+        <h1>SIGMA</h1>
+        <p>CONFERÊNCIA DE MATERIAIS</p>
+    </div>
+
+    <img src="logo_sigma.png" alt="Logo SIGMA" class="logo-admin">
+    
     <h1>🛠️ Gerenciamento de Conferências SIGMA</h1>
     <p>Use esta interface para incluir, alterar e remover a estrutura de setores e materiais. Para reordenar, basta **arrastar** os setores ou os materiais.</p>
     <a href="conferencia_teste.html" target="_blank">Abrir Conferência (para visualizar)</a>
@@ -327,7 +359,6 @@
                     if (item.tipo === 'multi' && item.tombamentos && item.tombamentos.length > 0) {
                         const tombs = item.tombamentos.map(t => t.tomb).join(', ');
                         tombamentosInfo = `<div class="tombamentos-info">Tombamentos: ${tombs}</div>`;
-                        // A variável tipoInfo já está correta, não precisa de reatribuição aqui.
                     }
 
                     itemWrapper.innerHTML = `
