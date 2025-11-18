@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="icon" type="image/png" href="logo_sigma.png" onerror="this.onerror=null; this.src='https://placehold.co/16x16/800020/ffffff?text=S'">
-    <title>Permanência Bravo - Gerenciador de Conferência</title>
+    <title>Permanência BRAVO - Gerenciador de Conferência</title>
     <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
     <style>
         /* =================================================== */
@@ -133,7 +133,7 @@
              background-color: #6c757d;
              color: white;
         }
-        .btn-admin-config:hover { background-color: #5a6268; }
+        .btn-admin-config:hover { background-color: #5d6667; }
 
 
         /* Formulários de Adição (CORREÇÃO DE LAYOUT) */
@@ -228,14 +228,27 @@
         
         /* Conteúdo dos Itens (para Retrair/Expandir) */
         .setor-content-admin {
-            max-height: 1000px; /* Será controlado por JS */
-            overflow: hidden;
             transition: max-height 0.4s ease-out;
+            overflow: hidden;
         }
         .setor-content-admin.collapsed {
             max-height: 0;
             padding-bottom: 0 !important;
             border-bottom: none !important;
+        }
+        
+        /* ESTILOS DE DRAG & DROP */
+        .lista-setores {
+            /* Fixa a lista principal para arrastar setores */
+            padding: 0;
+        }
+        .setor-item {
+             /* Garante que o setor seja arrastável */
+             cursor: grab;
+        }
+        .setor-header-admin {
+             /* Garante que só o cabeçalho seja a alça de arraste do setor */
+             cursor: grab;
         }
 
         .setor-actions {
@@ -247,6 +260,7 @@
             list-style: none;
             padding: 10px;
             margin: 0;
+            min-height: 10px; /* Importante para soltar itens em listas vazias */
         }
 
         /* Itens de Conferência */
@@ -256,12 +270,23 @@
             align-items: center;
             padding: 10px;
             border-bottom: 1px solid #eee;
-            cursor: grab;
             background-color: #fff;
+            
+            /* Para SortableJS */
+            cursor: move; 
         }
 
         .item-conferencia-admin:last-child {
             border-bottom: none;
+        }
+        
+        /* Alça de arraste visível (handle) */
+        .item-drag-handle {
+            margin-right: 10px;
+            cursor: grab;
+            color: #ccc;
+            font-size: 1.2em;
+            flex-shrink: 0;
         }
         
         .item-info {
@@ -271,46 +296,15 @@
             text-align: left;
             margin-right: 10px;
         }
-        .item-info strong { font-size: 1em; }
-        .item-info small { color: #666; font-size: 0.85em; }
+        
+        /* Classe fantasma do SortableJS */
+        .sortable-ghost {
+            opacity: 0.4;
+            background-color: #f0fff0 !important;
+            border: 1px dashed #1b8a3e;
+            box-shadow: none;
+        }
 
-        .item-actions-admin {
-            display: flex;
-            gap: 5px;
-            flex-shrink: 0;
-            white-space: nowrap;
-        }
-        
-        /* Tombamentos (Dentro dos Itens) */
-        .tombamento-list {
-            list-style: none;
-            padding: 5px 10px;
-            background-color: #f7f7f7;
-            border-top: 1px dashed #ddd;
-            margin-top: 5px;
-        }
-        .tombamento-list li {
-            font-size: 0.8em;
-            display: flex;
-            justify-content: space-between;
-            padding: 3px 0;
-            border-bottom: 1px dotted #eee;
-        }
-        .tombamento-list li .tombamento-actions .btn-action {
-            padding: 2px 6px;
-        }
-        .add-tombamento-form {
-            display: flex;
-            gap: 5px;
-            padding: 5px 10px 0;
-            border-top: 1px dashed #ddd;
-        }
-        .add-tombamento-form input {
-            padding: 5px;
-            font-size: 0.8em;
-            flex-grow: 1;
-        }
-        
         /* Modal e Edição (Mantidos) */
         .modal-overlay {
             position: fixed;
@@ -324,36 +318,6 @@
             align-items: center;
             z-index: 1000;
         }
-        .modal-content {
-            background: white;
-            padding: 25px;
-            border-radius: 8px;
-            width: 90%;
-            max-width: 400px;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
-        }
-        .modal-content label {
-            display: block;
-            margin-top: 10px;
-            margin-bottom: 5px;
-            font-weight: bold;
-        }
-        .modal-content input, .modal-content select {
-            width: 100%;
-            padding: 10px;
-            margin-bottom: 10px;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-            box-sizing: border-box;
-        }
-        .modal-buttons {
-            display: flex;
-            justify-content: flex-end;
-            gap: 10px;
-            margin-top: 20px;
-        }
-        .btn-salvar-modal { background-color: #1b8a3e; color: white; }
-        .btn-cancelar-modal { background-color: #d90f23; color: white; }
     </style>
 </head>
 <body>
@@ -374,7 +338,7 @@
     
     <img src="logo_sigma.png" alt="Logo SIGMA" class="logo-admin">
     
-    <h1>🛠️ Permanência BRAVO - Gerenciar Conferência</h1>
+    <h1>🛠️ Permanência BRAVO - Gerenciador de Conferência 🛠️</h1>
     <p id="loading-message">Carregando dados do Firebase...</p>
 
     <div id="main-admin-content" style="display: none;">
@@ -390,7 +354,7 @@
             <input type="text" id="input-setor-nome" placeholder="Nome do Novo Setor (Ex: BRAVO 5)">
             <button class="btn-add" onclick="adicionarSetor(document.getElementById('input-setor-nome').value)">+ Setor</button>
         </div>
-
+        
         <ul id="lista-setores-container" class="lista-setores">
             </ul>
     </div>
@@ -424,6 +388,7 @@
 <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
 
 <script>
     // *******************************************************************
@@ -438,6 +403,7 @@
       appId: "1:378026276038:web:620dd6ff57501b1a8313c7"
     };
 
+    // Inicialização do Firebase e Firestore
     firebase.initializeApp(firebaseConfig);
     const db = firebase.firestore();
     const COLECAO_NOME = 'lista_mestra'; 
@@ -452,17 +418,45 @@
             "id": "1", 
             "nome": "DEPÓSITO CENTRAL", 
             "itens": [
-                { "id": "1-1", "nome": "KIT PRIMEIROS SOCORROS", "quantidadeEsperada": 5, "tipo": "single", "tombamentos": [] },
-                { "id": "1-2", "nome": "LANTERNA TÁTICA", "quantidadeEsperada": 2, "tipo": "multi", "tombamentos": [
-                    {"tomb": "123.456", "status": "pending", "obs": ""},
-                    {"tomb": "678.910", "status": "pending", "obs": ""},
-                ]}
+                {
+                    "id": "1-1",
+                    "nome": "KIT PRIMEIROS SOCORROS",
+                    "quantidadeEsperada": 5,
+                    "tipo": "single",
+                    "tombamentos": []
+                },
+                {
+                    "id": "1-2",
+                    "nome": "LANTERNA TÁTICA",
+                    "quantidadeEsperada": 2,
+                    "tipo": "multi",
+                    "tombamentos": [
+                        {"tomb": "123.456", "status": "pending", "obs": ""},
+                        {"tomb": "678.910", "status": "pending", "obs": ""},
+                    ]
+                }
             ]
         },
-        { "id": "2", "nome": "VIATURA 13-1", "itens": [
-             { "id": "2-1", "nome": "ALMOTOLIA 500ML", "quantidadeEsperada": 2, "tipo": "single", "tombamentos": [] },
-             { "id": "2-2", "nome": "CHAVE DE RODA", "quantidadeEsperada": 1, "tipo": "single", "tombamentos": [] }
-        ]},
+        { 
+            "id": "2", 
+            "nome": "VIATURA 13-1", 
+            "itens": [
+                 {
+                    "id": "2-1",
+                    "nome": "ALMOTOLIA 500ML",
+                    "quantidadeEsperada": 2,
+                    "tipo": "single",
+                    "tombamentos": []
+                },
+                {
+                    "id": "2-2",
+                    "nome": "CHAVE DE RODA",
+                    "quantidadeEsperada": 1,
+                    "tipo": "single",
+                    "tombamentos": []
+                }
+            ]
+        },
     ];
 
     let dadosConferencia = [];
@@ -479,9 +473,10 @@
 
             if (doc.exists && Array.isArray(doc.data().list)) {
                 dadosConferencia = doc.data().list;
+                console.log("Dados carregados com sucesso do Firebase.");
             } else {
                 dadosConferencia = DADOS_CONFERENCIA_FALLBACK;
-                console.warn("Documento não encontrado no Firebase. Forçando o upload inicial...");
+                console.warn("Documento não encontrado no Firebase. Usando fallback e forçando o upload inicial...");
                 await salvarDados(false); 
             }
 
@@ -496,7 +491,6 @@
         }
 
         renderizarLista();
-        preencherSelectSetores();
         document.getElementById('loading-message').style.display = 'none';
         document.getElementById('main-admin-content').style.display = 'block';
     }
@@ -517,7 +511,7 @@
 
         } catch (error) {
             console.error("ERRO ao salvar no Firebase:", error);
-            alert("ERRO ao sincronizar dados com o Firebase. Verifique as regras de segurança.");
+            alert("ERRO ao sincronizar dados com o Firebase. Verifique as regras de segurança e o ID do projeto.");
         }
     }
 
@@ -542,7 +536,6 @@
         document.getElementById('input-setor-nome').value = '';
         salvarDados(); 
         renderizarLista();
-        preencherSelectSetores();
     }
 
     function removerSetor(setorId) {
@@ -552,7 +545,6 @@
 
         salvarDados(); 
         renderizarLista();
-        preencherSelectSetores();
     }
     
     function renomearSetor(setorId, novoNome) {
@@ -607,6 +599,29 @@
         renderizarLista();
     }
     
+    // Funcao auxiliar para adicionar item (chamada do botao no loop de renderizacao)
+    function adicionarItemPorSetor(setorId) {
+        const nomeInput = document.getElementById(`input-item-nome-${setorId}`);
+        const qtdInput = document.getElementById(`input-item-qtd-${setorId}`);
+        const tipoSelect = document.getElementById(`select-item-tipo-${setorId}`);
+
+        const nome = nomeInput.value.trim();
+        const quantidadeEsperada = parseInt(qtdInput.value);
+        const tipo = tipoSelect.value;
+        
+        if (!nome || isNaN(quantidadeEsperada) || quantidadeEsperada < 1) {
+            alert("Preencha todos os campos do item corretamente.");
+            return;
+        }
+
+        adicionarItem(setorId, nome, quantidadeEsperada, tipo);
+
+        // Limpa os campos após a adição
+        nomeInput.value = '';
+        qtdInput.value = '1';
+    }
+
+
     function removerItem(setorId, itemId) {
          if (!confirm("Tem certeza que deseja remover este item?")) return;
 
@@ -700,7 +715,7 @@
     }
 
     function preencherSelectSetores() {
-        // Esta função não é mais usada para o formulário global
+        // Não é mais usada para formulários globais
     }
 
     function toggleSetorContent(headerElement) {
@@ -773,6 +788,7 @@
 
                 itensHtml += `
                     <li class="item-conferencia-admin" data-id="${item.id}" data-setor-id="${setor.id}" draggable="true">
+                        <span class="item-drag-handle">☰</span> 
                         <div class="item-info">
                             <strong>${item.nome}</strong>
                             <small>Qtd: ${item.quantidadeEsperada} | Tipo: ${item.tipo === 'multi' ? 'Tombamento' : 'Único'}</small>
@@ -808,211 +824,12 @@
         aplicarDragAndDrop();
     }
     
-    // Funcao auxiliar para adicionar item (chamada do botao no loop de renderizacao)
-    function adicionarItemPorSetor(setorId) {
-        const nomeInput = document.getElementById(`input-item-nome-${setorId}`);
-        const qtdInput = document.getElementById(`input-item-qtd-${setorId}`);
-        const tipoSelect = document.getElementById(`select-item-tipo-${setorId}`);
-
-        const nome = nomeInput.value.trim();
-        const quantidadeEsperada = parseInt(qtdInput.value);
-        const tipo = tipoSelect.value;
-        
-        if (!nome || isNaN(quantidadeEsperada) || quantidadeEsperada < 1) {
-            alert("Preencha todos os campos do item corretamente.");
-            return;
-        }
-
-        adicionarItem(setorId, nome, quantidadeEsperada, tipo);
-
-        // Limpa os campos após a adição
-        nomeInput.value = '';
-        qtdInput.value = '1';
-    }
-
-
     // *******************************************************************
-    // 6. FUNÇÕES DE EDIÇÃO (MODAL) (MANTIDAS)
-    // *******************************************************************
-    
-    function abrirModalEdicao(setorId, itemId) {
-        const item = encontrarItemPorId(itemId);
-        if (!item) return;
-
-        document.getElementById('edit-setor-id').value = setorId;
-        document.getElementById('edit-item-original-id').value = itemId;
-        document.getElementById('edit-item-nome').value = item.nome;
-        document.getElementById('edit-item-qtd').value = item.quantidadeEsperada;
-        document.getElementById('edit-item-tipo').value = item.tipo;
-        
-        document.getElementById('edit-item-qtd').disabled = (item.tipo === 'multi');
-
-        document.getElementById('modal-edicao').style.display = 'flex';
-    }
-
-    function fecharModal() {
-        document.getElementById('modal-edicao').style.display = 'none';
-    }
-
-    function salvarEdicaoItem() {
-        const itemId = document.getElementById('edit-item-original-id').value;
-        const novoNome = document.getElementById('edit-item-nome').value.trim().toUpperCase();
-        const novaQtd = parseInt(document.getElementById('edit-item-qtd').value);
-        
-        if (!novoNome) {
-            alert("O nome do item não pode ser vazio.");
-            return;
-        }
-
-        const item = encontrarItemPorId(itemId);
-        if (item) {
-            item.nome = novoNome;
-            if (item.tipo === 'single') {
-                 item.quantidadeEsperada = novaQtd;
-            }
-            
-            salvarDados(); 
-            renderizarLista();
-            fecharModal();
-        }
-    }
-
-
-    // *******************************************************************
-    // 7. FUNÇÕES DE BACKUP LOCAL DE EMERGÊNCIA (MANTIDAS)
-    // *******************************************************************
-    
-    function fazerBackupLocal() {
-        const jsonString = JSON.stringify(dadosConferencia, null, 2);
-        const blob = new Blob([jsonString], { type: "application/json" });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = 'conferencia_backup_' + new Date().toISOString().slice(0, 10) + '.json';
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        URL.revokeObjectURL(url);
-        alert("Backup da lista baixado como arquivo JSON.");
-    }
-    
-    function importarBackupLocal(event) {
-        const file = event.target.files[0];
-        if (!file) return;
-
-        const reader = new FileReader();
-        reader.onload = function(e) {
-            try {
-                const importedData = JSON.parse(e.target.result);
-                if (!Array.isArray(importedData)) {
-                    throw new Error("O arquivo não está no formato de lista (Array) esperado.");
-                }
-                
-                if (confirm("ATENÇÃO: Este backup substituirá TODOS os dados atuais no Firebase. Continuar?")) {
-                    dadosConferencia = importedData;
-                    salvarDados(); 
-                    renderizarLista();
-                    alert("Dados importados com sucesso e sincronizados com o Firebase.");
-                }
-
-            } catch (error) {
-                alert("Erro ao importar o arquivo: " + error.message);
-            }
-        };
-        reader.readAsText(file);
-    }
-
-    // *******************************************************************
-    // 8. FUNÇÕES DE DRAG AND DROP (Reordenamento - MANTIDAS)
+    // 8. FUNÇÕES DE DRAG AND DROP (Reordenamento)
     // *******************************************************************
 
     let dragSrcEl = null;
-
-    function handleDragStart(e) {
-        dragSrcEl = this;
-        e.dataTransfer.effectAllowed = 'move';
-        e.dataTransfer.setData('text/plain', this.dataset.id);
-        this.classList.add('dragging');
-    }
-
-    function handleDragOver(e) {
-        e.preventDefault();
-        e.dataTransfer.dropEffect = 'move';
-        return false;
-    }
-
-    function handleDragEnter(e) {
-        this.classList.add('over');
-    }
-
-    function handleDragLeave(e) {
-        this.classList.remove('over');
-    }
-
-    function handleDrop(e) {
-        e.stopPropagation();
-        this.classList.remove('over', 'dragging');
-
-        if (dragSrcEl !== this) {
-            const dragId = dragSrcEl.dataset.id;
-            const dropId = this.dataset.id;
-            
-            const isSetor = dragSrcEl.classList.contains('setor-item');
-            const isItem = dragSrcEl.classList.contains('item-conferencia-admin');
-            
-            let sourceList = null;
-            let targetList = null;
-
-            if (isSetor && dragSrcEl.parentNode === this.parentNode) {
-                 sourceList = dadosConferencia;
-                 targetList = dadosConferencia;
-            } 
-            else if (isItem) {
-                 const dragSetorId = dragSrcEl.dataset.setorId;
-                 const dropSetorId = this.dataset.setorId;
-                 
-                 const dragSetor = encontrarSetorPorId(dragSetorId);
-                 const dropSetor = encontrarSetorPorId(dropSetorId);
-
-                 if (dragSetor && dropSetor) {
-                      sourceList = dragSetor.itens;
-                      targetList = dropSetor.itens;
-                 }
-            }
-            
-            if (sourceList && targetList) {
-                reordenarArray(sourceList, targetList, dragId, dropId, isItem ? 'id' : 'id');
-                salvarDados(); 
-                renderizarLista();
-            }
-        }
-        return false;
-    }
-
-    function handleDragEnd(e) {
-        this.classList.remove('dragging');
-        document.querySelectorAll('.over').forEach(el => el.classList.remove('over'));
-    }
-
-    function aplicarDragAndDrop() {
-        document.querySelectorAll('.setor-item').forEach(setor => {
-            setor.addEventListener('dragstart', handleDragStart, false);
-            setor.addEventListener('dragenter', handleDragEnter, false);
-            setor.addEventListener('dragover', handleDragOver, false);
-            setor.addEventListener('dragleave', handleDragLeave, false);
-            setor.addEventListener('drop', handleDrop, false);
-            setor.addEventListener('dragend', handleDragEnd, false);
-        });
-
-        document.querySelectorAll('.item-conferencia-admin').forEach(item => {
-            item.addEventListener('dragstart', handleDragStart, false);
-            item.addEventListener('dragenter', handleDragEnter, false);
-            item.addEventListener('dragover', handleDragOver, false);
-            item.addEventListener('dragleave', handleDragLeave, false);
-            item.addEventListener('drop', handleDrop, false);
-            item.addEventListener('dragend', handleDragEnd, false);
-        });
-    }
+    let listContainerEl = document.getElementById('lista-setores-container');
 
     function reordenarArray(sourceList, targetList, dragId, dropId, key) {
         let dragIndex = sourceList.findIndex(e => e[key] === dragId);
@@ -1030,6 +847,51 @@
         }
     }
 
+    function aplicarDragAndDrop() {
+        // DRAG & DROP PARA SETORES
+        new Sortable(listContainerEl, {
+            animation: 150,
+            handle: '.setor-header-admin',
+            filter: 'button', 
+            onEnd: function(evt) {
+                // Reordena o array principal de setores (dadosConferencia)
+                reordenarArray(dadosConferencia, dadosConferencia, evt.item.dataset.id, evt.item.nextElementSibling ? evt.item.nextElementSibling.dataset.id : null, 'id');
+                salvarDados();
+            }
+        });
+
+        // DRAG & DROP PARA ITENS
+        document.querySelectorAll('.item-list-admin').forEach(list => {
+            new Sortable(list, {
+                group: 'shared-items', // Permite arrastar entre listas
+                animation: 150,
+                handle: '.item-drag-handle', // Alça de arraste
+                onEnd: function(evt) {
+                    const itemID = evt.item.dataset.id;
+                    const dragListId = evt.from.dataset.setorId;
+                    const dropListId = evt.to.dataset.setorId;
+                    const dragSetor = encontrarSetorPorId(dragListId);
+                    const dropSetor = encontrarSetorPorId(dropListId);
+                    
+                    if (dragListId === dropListId) {
+                        // Reordena dentro do mesmo setor
+                        reordenarArray(dragSetor.itens, dragSetor.itens, itemID, evt.item.nextElementSibling ? evt.item.nextElementSibling.dataset.id : null, 'id');
+                    } else {
+                        // Transfere entre setores
+                        const itemMovido = dragSetor.itens.find(i => i.id === itemID);
+                        if (itemMovido) {
+                             const novoIdBase = dropSetor.id;
+                             // Simula a lógica de drop para que o novo item entre no lugar correto
+                             reordenarArray(dragSetor.itens, dropSetor.itens, itemID, evt.item.nextElementSibling ? evt.item.nextElementSibling.dataset.id : null, 'id');
+                        }
+                    }
+
+                    salvarDados();
+                    renderizarLista(); // Renderiza para atualizar IDs e estrutura
+                }
+            });
+        });
+    }
 
     // *******************************************************************
     // 9. INICIALIZAÇÃO
