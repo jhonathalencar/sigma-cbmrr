@@ -3,805 +3,929 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SIGMA - Gerenciador de Conferências</title>
-    
-    <link rel="icon" href="logo_sigma.png" type="image/png">
+    <link rel="icon" type="image/png" href="logo_sigma.png" onerror="this.onerror=null; this.src='https://placehold.co/16x16/800020/ffffff?text=S'">
+    <title>ADMIN - Gerenciador de Conferência</title>
     <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
     <style>
-        /* ESTILOS DO CABEÇALHO FIXO (CBM-RR) - REPLICADO DO CONFERENCIA_TESTE.HTML */
+        /* ESTILOS DE ADMIN */
         body {
             font-family: Arial, sans-serif;
             background-color: #f4f4f9;
             color: #333;
+            min-height: 100vh;
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
             padding: 20px;
+        }
+
+        .container {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            width: 95%;
             max-width: 800px;
-            margin: 0 auto;
-            padding-top: 60px;
+            margin-bottom: 20px;
+            box-sizing: border-box;
+        }
+
+        h1 {
+            color: #d90f23;
+            margin-bottom: 15px;
+            font-size: 1.8em;
+            border-bottom: 2px solid #e0e0e0;
+            padding-bottom: 10px;
         }
         
-        .main-header {
+        /* Botões de Ação Global */
+        .global-actions {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            justify-content: flex-start;
+        }
+
+        .global-actions button, .btn-salvar-alteracao, .btn-action {
+            padding: 8px 15px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: background-color 0.3s;
+        }
+
+        .btn-sync {
+            background-color: #1b8a3e; /* Verde para sincronização */
+            color: white;
+        }
+        .btn-sync:hover { background-color: #156d31; }
+
+        .btn-add {
+            background-color: #800020; /* Vinho para Adicionar */
+            color: white;
+        }
+        .btn-add:hover { background-color: #5d0017; }
+
+        .btn-admin-config {
+             background-color: #6c757d; /* Cinza para Backup */
+             color: white;
+        }
+        .btn-admin-config:hover { background-color: #5a6268; }
+
+
+        /* Formulários de Adição */
+        .add-form {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            background-color: #fafafa;
+        }
+        .add-form input {
+            flex-grow: 1;
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        .add-form select {
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+
+
+        /* Listas de Setores e Itens */
+        .lista-setores {
+            padding-left: 0;
+            list-style: none;
+        }
+
+        .setor-item {
+            margin-bottom: 15px;
+            border: 1px solid #800020;
+            border-radius: 6px;
+            overflow: hidden;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .setor-header-admin {
+            background-color: #800020;
+            color: white;
+            padding: 10px 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-weight: bold;
+            cursor: grab;
+        }
+
+        .setor-actions {
+            display: flex;
+            gap: 5px;
+        }
+
+        .setor-actions .btn-action {
+            background-color: #d90f23;
+            font-size: 0.8em;
+            padding: 5px 10px;
+        }
+        .setor-actions .btn-action:hover { background-color: #b80d1e; }
+        
+        .item-list-admin {
+            list-style: none;
+            padding: 10px;
+            margin: 0;
+        }
+
+        /* Itens de Conferência */
+        .item-conferencia-admin {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px;
+            border-bottom: 1px solid #eee;
+            cursor: grab;
+            background-color: #fff;
+        }
+
+        .item-conferencia-admin:last-child {
+            border-bottom: none;
+        }
+        
+        .item-info {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            text-align: left;
+        }
+        .item-info strong { font-size: 1em; }
+        .item-info small { color: #666; font-size: 0.85em; }
+
+        .item-actions-admin {
+            display: flex;
+            gap: 5px;
+        }
+        
+        .item-actions-admin .btn-action {
+            background-color: #d90f23;
+            font-size: 0.75em;
+            padding: 5px 8px;
+        }
+
+        /* Tombamentos (Dentro dos Itens) */
+        .tombamento-list {
+            list-style: none;
+            padding: 5px 10px;
+            background-color: #f7f7f7;
+            border-top: 1px dashed #ddd;
+            margin-top: 5px;
+        }
+        .tombamento-list li {
+            font-size: 0.8em;
+            display: flex;
+            justify-content: space-between;
+            padding: 3px 0;
+            border-bottom: 1px dotted #eee;
+        }
+        .tombamento-list li .tombamento-actions .btn-action {
+            padding: 2px 6px;
+        }
+        .add-tombamento-form {
+            display: flex;
+            gap: 5px;
+            padding: 5px 10px 0;
+            border-top: 1px dashed #ddd;
+        }
+        .add-tombamento-form input {
+            padding: 5px;
+            font-size: 0.8em;
+            flex-grow: 1;
+        }
+        
+        /* Modal e Edição */
+        .modal-overlay {
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
-            height: 50px;
-            background-color: #800020;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
-            z-index: 100;
-            display: flex;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            display: none;
+            justify-content: center;
             align-items: center;
-            padding: 0 15px;
-            box-sizing: border-box;
-            gap: 10px;
+            z-index: 1000;
         }
-
-        .header-icon {
-            height: 40px; 
-            width: auto; 
-            vertical-align: middle; 
-            flex-shrink: 0;
+        .modal-content {
+            background: white;
+            padding: 25px;
+            border-radius: 8px;
+            width: 90%;
+            max-width: 400px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
         }
-
-        .header-title-desktop, .header-title-mobile {
-            font-weight: bold;
-            font-size: 1.1em;
-            line-height: 1.2;
-            flex-grow: 1;
-        }
-
-        .text-white {
-            color: white;
-        }
-
-        .text-red {
-            color: #FF3B3B;
-        }
-
-        @media (min-width: 768px) {
-            .header-title-desktop { display: block; }
-            .header-title-mobile { display: none; }
-            .header-title-desktop { font-size: 1.2em; }
-        }
-        /* FIM DOS ESTILOS DO CABEÇALHO FIXO */
-
-        /* Estilo para a logo centralizada (SIGMA no corpo principal) */
-        .logo-admin {
+        .modal-content label {
             display: block;
-            margin: 20px auto 10px auto; 
-            max-width: 100px; 
-            height: auto;
+            margin-top: 10px;
+            margin-bottom: 5px;
+            font-weight: bold;
         }
-
-        /* ESTILOS DE ADMIN (MANTIDOS E ADAPTADOS) */
-        h1 {
-            color: #d90f23;
-            border-bottom: 2px solid #e0e0e0;
-            padding-bottom: 10px;
-            margin-bottom: 25px;
-            margin-top: 20px;
-            text-align: center;
-        }
-        h2 {
-            color: #800020;
-            border-bottom: 1px dashed #ccc;
-            padding-bottom: 5px;
-            margin-top: 30px;
-        }
-        h3 {
-            background-color: #800020;
-            color: white;
+        .modal-content input, .modal-content select {
+            width: 100%;
             padding: 10px;
-            border-radius: 5px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            font-size: 1.1em;
-            margin-top: 15px;
-            cursor: grab;
-        }
-        h3:active {
-            cursor: grabbing;
-        }
-        form {
-            display: flex;
-            gap: 10px;
-            padding: 10px 0;
-            border-bottom: 1px dotted #eee;
-        }
-        /* Estilos dos campos */
-        input[type="text"], input[type="number"], .tombamentos-tag-container, textarea {
-            padding: 8px;
+            margin-bottom: 10px;
             border: 1px solid #ccc;
             border-radius: 4px;
             box-sizing: border-box;
-            flex-grow: 1;
         }
-        /* Botões */
-        button {
-            background-color: #d90f23;
-            color: white;
-            border: none;
-            padding: 8px 12px;
-            border-radius: 4px;
-            cursor: pointer;
-            font-weight: bold;
-            transition: background-color 0.2s;
-        }
-        .btn-adicionar {
-            background-color: #1b8a3e;
-        }
-        .btn-remover {
-            background-color: #d90f23;
-            padding: 5px 8px;
-            font-size: 0.8em;
-        }
-        .btn-renomear, .btn-editar {
-             background-color: #f39c12;
-             padding: 5px 8px;
-             font-size: 0.8em;
-             margin-right: 5px;
-        }
-        .btn-actions-sync { /* Estilo para os botões de sync */
-             background-color: #3498db;
-        }
-        .setor-actions button, .item-actions button {
-             margin-left: 5px;
-             flex-shrink: 0;
-        }
-        /* Lista de Itens (Modificada para arrastar) */
-        .setor-container {
-            border: 1px solid #ddd;
-            margin-bottom: 20px;
-            padding: 10px;
-            border-radius: 6px;
-            background-color: #fff;
-        }
-        .item-drag-handle {
-            margin-right: 10px;
-            cursor: grab;
-            color: #ccc;
-            font-size: 1.2em;
-            flex-shrink: 0;
-        }
-        .item-list > div {
-            background-color: #fff;
-            padding: 8px 10px;
-            border: 1px solid #eee;
-            margin: 5px 0;
-            border-left: 4px solid #800020;
+        .modal-buttons {
             display: flex;
-            justify-content: space-between;
-            align-items: center;
+            justify-content: flex-end;
+            gap: 10px;
+            margin-top: 20px;
         }
-        .item-list > div > div:nth-child(2) { 
-            flex-grow: 1; 
-            min-width: 0;
-            margin-right: 10px;
-        }
-        .item-actions {
-            display: flex;
-            gap: 5px;
-            flex-shrink: 0;
-            white-space: nowrap;
-        }
-        .tombamentos-info {
-            font-size: 0.9em;
-            color: #555;
-            padding-top: 5px;
-        }
-        .sortable-ghost {
-            opacity: 0.4;
-            background-color: #fff0f0 !important;
-            border: 1px dashed #d90f23;
-        }
-        /* Estilos do Modal (Mantidos) */
-        .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.4); }
-        .modal-content { background-color: #fefefe; margin: 10% auto; padding: 20px; border: 1px solid #888; width: 80%; max-width: 500px; border-radius: 8px; }
-        .close-btn { color: #aaa; float: right; font-size: 28px; font-weight: bold; }
-        .close-btn:hover, .close-btn:focus { color: #000; text-decoration: none; cursor: pointer; }
-        .modal .form-group label { display: block; margin-bottom: 5px; font-weight: bold; font-size: 0.9em; color: #555; margin-top: 10px; }
-        .modal .form-group input, .modal .form-group textarea { width: 100%; padding: 8px; }
-        .modal button { margin-top: 20px; }
+        .btn-salvar-modal { background-color: #1b8a3e; color: white; }
+        .btn-cancelar-modal { background-color: #d90f23; color: white; }
     </style>
 </head>
 <body>
-    
-    <header class="main-header">
-        <img src="cbmrr.png" alt="Ícone CBM-RR" class="header-icon" 
-                onerror="this.onerror=null; this.src='https://placehold.co/40x40/ffffff/800020/fff?text=CBM'">
-        
-        <div class="header-title-desktop">
-            <span class="text-white">CORPO DE BOMBEIROS MILITAR </span><span class="text-red">RORAIMA</span>
-        </div>
-        
-        <div class="header-title-mobile">
-            <span class="text-white">CBM</span><span class="text-red">RR</span>
-        </div>
-    </header>
 
+<div class="container">
     <img src="logo_sigma.png" alt="Logo SIGMA" class="logo-admin">
-    
-    <h1>🛠️ Gerenciamento de Conferências SIGMA</h1>
-    <p>As alterações feitas aqui são salvas *localmente*. Use as opções de **Sincronização** para atualizar o arquivo `data.json` no GitHub e sincronizar para todos os usuários.</p>
-    <a href="conferencia_teste.html" target="_blank">Abrir Conferência (para visualizar)</a>
-    
-    <hr>
-    
-    <h2>🔁 Sincronização de Dados</h2>
-    <div style="display: flex; gap: 10px; margin-bottom: 20px;">
-        <button onclick="exportarDados()" class="btn-actions-sync" style="flex-grow: 1;">
-            1. EXPORTAR JSON (SALVAR PARA O ARQUIVO)
-        </button>
-        <input type="file" id="import-json-input" accept=".json" style="display: none;">
-        <button onclick="document.getElementById('import-json-input').click()" class="btn-actions-sync" style="flex-grow: 1;">
-            2. IMPORTAR JSON (CARREGAR DO ARQUIVO)
-        </button>
-    </div>
+    <h1>🛠️ Administração da Conferência</h1>
+    <p id="loading-message">Carregando dados do Firebase...</p>
 
-    <div id="loading-message">Carregando dados...</div>
-    
     <div id="main-admin-content" style="display: none;">
         
-        <h2>➕ Adicionar Novo Setor</h2>
-        <form id="form-add-setor">
-            <input type="text" name="nomeSetor" placeholder="Nome do Novo Setor (Ex: POSTO CHARLIE)" required>
-            <button type="submit" class="btn-adicionar">Adicionar Setor</button>
-        </form>
+        <div class="global-actions">
+            <button class="btn-sync" onclick="salvarDados()">Salvar e Sincronizar Agora</button>
+            <button class="btn-admin-config" onclick="fazerBackupLocal()">Backup Local (JSON)</button>
+            <input type="file" id="import-json" style="display: none;" onchange="importarBackupLocal(event)">
+            <button class="btn-admin-config" onclick="document.getElementById('import-json').click()">Importar Backup</button>
+        </div>
+
+        <div class="add-form">
+            <input type="text" id="input-setor-nome" placeholder="Nome do Novo Setor (Ex: BRAVO 5)">
+            <button class="btn-add" onclick="adicionarSetor(document.getElementById('input-setor-nome').value)">+ Setor</button>
+        </div>
+
+        <div class="add-form">
+            <select id="select-setor-item">
+                <option value="">Selecione um Setor</option>
+            </select>
+            <input type="text" id="input-item-nome" placeholder="Nome do Item">
+            <input type="number" id="input-item-qtd" placeholder="Qtd. Esp." min="1" value="1">
+            <select id="select-item-tipo">
+                <option value="single">Item Único</option>
+                <option value="multi">Item com Tombamento</option>
+            </select>
+            <button class="btn-add" onclick="adicionarItem()">+ Item</button>
+        </div>
         
-        <hr>
-        
-        <h2>📦 Materiais Atuais por Setor</h2>
-        <div id="setores-list-container">
-            </div>
-        
+        <ul id="lista-setores-container" class="lista-setores">
+            </ul>
     </div>
+</div>
 
-    <div id="item-edit-modal" class="modal">
-        <div class="modal-content">
-            <span class="close-btn" onclick="document.getElementById('item-edit-modal').style.display='none'">&times;</span>
-            <h2>Editar Material</h2>
-            <form id="form-edit-item">
-                <input type="hidden" id="edit-setor-id" name="setorId">
-                <input type="hidden" id="edit-item-id" name="itemId">
+<div id="modal-edicao" class="modal-overlay">
+    <div class="modal-content">
+        <h2>Editar Item</h2>
+        <input type="hidden" id="edit-setor-id">
+        <input type="hidden" id="edit-item-original-id">
 
-                <div class="form-group">
-                    <label for="edit-nome">Nome do Material</label>
-                    <input type="text" id="edit-nome" name="nome" required>
-                </div>
+        <label for="edit-item-nome">Nome:</label>
+        <input type="text" id="edit-item-nome">
+        
+        <label for="edit-item-qtd">Quantidade Esperada:</label>
+        <input type="number" id="edit-item-qtd" min="1">
+        
+        <label for="edit-item-tipo">Tipo:</label>
+        <select id="edit-item-tipo" disabled>
+             <option value="single">Item Único</option>
+             <option value="multi">Item com Tombamento</option>
+        </select>
 
-                <div class="form-group" id="edit-qtd-group">
-                    <label for="edit-qtd">Quantidade Esperada</label>
-                    <input type="number" id="edit-qtd" name="qtd" min="1">
-                    <small style="color: red; display: none;" id="qtd-warning">A quantidade será calculada pelos tombamentos.</small>
-                </div>
-                
-                <div class="form-group">
-                    <label for="edit-tombamentos">Tombamentos (Separados por vírgula)</label>
-                    <textarea id="edit-tombamentos" name="tombamentos" placeholder="Ex: 123.456, 678.910"></textarea>
-                    <small>Se preenchido, a quantidade será contada automaticamente.</small>
-                </div>
-
-                <button type="submit" class="btn-adicionar">Salvar Alterações</button>
-            </form>
+        <div class="modal-buttons">
+            <button class="btn-cancelar-modal" onclick="fecharModal()">Cancelar</button>
+            <button class="btn-salvar-modal" onclick="salvarEdicaoItem()">Salvar Alterações</button>
         </div>
     </div>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+
+<script>
+    // *******************************************************************
+    // 1. CONFIGURAÇÃO FIREBASE
+    // *******************************************************************
+    const firebaseConfig = {
+      apiKey: "AIzaSyCB0PH0UgghgsvH0BgPkG4AkKON6xSQ9mc",
+      authDomain: "sigma-cbmrr.firebaseapp.com",
+      projectId: "sigma-cbmrr",
+      storageBucket: "sigma-cbmrr.firebasestorage.app",
+      messagingSenderId: "378026276038",
+      appId: "1:378026276038:web:620dd6ff57501b1a8313c7"
+    };
+
+    // Inicialização do Firebase e Firestore
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+    const COLECAO_NOME = 'lista_mestra'; 
+    const DOCUMENTO_ID = 'lista_completa'; // ID fixo para o documento principal
+
+    // *******************************************************************
+    // 2. ESTRUTURA DE DADOS (Preencha com sua lista completa)
+    // *******************************************************************
     
-    <script>
-        // *******************************************************************
-        // 1. ESTRUTURA DE DADOS INICIAL / CARREGAMENTO
-        // *******************************************************************
-        const DADOS_CONFERENCIA_FALLBACK = [
-            {
-                id: "1",
-                nome: "DEPÓSITO CENTRAL",
-                itens: [
-                    { id: "1-1", nome: "KIT PRIMEIROS SOCORROS", quantidadeEsperada: 5, tipo: "single", tombamentos: [] },
-                    {
-                        id: "1-2",
-                        nome: "LANTERNA TÁTICA",
-                        quantidadeEsperada: 2,
-                        tipo: "multi",
-                        tombamentos: [
-                            { tomb: "123.456" },
-                            { tomb: "678.910" }
-                        ]
-                    },
-                    { id: "1-3", nome: "MANGUEIRA DE INCÊNDIO (30m)", quantidadeEsperada: 3, tipo: "single", tombamentos: [] }
-                ]
-            },
-            {
-                id: "2",
-                nome: "VIATURA 13-1",
-                itens: [
-                    { id: "2-1", nome: "ALMOTOLIA 500ml", quantidadeEsperada: 2, tipo: "single", tombamentos: [] },
-                    { id: "2-2", nome: "CILINDRO DE OXIGÊNIO (portátil)", quantidadeEsperada: 1, tipo: "single", tombamentos: [] },
-                    { id: "2-3", nome: "CHAVE DE RODA", quantidadeEsperada: 1, tipo: "single", tombamentos: [] }
-                ]
+    // ESTA É A LISTA DE BACKUP E INICIAL. ELA SERÁ USADA PARA O PRIMEIRO UPLOAD 
+    // SE O FIREBASE ESTIVER VAZIO. SUBSTITUA COM O SEU JSON COMPLETO.
+    const DADOS_CONFERENCIA_FALLBACK = [
+        { 
+            "id": "1", 
+            "nome": "DEPÓSITO CENTRAL", 
+            "itens": [
+                {
+                    "id": "1-1",
+                    "nome": "KIT PRIMEIROS SOCORROS",
+                    "quantidadeEsperada": 5,
+                    "tipo": "single",
+                    "tombamentos": []
+                },
+                {
+                    "id": "1-2",
+                    "nome": "LANTERNA TÁTICA",
+                    "quantidadeEsperada": 2,
+                    "tipo": "multi",
+                    "tombamentos": [
+                        {"tomb": "123.456", "status": "pending", "obs": ""},
+                        {"tomb": "678.910", "status": "pending", "obs": ""},
+                    ]
+                }
+            ]
+        },
+        { 
+            "id": "2", 
+            "nome": "VIATURA 13-1", 
+            "itens": [
+                 {
+                    "id": "2-1",
+                    "nome": "ALMOTOLIA 500ML",
+                    "quantidadeEsperada": 2,
+                    "tipo": "single",
+                    "tombamentos": []
+                },
+                {
+                    "id": "2-2",
+                    "nome": "CHAVE DE RODA",
+                    "quantidadeEsperada": 1,
+                    "tipo": "single",
+                    "tombamentos": []
+                }
+            ]
+        },
+    ];
+
+    let dadosConferencia = [];
+    const LOCAL_STORAGE_KEY = 'dadosConferencia_backup'; 
+
+
+    // *******************************************************************
+    // 3. FUNÇÕES DE SINCRONIZAÇÃO (Firebase)
+    // *******************************************************************
+
+    async function carregarDadosAPI() {
+        try {
+            const doc = await db.collection(COLECAO_NOME).doc(DOCUMENTO_ID).get();
+
+            if (doc.exists && Array.isArray(doc.data().list)) {
+                dadosConferencia = doc.data().list;
+                console.log("Dados carregados com sucesso do Firebase.");
+            } else {
+                // Se o documento não existir, usa o fallback para a primeira vez
+                dadosConferencia = DADOS_CONFERENCIA_FALLBACK;
+                console.warn("Documento não encontrado no Firebase. Usando fallback e forçando o upload inicial...");
+                await salvarDados(); // Força o upload da lista de fallback
             }
-        ];
 
-        let dadosConferencia = [];
-        const LOCAL_STORAGE_KEY = 'dadosConferencia';
-
-        function carregarDados() {
-            // Tenta carregar do Local Storage (dados da última edição local)
+        } catch (error) {
+            console.error("Erro ao carregar dados do Firebase. Usando backup local:", error);
             const storedData = localStorage.getItem(LOCAL_STORAGE_KEY);
             if (storedData) {
-                try {
-                    const parsedData = JSON.parse(storedData);
-                    parsedData.forEach(setor => {
-                        setor.itens.forEach(item => {
-                            if (item.tipo === 'single' && !item.tombamentos) item.tombamentos = [];
-                        });
-                    });
-                    dadosConferencia = parsedData;
-                } catch (e) {
-                    console.error("Erro ao carregar dados do Local Storage. Usando fallback.", e);
-                    dadosConferencia = DADOS_CONFERENCIA_FALLBACK;
-                }
+                 dadosConferencia = JSON.parse(storedData);
             } else {
-                // Se nada foi salvo localmente, usa o fallback
-                dadosConferencia = DADOS_CONFERENCIA_FALLBACK;
-                salvarDados();
+                 dadosConferencia = DADOS_CONFERENCIA_FALLBACK;
             }
         }
 
-        function salvarDados() {
-            // Salva apenas localmente
-            localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(dadosConferencia));
-            console.log("Dados de conferência salvos no Local Storage.");
-        }
+        renderizarLista();
+        preencherSelectSetores();
+        document.getElementById('loading-message').style.display = 'none';
+        document.getElementById('main-admin-content').style.display = 'block';
+    }
 
-        // *******************************************************************
-        // 2. FUNÇÕES DE RENDERIZAÇÃO E INTERFACE
-        // *******************************************************************
-
-        function renderizarLista() {
-            const listaContainer = document.getElementById('setores-list-container');
-            listaContainer.innerHTML = '';
+    async function salvarDados() {
+        try {
+            // Cria um backup local de emergência
+            localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(dadosConferencia)); 
             
-            if (dadosConferencia.length === 0) {
-                 listaContainer.innerHTML = '<p>Nenhum setor adicionado. Adicione um acima.</p>';
-                 return;
-            }
-
-            dadosConferencia.forEach(setor => {
-                const setorEl = document.createElement('div');
-                setorEl.className = 'setor-container';
-                setorEl.setAttribute('data-id', setor.id);
-                
-                // --- Cabeçalho do Setor com Renomear e Remover ---
-                setorEl.innerHTML = `
-                    <h3 class="setor-header-drag">${setor.nome}
-                        <div class="setor-actions">
-                            <button onclick="promptRenomearSetor('${setor.id}', '${setor.nome}')" class="btn-renomear">Renomear</button>
-                            <button onclick="removerSetor('${setor.id}')" class="btn-remover">Remover Setor</button>
-                        </div>
-                    </h3>
-                `;
-                
-                // --- Formulário para Adicionar Material ---
-                const addItemForm = document.createElement('form');
-                addItemForm.onsubmit = function(e) {
-                    e.preventDefault();
-                    adicionarItem(setor.id, this.elements.nome.value, this.elements.qtd.value, this.elements.tombamentos.value);
-                    this.reset();
-                };
-                addItemForm.innerHTML = `
-                    <input type="text" name="nome" placeholder="1. Material (Ex: MANGUEIRA)" required>
-                    <input type="text" name="tombamentos" placeholder="2. Tombamentos (Ex: 123.456, 678.910)">
-                    <input type="number" name="qtd" placeholder="3. Qtd" style="max-width: 60px;">
-                    <button type="submit" class="btn-adicionar">Add Material</button>
-                `;
-                setorEl.appendChild(addItemForm);
-
-                // --- Lista de Itens (Container para arrastar itens) ---
-                const itemListEl = document.createElement('div');
-                itemListEl.className = 'item-list';
-                itemListEl.setAttribute('data-setor-id', setor.id); // ID para o SortableJS
-
-                setor.itens.forEach(item => {
-                    const itemWrapper = document.createElement('div');
-                    itemWrapper.setAttribute('data-id', item.id);
-                    
-                    let tombamentosInfo = '';
-                    
-                    // PADRONIZAÇÃO SOLICITADA: sempre mostra "Qtd. Esperada: X"
-                    let tipoInfo = `Qtd. Esperada: ${item.quantidadeEsperada}`;
-                    
-                    if (item.tipo === 'multi' && item.tombamentos && item.tombamentos.length > 0) {
-                        const tombs = item.tombamentos.map(t => t.tomb).join(', ');
-                        tombamentosInfo = `<div class="tombamentos-info">Tombamentos: ${tombs}</div>`;
-                    }
-
-                    itemWrapper.innerHTML = `
-                        <span class="item-drag-handle">☰</span> 
-                        <div style="flex-grow: 1;">
-                            <strong>${item.nome}</strong> (${tipoInfo})
-                            ${tombamentosInfo}
-                        </div>
-                        <div class="item-actions">
-                            <button onclick="promptEditarItem('${setor.id}', '${item.id}')" class="btn-editar">Editar</button>
-                            <button onclick="removerItem('${setor.id}', '${item.id}')" class="btn-remover">Remover</button>
-                        </div>
-                    `;
-                    itemListEl.appendChild(itemWrapper);
-                });
-                
-                setorEl.appendChild(itemListEl);
-                listaContainer.appendChild(setorEl);
+            // Salva no Firebase
+            await db.collection(COLECAO_NOME).doc(DOCUMENTO_ID).set({
+                list: dadosConferencia,
+                updatedAt: firebase.firestore.FieldValue.serverTimestamp()
             });
-            
-            // 3. ATIVAÇÃO DO DRAG AND DROP
-            ativarDragAndDrop();
+
+            console.log("Dados sincronizados com sucesso no Firebase!");
+            alert("Sincronização Completa! As alterações estão online.");
+
+        } catch (error) {
+            console.error("ERRO ao salvar no Firebase:", error);
+            alert("ERRO ao sincronizar dados com o Firebase. Verifique as regras de segurança e o ID do projeto.");
         }
+    }
 
-        // Lógica para mostrar o modal de edição (Mantida a lógica de auto-preenchimento para a edição)
-        function promptEditarItem(setorId, itemId) {
-            const setor = dadosConferencia.find(s => s.id === setorId);
-            const item = setor ? setor.itens.find(i => i.id === itemId) : null;
+    // *******************************************************************
+    // 4. FUNÇÕES CRUD (Com Chamadas a salvarDados())
+    // *******************************************************************
 
-            if (!item) return;
+    function gerarNovoId() {
+         return Date.now().toString().slice(-6) + Math.floor(Math.random() * 100).toString().padStart(2, '0');
+    }
 
-            const modal = document.getElementById('item-edit-modal');
-            
-            // Preenche os campos do modal
-            document.getElementById('edit-setor-id').value = setorId;
-            document.getElementById('edit-item-id').value = itemId;
-            document.getElementById('edit-nome').value = item.nome;
-            document.getElementById('edit-qtd').value = item.quantidadeEsperada;
-            
-            // Preenche a textarea de tombamentos
-            const tombamentosTextArea = document.getElementById('edit-tombamentos');
-            tombamentosTextArea.value = item.tombamentos.map(t => t.tomb).join(', ');
+    function adicionarSetor(nome) {
+        nome = nome.trim().toUpperCase();
+        if (!nome) { alert("O nome do setor é obrigatório."); return; }
 
-            // Esconde/mostra o campo de QTD baseado no tipo (para edição)
-            const qtdGroup = document.getElementById('edit-qtd-group');
-            const qtdWarning = document.getElementById('qtd-warning');
+        dadosConferencia.push({
+            id: gerarNovoId(),
+            nome: nome,
+            itens: []
+        });
 
-            if (item.tipo === 'multi') {
-                qtdGroup.style.display = 'block';
-                document.getElementById('edit-qtd').readOnly = true;
-                document.getElementById('edit-qtd').style.backgroundColor = '#f0f0f0';
-                qtdWarning.style.display = 'block';
-            } else {
-                qtdGroup.style.display = 'block';
-                document.getElementById('edit-qtd').readOnly = false;
-                document.getElementById('edit-qtd').style.backgroundColor = '#fff';
-                qtdWarning.style.display = 'none';
-            }
-            
-            modal.style.display = 'block';
-            document.getElementById('edit-nome').focus();
-        }
+        document.getElementById('input-setor-nome').value = '';
+        salvarDados(); // <--- Sincroniza
+        renderizarLista();
+        preencherSelectSetores();
+    }
 
-        // *******************************************************************
-        // 3. FUNÇÕES CRUD (CREATE, UPDATE, DELETE) E REORDENAÇÃO
-        // *******************************************************************
+    function removerSetor(setorId) {
+        if (!confirm("Tem certeza que deseja remover este setor e TODOS os seus itens?")) return;
 
-        // U - Update (Renomear Setor)
-        function renomearSetor(setorId, novoNome) {
-            const setor = dadosConferencia.find(s => s.id === setorId);
-            if (setor && novoNome.trim().length > 0) {
-                setor.nome = novoNome.toUpperCase();
-                salvarDados();
-                renderizarLista();
-                return true;
-            }
-            return false;
-        }
+        dadosConferencia = dadosConferencia.filter(s => s.id !== setorId);
 
-        function promptRenomearSetor(setorId, nomeAtual) {
-            const novoNome = prompt(`Renomear o setor "${nomeAtual}":`, nomeAtual);
-            if (novoNome !== null) { 
-                if (renomearSetor(setorId, novoNome)) {
-                    alert(`Setor renomeado para: ${novoNome.toUpperCase()}`);
-                } else {
-                    alert("O nome não pode ser vazio.");
-                }
-            }
-        }
-        
-        // C - Create Setor
-        function adicionarSetor(nomeSetor) {
-            const novoId = Date.now().toString().slice(-4); 
-            dadosConferencia.push({
-                id: novoId,
-                nome: nomeSetor.toUpperCase(),
-                itens: []
-            });
-            salvarDados();
-            renderizarLista();
-        }
-
-        // C - Create Item (Lógica de contagem de tombamento atualizada)
-        function adicionarItem(setorId, nomeItem, quantidade, tombamentosStr) {
-            const setor = dadosConferencia.find(s => s.id === setorId);
-            if (!setor) return;
-
-            let tipo = 'single';
-            let quantidadeFinal = parseInt(quantidade) || 0;
-            let tombamentosArray = [];
-
-            if (tombamentosStr.trim().length > 0) {
-                tipo = 'multi';
-                // Processa a string de tombamentos: remove espaços, filtra vazios
-                tombamentosArray = tombamentosStr.split(',')
-                                    .map(t => t.trim())
-                                    .filter(t => t.length > 0)
-                                    .map(t => ({ tomb: t }));
-                
-                // Se for MULTI, a quantidade é o número de tombamentos
-                quantidadeFinal = tombamentosArray.length;
-            } else {
-                // Se for SINGLE, valida a quantidade
-                if (quantidadeFinal <= 0) {
-                    alert("Informe uma quantidade válida se não houver tombamento.");
-                    return;
-                }
-            }
-
-            const novoId = `${setorId}-${Date.now().toString().slice(-4)}`; 
-            
-            setor.itens.push({
-                id: novoId,
-                nome: nomeItem.toUpperCase(),
-                quantidadeEsperada: quantidadeFinal,
-                tipo: tipo,
-                tombamentos: tombamentosArray
-            });
-            salvarDados();
-            renderizarLista();
-        }
-        
-        // U - Update Item (Função de edição)
-        function editarItem(setorId, itemId, novoNome, novaQtd, novosTombamentosStr) {
-            const setor = dadosConferencia.find(s => s.id === setorId);
-            const item = setor ? setor.itens.find(i => i.id === itemId) : null;
-
-            if (!item || novoNome.trim().length === 0) {
-                alert("Nome do item não pode ser vazio.");
-                return false;
-            }
-
-            let tipo = 'single';
-            let quantidadeFinal = parseInt(novaQtd) || 0;
-            let tombamentosArray = [];
-
-            if (novosTombamentosStr.trim().length > 0) {
-                tipo = 'multi';
-                tombamentosArray = novosTombamentosStr.split(',')
-                                    .map(t => t.trim())
-                                    .filter(t => t.length > 0)
-                                    .map(t => ({ tomb: t }));
-                
-                quantidadeFinal = tombamentosArray.length;
-            } else {
-                 // Se for SINGLE, valida a quantidade
-                if (quantidadeFinal <= 0) {
-                    alert("Informe uma quantidade válida se não houver tombamento.");
-                    return false;
-                }
-            }
-
-            // Aplica as alterações
-            item.nome = novoNome.toUpperCase();
-            item.quantidadeEsperada = quantidadeFinal;
-            item.tipo = tipo;
-            item.tombamentos = tombamentosArray;
-
+        salvarDados(); // <--- Sincroniza
+        renderizarLista();
+        preencherSelectSetores();
+    }
+    
+    function renomearSetor(setorId, novoNome) {
+        const setor = dadosConferencia.find(s => s.id === setorId);
+        if (setor && novoNome.trim().length > 0) {
+            setor.nome = novoNome.toUpperCase();
             salvarDados();
             renderizarLista();
             return true;
         }
-
-        // D - Delete Setor
-        function removerSetor(setorId) {
-            if (confirm("Tem certeza que deseja remover este setor e todos os seus materiais? Esta ação é IRREVERSÍVEL!")) {
-                dadosConferencia = dadosConferencia.filter(s => s.id !== setorId);
-                salvarDados();
-                renderizarLista();
+        return false;
+    }
+    
+    function promptRenomearSetor(setorId, nomeAtual) {
+        const novoNome = prompt(`Renomear o setor "${nomeAtual}":`, nomeAtual);
+        if (novoNome !== null) { 
+            if (renomearSetor(setorId, novoNome)) {
+                alert(`Setor renomeado para: ${novoNome.toUpperCase()}`);
+            } else {
+                alert("O nome não pode ser vazio.");
             }
         }
+    }
 
-        // D - Delete Item
-        function removerItem(setorId, itemId) {
-            const setor = dadosConferencia.find(s => s.id === setorId);
-            if (setor) {
-                setor.itens = setor.itens.filter(i => i.id !== itemId);
-                salvarDados();
-                renderizarLista();
-            }
+
+    function adicionarItem() {
+        const setorId = document.getElementById('select-setor-item').value;
+        const nome = document.getElementById('input-item-nome').value.trim().toUpperCase();
+        const quantidadeEsperada = parseInt(document.getElementById('input-item-qtd').value);
+        const tipo = document.getElementById('select-item-tipo').value;
+
+        if (!setorId || !nome || isNaN(quantidadeEsperada) || quantidadeEsperada < 1) {
+            alert("Preencha todos os campos corretamente.");
+            return;
         }
+
+        const setor = dadosConferencia.find(s => s.id === setorId);
+        if (!setor) return;
+
+        const novoItem = {
+            id: setorId + '-' + gerarNovoId(),
+            nome: nome,
+            quantidadeEsperada: quantidadeEsperada,
+            tipo: tipo,
+            tombamentos: []
+        };
         
-        // -------------------------------------------------------------------
-        // 4. LÓGICA DE REORDENAÇÃO (DRAG AND DROP)
-        // -------------------------------------------------------------------
-
-        function reordenarSetores(evt) {
-            const setorMovido = dadosConferencia.splice(evt.oldIndex, 1)[0];
-            dadosConferencia.splice(evt.newIndex, 0, setorMovido);
-            salvarDados();
-        }
-
-        function reordenarItens(evt) {
-            const setorId = evt.from.getAttribute('data-setor-id'); 
-            const setor = dadosConferencia.find(s => s.id === setorId);
-            
-            if (setor) {
-                const itemMovido = setor.itens.splice(evt.oldIndex, 1)[0];
-                setor.itens.splice(evt.newIndex, 0, itemMovido);
-                salvarDados();
+        // Se for tipo 'multi', gera os tombamentos vazios
+        if (tipo === 'multi' && quantidadeEsperada > 0) {
+            for (let i = 0; i < quantidadeEsperada; i++) {
+                novoItem.tombamentos.push({ tomb: `NOVO-${i + 1}`, status: "pending", obs: "" });
             }
         }
 
-        function transferirItemEntreSetores(evt) {
-             const itemMovidoId = evt.item.getAttribute('data-id');
-             const setorOrigemId = evt.from.getAttribute('data-setor-id');
-             const setorDestinoId = evt.to.getAttribute('data-setor-id');
-             const newIndex = evt.newIndex;
 
-             const setorOrigem = dadosConferencia.find(s => s.id === setorOrigemId);
-             const setorDestino = dadosConferencia.find(s => s.id === setorDestinoId);
-             
-             if (setorOrigem && setorDestino) {
-                 const itemIndex = setorOrigem.itens.findIndex(i => i.id === itemMovidoId);
-                 if (itemIndex > -1) {
-                     const [itemMovido] = setorOrigem.itens.splice(itemIndex, 1);
-                     setorDestino.itens.splice(newIndex, 0, itemMovido);
-                     
-                     salvarDados();
-                     renderizarLista();
-                 }
+        setor.itens.push(novoItem);
+
+        document.getElementById('input-item-nome').value = '';
+        document.getElementById('input-item-qtd').value = '1';
+        document.getElementById('select-setor-item').value = '';
+        
+        salvarDados(); // <--- Sincroniza
+        renderizarLista();
+    }
+    
+    function removerItem(setorId, itemId) {
+         if (!confirm("Tem certeza que deseja remover este item?")) return;
+
+         const setor = dadosConferencia.find(s => s.id === setorId);
+         if (setor) {
+             setor.itens = setor.itens.filter(item => item.id !== itemId);
+         }
+         
+         salvarDados(); // <--- Sincroniza
+         renderizarLista();
+    }
+
+    function adicionarTombamento(itemId, inputElement) {
+        const tombamento = inputElement.value.trim().toUpperCase();
+        if (!tombamento) return;
+        
+        const item = encontrarItemPorId(itemId);
+        if (item) {
+            item.tombamentos.push({ tomb: tombamento, status: "pending", obs: "" });
+            item.quantidadeEsperada = item.tombamentos.length; // Atualiza Qtd. Esperada
+            salvarDados(); // <--- Sincroniza
+            renderizarLista();
+        }
+    }
+
+    function removerTombamento(itemId, tombamento) {
+        if (!confirm(`Remover o tombamento ${tombamento}?`)) return;
+
+        const item = encontrarItemPorId(itemId);
+        if (item) {
+            item.tombamentos = item.tombamentos.filter(t => t.tomb !== tombamento);
+            item.quantidadeEsperada = item.tombamentos.length; // Atualiza Qtd. Esperada
+            salvarDados(); // <--- Sincroniza
+            renderizarLista();
+        }
+    }
+    
+    function editarTombamento(itemId, tombamento, inputElement) {
+        const novoTombamento = inputElement.value.trim().toUpperCase();
+        if (!novoTombamento || novoTombamento === tombamento) return;
+
+        const item = encontrarItemPorId(itemId);
+        if (item) {
+             const tomb = item.tombamentos.find(t => t.tomb === tombamento);
+             if (tomb) {
+                  tomb.tomb = novoTombamento;
+                  salvarDados(); // <--- Sincroniza
+                  // Não precisa de renderizarLista, apenas do alerta
+                  alert(`Tombamento ${tombamento} alterado para ${novoTombamento}.`);
              }
         }
+    }
 
-        function ativarDragAndDrop() {
-            // 4.1. Configuração para ARRASTAR SETORES
-            new Sortable(document.getElementById('setores-list-container'), {
-                animation: 150,
-                handle: 'h3',
-                filter: 'button',
-                onEnd: reordenarSetores
-            });
 
-            // 4.2. Configuração para ARRASTAR MATERIAIS DENTRO DE CADA SETOR
-            document.querySelectorAll('.item-list').forEach(list => {
-                new Sortable(list, {
-                    group: 'shared',
-                    animation: 150,
-                    handle: '.item-drag-handle',
-                    onEnd: (evt) => {
-                        if (evt.from !== evt.to) {
-                             transferirItemEntreSetores(evt);
-                        } else {
-                             reordenarItens(evt);
-                        }
-                    }
-                });
-            });
-        }
-        
-        // -------------------------------------------------------------------
-        // 5. FUNÇÕES DE EXPORTAÇÃO E IMPORTAÇÃO JSON
-        // -------------------------------------------------------------------
-        
-        function exportarDados() {
-            const dataStr = JSON.stringify(dadosConferencia, null, 2); // Formatação para legibilidade
-            const blob = new Blob([dataStr], { type: "application/json" });
-            const url = URL.createObjectURL(blob);
-            
-            const link = document.createElement('a');
-            link.href = url;
-            link.download = 'data.json';
-            
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-            
-            URL.revokeObjectURL(url);
-            alert("Arquivo 'data.json' exportado! Faça o upload dele para o GitHub.");
-        }
+    // *******************************************************************
+    // 5. FUNÇÕES DE RENDERIZAÇÃO E UTILS
+    // *******************************************************************
 
-        function importarDados(event) {
-            const file = event.target.files[0];
-            if (!file) return;
+    function encontrarSetorPorId(id) {
+        return dadosConferencia.find(s => s.id === id);
+    }
+    
+    function encontrarItemPorId(id) {
+         for (const setor of dadosConferencia) {
+             const item = setor.itens.find(i => i.id === id);
+             if (item) return item;
+         }
+         return null;
+    }
 
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                try {
-                    const importedData = JSON.parse(e.target.result);
-                    
-                    if (Array.isArray(importedData) && importedData.length > 0) {
-                        // Limpa o Local Storage e carrega os novos dados
-                        localStorage.removeItem(LOCAL_STORAGE_KEY);
-                        dadosConferencia = importedData;
-                        salvarDados(); // Salva a nova cópia localmente
-                        renderizarLista();
-                        alert("Dados importados com sucesso! Recarregue a conferência para visualizar as mudanças.");
-                    } else {
-                        alert("Erro: Arquivo JSON inválido ou vazio.");
-                    }
-                } catch (error) {
-                    alert("Erro ao ler ou processar o arquivo JSON.");
-                    console.error("Erro na importação:", error);
+    function preencherSelectSetores() {
+        const select = document.getElementById('select-setor-item');
+        select.innerHTML = '<option value="">Selecione um Setor</option>';
+        dadosConferencia.forEach(setor => {
+            const option = document.createElement('option');
+            option.value = setor.id;
+            option.textContent = `${setor.nome} (${setor.id})`;
+            select.appendChild(option);
+        });
+    }
+
+    function renderizarLista() {
+        const container = document.getElementById('lista-setores-container');
+        container.innerHTML = '';
+
+        dadosConferencia.forEach(setor => {
+            const setorLi = document.createElement('li');
+            setorLi.className = 'setor-item';
+            setorLi.setAttribute('data-id', setor.id);
+            setorLi.setAttribute('draggable', true);
+
+            let itensHtml = '';
+            setor.itens.forEach(item => {
+                let tombamentosHtml = '';
+                
+                if (item.tipo === 'multi' && item.tombamentos) {
+                    const tombamentosList = item.tombamentos.map(tomb => `
+                        <li>
+                            <span>Tombamento: 
+                                <input type="text" value="${tomb.tomb}" size="10" 
+                                       onblur="editarTombamento('${item.id}', '${tomb.tomb}', this)">
+                            </span>
+                            <div class="tombamento-actions">
+                                <button class="btn-action" onclick="removerTombamento('${item.id}', '${tomb.tomb}')">X</button>
+                            </div>
+                        </li>
+                    `).join('');
+
+                    tombamentosHtml = `
+                        <ul class="tombamento-list">
+                            ${tombamentosList}
+                            <li style="border-bottom:none;">
+                                <div class="add-tombamento-form">
+                                    <input type="text" id="tomb-input-${item.id}" placeholder="Novo Tombamento">
+                                    <button class="btn-add" onclick="adicionarTombamento('${item.id}', document.getElementById('tomb-input-${item.id}'))">+ Add</button>
+                                </div>
+                            </li>
+                        </ul>
+                    `;
                 }
-            };
-            reader.readAsText(file);
+
+
+                itensHtml += `
+                    <li class="item-conferencia-admin" data-id="${item.id}" data-setor-id="${setor.id}" draggable="true">
+                        <div class="item-info">
+                            <strong>${item.nome}</strong>
+                            <small>Qtd: ${item.quantidadeEsperada} | Tipo: ${item.tipo === 'multi' ? 'Tombamento' : 'Único'}</small>
+                        </div>
+                        <div class="item-actions-admin">
+                            <button class="btn-action" onclick="abrirModalEdicao('${setor.id}', '${item.id}')">Editar</button>
+                            <button class="btn-action" onclick="removerItem('${setor.id}', '${item.id}')">Remover</button>
+                        </div>
+                        ${tombamentosHtml}
+                    </li>
+                `;
+            });
+
+            setorLi.innerHTML = `
+                <div class="setor-header-admin">
+                    <span>${setor.nome} (${setor.id})</span>
+                    <div class="setor-actions">
+                        <button class="btn-action" onclick="promptRenomearSetor('${setor.id}', '${setor.nome}')">Renomear</button>
+                        <button class="btn-action" onclick="removerSetor('${setor.id}')">Remover Setor</button>
+                    </div>
+                </div>
+                <ul class="item-list-admin" data-setor-id="${setor.id}">
+                    ${itensHtml}
+                </ul>
+            `;
+            container.appendChild(setorLi);
+        });
+
+        aplicarDragAndDrop();
+    }
+    
+    // *******************************************************************
+    // 6. FUNÇÕES DE EDIÇÃO (MODAL)
+    // *******************************************************************
+    
+    function abrirModalEdicao(setorId, itemId) {
+        const item = encontrarItemPorId(itemId);
+        if (!item) return;
+
+        document.getElementById('edit-setor-id').value = setorId;
+        document.getElementById('edit-item-original-id').value = itemId;
+        document.getElementById('edit-item-nome').value = item.nome;
+        document.getElementById('edit-item-qtd').value = item.quantidadeEsperada;
+        document.getElementById('edit-item-tipo').value = item.tipo;
+        
+        // Bloqueia edição de quantidade se for multi
+        document.getElementById('edit-item-qtd').disabled = (item.tipo === 'multi');
+
+        document.getElementById('modal-edicao').style.display = 'flex';
+    }
+
+    function fecharModal() {
+        document.getElementById('modal-edicao').style.display = 'none';
+    }
+
+    function salvarEdicaoItem() {
+        const itemId = document.getElementById('edit-item-original-id').value;
+        const novoNome = document.getElementById('edit-item-nome').value.trim().toUpperCase();
+        const novaQtd = parseInt(document.getElementById('edit-item-qtd').value);
+        
+        if (!novoNome) {
+            alert("O nome do item não pode ser vazio.");
+            return;
         }
 
-        // *******************************************************************
-        // 6. INICIALIZAÇÃO / EVENT LISTENERS
-        // *******************************************************************
-        window.onload = function() {
-            carregarDados();
-            renderizarLista();
-            
-            document.getElementById('loading-message').style.display = 'none';
-            document.getElementById('main-admin-content').style.display = 'block';
-
-            // Listener para Adicionar Novo Setor
-            const addSetorForm = document.getElementById('form-add-setor');
-            if (addSetorForm) {
-                addSetorForm.onsubmit = function(e) {
-                    e.preventDefault();
-                    adicionarSetor(this.elements.nomeSetor.value);
-                    this.reset();
-                };
+        const item = encontrarItemPorId(itemId);
+        if (item) {
+            item.nome = novoNome;
+            // Só atualiza a quantidade se for item 'single'
+            if (item.tipo === 'single') {
+                 item.quantidadeEsperada = novaQtd;
             }
             
-            // Listener para Salvar Edição do Item
-            const editItemForm = document.getElementById('form-edit-item');
-            editItemForm.onsubmit = function(e) {
-                e.preventDefault();
-                const setorId = this.elements.setorId.value;
-                const itemId = this.elements.itemId.value;
-                const novoNome = this.elements.nome.value;
-                const novaQtd = this.elements.qtd.value;
-                const novosTombamentos = this.elements.tombamentos.value;
+            salvarDados(); // <--- Sincroniza
+            renderizarLista();
+            fecharModal();
+        }
+    }
+    
+    // *******************************************************************
+    // 7. FUNÇÕES DE BACKUP LOCAL DE EMERGÊNCIA
+    // *******************************************************************
+    
+    function fazerBackupLocal() {
+        const jsonString = JSON.stringify(dadosConferencia, null, 2);
+        const blob = new Blob([jsonString], { type: "application/json" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'conferencia_backup_' + new Date().toISOString().slice(0, 10) + '.json';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+        alert("Backup da lista baixado como arquivo JSON.");
+    }
+    
+    function importarBackupLocal(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            try {
+                const importedData = JSON.parse(e.target.result);
+                if (!Array.isArray(importedData)) {
+                    throw new Error("O arquivo não está no formato de lista (Array) esperado.");
+                }
                 
-                if (editarItem(setorId, itemId, novoNome, novaQtd, novosTombamentos)) {
-                    document.getElementById('item-edit-modal').style.display = 'none';
-                    alert(`Material "${novoNome}" alterado com sucesso!`);
+                if (confirm("ATENÇÃO: Este backup substituirá TODOS os dados atuais no Firebase. Continuar?")) {
+                    dadosConferencia = importedData;
+                    salvarDados(); // <--- Sincroniza com o Firebase
+                    renderizarLista();
+                    preencherSelectSetores();
+                    alert("Dados importados com sucesso e sincronizados com o Firebase.");
                 }
-            };
 
-            // Listener para o campo de Importação
-            document.getElementById('import-json-input').addEventListener('change', importarDados);
-
-
-            // Lógica para controle do campo Qtd no modal
-            document.getElementById('edit-tombamentos').addEventListener('input', function() {
-                const qtdField = document.getElementById('edit-qtd');
-                const warning = document.getElementById('qtd-warning');
-                
-                if (this.value.trim().length > 0) {
-                    qtdField.readOnly = true;
-                    qtdField.style.backgroundColor = '#f0f0f0';
-                    warning.style.display = 'block';
-                    const count = this.value.split(',').filter(t => t.trim().length > 0).length;
-                    qtdField.value = count;
-                } else {
-                    qtdField.readOnly = false;
-                    qtdField.style.backgroundColor = '#fff';
-                    warning.style.display = 'none';
-                }
-            });
-            
-            // Fechar modal ao clicar fora
-            window.onclick = function(event) {
-                const modal = document.getElementById('item-edit-modal');
-                if (event.target == modal) {
-                    modal.style.display = "none";
-                }
+            } catch (error) {
+                alert("Erro ao importar o arquivo: " + error.message);
             }
         };
-        // Expondo a função para uso no onclick do HTML
-        window.promptEditarItem = promptEditarItem;
-        window.removerItem = removerItem;
-        window.promptRenomearSetor = promptRenomearSetor;
-        window.removerSetor = removerSetor;
-        window.exportarDados = exportarDados; // Exporta a função para o botão
-    </script>
+        reader.readAsText(file);
+    }
+
+    // *******************************************************************
+    // 8. FUNÇÕES DE DRAG AND DROP (Reordenamento)
+    // *******************************************************************
+
+    let dragSrcEl = null;
+
+    function handleDragStart(e) {
+        dragSrcEl = this;
+        e.dataTransfer.effectAllowed = 'move';
+        e.dataTransfer.setData('text/plain', this.dataset.id);
+        this.classList.add('dragging');
+    }
+
+    function handleDragOver(e) {
+        e.preventDefault();
+        e.dataTransfer.dropEffect = 'move';
+        return false;
+    }
+
+    function handleDragEnter(e) {
+        this.classList.add('over');
+    }
+
+    function handleDragLeave(e) {
+        this.classList.remove('over');
+    }
+
+    function handleDrop(e) {
+        e.stopPropagation();
+        this.classList.remove('over', 'dragging');
+
+        if (dragSrcEl !== this) {
+            const dragId = dragSrcEl.dataset.id;
+            const dropId = this.dataset.id;
+            
+            const isSetor = dragSrcEl.classList.contains('setor-item');
+            const isItem = dragSrcEl.classList.contains('item-conferencia-admin');
+            
+            let sourceList = null;
+            let targetList = null;
+
+            // Lógica para Setores
+            if (isSetor && dragSrcEl.parentNode === this.parentNode) {
+                 sourceList = dadosConferencia;
+                 targetList = dadosConferencia;
+            } 
+            // Lógica para Itens
+            else if (isItem) {
+                 const dragSetorId = dragSrcEl.dataset.setorId;
+                 const dropSetorId = this.dataset.setorId;
+                 
+                 const dragSetor = encontrarSetorPorId(dragSetorId);
+                 const dropSetor = encontrarSetorPorId(dropSetorId);
+
+                 if (dragSetor && dropSetor) {
+                      sourceList = dragSetor.itens;
+                      targetList = dropSetor.itens;
+                 }
+            }
+            
+            if (sourceList && targetList) {
+                reordenarArray(sourceList, targetList, dragId, dropId, isItem ? 'id' : 'id');
+                salvarDados(); // <--- Sincroniza
+                renderizarLista();
+            }
+        }
+        return false;
+    }
+
+    function handleDragEnd(e) {
+        this.classList.remove('dragging');
+        document.querySelectorAll('.over').forEach(el => el.classList.remove('over'));
+    }
+
+    function aplicarDragAndDrop() {
+        document.querySelectorAll('.setor-item').forEach(setor => {
+            setor.addEventListener('dragstart', handleDragStart, false);
+            setor.addEventListener('dragenter', handleDragEnter, false);
+            setor.addEventListener('dragover', handleDragOver, false);
+            setor.addEventListener('dragleave', handleDragLeave, false);
+            setor.addEventListener('drop', handleDrop, false);
+            setor.addEventListener('dragend', handleDragEnd, false);
+        });
+
+        document.querySelectorAll('.item-conferencia-admin').forEach(item => {
+            item.addEventListener('dragstart', handleDragStart, false);
+            item.addEventListener('dragenter', handleDragEnter, false);
+            item.addEventListener('dragover', handleDragOver, false);
+            item.addEventListener('dragleave', handleDragLeave, false);
+            item.addEventListener('drop', handleDrop, false);
+            item.addEventListener('dragend', handleDragEnd, false);
+        });
+    }
+
+    function reordenarArray(sourceList, targetList, dragId, dropId, key) {
+        let dragIndex = sourceList.findIndex(e => e[key] === dragId);
+        let dropIndex = targetList.findIndex(e => e[key] === dropId);
+
+        if (sourceList === targetList) {
+            const temp = sourceList[dragIndex];
+            sourceList.splice(dragIndex, 1);
+            sourceList.splice(dropIndex, 0, temp);
+        } else {
+             const temp = sourceList[dragIndex];
+             sourceList.splice(dragIndex, 1);
+             // Atualiza o ID do item movido (muda de setor, precisa de um novo ID único)
+             temp.id = targetList.length > 0 ? targetList[0].id.split('-')[0] + '-' + gerarNovoId() : temp.id;
+             targetList.splice(dropIndex, 0, temp);
+        }
+    }
+
+
+    // *******************************************************************
+    // 9. INICIALIZAÇÃO
+    // *******************************************************************
+    window.onload = function() {
+        carregarDadosAPI();
+    };
+    
+    // Exporta funções para uso no HTML
+    window.adicionarSetor = adicionarSetor;
+    window.removerSetor = removerSetor;
+    window.adicionarItem = adicionarItem;
+    window.adicionarTombamento = adicionarTombamento;
+    window.removerTombamento = removerTombamento;
+    window.editarTombamento = editarTombamento;
+    window.abrirModalEdicao = abrirModalEdicao;
+    window.fecharModal = fecharModal;
+    window.salvarEdicaoItem = salvarEdicaoItem;
+    window.fazerBackupLocal = fazerBackupLocal;
+    window.importarBackupLocal = importarBackupLocal;
+    window.salvarDados = salvarDados;
+    window.promptRenomearSetor = promptRenomearSetor;
+</script>
 </body>
 </html>
