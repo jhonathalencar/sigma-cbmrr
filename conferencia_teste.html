@@ -205,7 +205,7 @@
             justify-content: space-between;
             align-items: flex-start; /* Alinhamento superior */
             margin-bottom: 5px;
-            flex-wrap: wrap;
+            /* flex-wrap: wrap; */ /* Removido para garantir que tudo fique na linha */
         }
 
         /* CLASSE PADRÃO PARA TODOS OS NOMES DE ITEM PRINCIPAL */
@@ -213,18 +213,19 @@
             font-weight: bold;
             color: #333;
             flex-grow: 1;
-            margin-right: 10px;
+            flex-shrink: 1; /* Permite que o texto encolha */
+            margin-right: 10px; /* Mantém um pequeno espaço entre nome e QTD */
             text-align: left;
             font-size: 0.95em;
         }
         
-        /* MODIFICAÇÃO CHAVE: Alinha à direita e muda o flex-shrink */
+        /* CORREÇÃO CHAVE: Força o alinhamento à direita e garante que não quebre a linha */
         .item-quantidade {
-            font-size: 0.95em; /* Aumentado para corresponder ao label */
+            font-size: 0.95em;
             color: #800020;
             font-weight: bold;
-            margin-left: auto; /* FORÇA ALINHAMENTO À DIREITA */
-            /* flex-shrink: 0; foi removido */
+            margin-left: auto; /* FORÇA O ALINHAMENTO À DIREITA */
+            flex-shrink: 0; /* IMPEDE QUE A QTD ENCOLHA */
         }
         
         .status-icon {
