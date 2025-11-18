@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="icon" type="image/png" href="logo_sigma.png" onerror="this.onerror=null; this.src='https://placehold.co/16x16/800020/ffffff?text=S'">
-    <title>Permanência Bravo - Gerenciar</title>
+    <title>ADMIN - Gerenciador de Conferência</title>
     <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
@@ -503,8 +503,7 @@
     
     <img src="logo_sigma.png" alt="Logo SIGMA" class="logo-admin">
     
-    <h1>🛠️ Permanência BRAVO 🛠️</h1><br>
-    <h2>Gerenciar Lista</h2>
+    <h1>🛠️ Administração da Conferência</h1>
     <p id="loading-message">Carregando dados do Firebase...</p>
 
     <div id="main-admin-content" style="display: none;">
@@ -858,7 +857,6 @@
         }
     }
     
-    // CORRIGIDO: Lógica de mover item entre setores
     function salvarEdicaoItem() {
         const oldSetorId = document.getElementById('edit-setor-id').value;
         const itemId = document.getElementById('edit-item-original-id').value;
@@ -932,7 +930,7 @@
              arrow.textContent = '►';
          }
     }
-
+    
     function preencherSelectSetoresModal(setorAtualId) {
         const select = document.getElementById('edit-item-setor');
         select.innerHTML = '';
@@ -1048,6 +1046,123 @@
         aplicarDragAndDrop();
     }
     
+    // *******************************************************************
+    // 6. FUNÇÕES DE EDIÇÃO (MODAL)
+    // *******************************************************************
+    
+    function abrirModalEdicao(setorId, itemId) {
+        const item = encontrarItemPorId(itemId);
+        if (!item) return;
+
+        // Preenche o Select do Setor
+        preencherSelectSetoresModal(setorId);
+
+        document.getElementById('edit-setor-id').value = setorId;
+        document.getElementById('edit-item-original-id').value = itemId;
+        document.getElementById('edit-item-nome').value = item.nome;
+        document.getElementById('edit-item-qtd').value = item.quantidadeEsperada;
+        document.getElementById('edit-item-tipo').value = item.tipo;
+        
+        document.getElementById('edit-item-qtd').disabled = (item.tipo === 'multi');
+        document.getElementById('edit-item-tipo').value = item.tipo; // Garante que o tipo seja exibido
+
+        // CRÍTICO: Define display: flex para centralizar o modal
+        document.getElementById('modal-edicao').style.display = 'flex';
+    }
+
+    function fecharModal() {
+        document.getElementById('modal-edicao').style.display = 'none';
+    }
+
+    function salvarEdicaoItem() {
+        const oldSetorId = document.getElementById('edit-setor-id').value;
+        const itemId = document.getElementById('edit-item-original-id').value;
+        const novoNome = document.getElementById('edit-item-nome').value.trim().toUpperCase();
+        const novoSetorId = document.getElementById('edit-item-setor').value;
+        const novaQtd = parseInt(document.getElementById('edit-item-qtd').value);
+        
+        if (!novoNome) {
+            alert("O nome do item não pode ser vazio.");
+            return;
+        }
+
+        const item = encontrarItemPorId(itemId);
+        if (!item) return;
+
+        item.nome = novoNome;
+        if (item.tipo === 'single') {
+             item.quantidadeEsperada = novaQtd;
+        }
+
+        // 1. VERIFICA MUDANÇA DE SETOR
+        if (oldSetorId !== novoSetorId) {
+            const oldSetor = encontrarSetorPorId(oldSetorId);
+            const newSetor = encontrarSetorPorId(novoSetorId);
+
+            if (oldSetor && newSetor) {
+                // Remove do setor antigo
+                oldSetor.itens = oldSetor.itens.filter(i => i.id !== itemId);
+                
+                // CRIA NOVO ID para o novo setor
+                item.id = novoSetorId + '-' + gerarNovoId();
+                
+                // Adiciona no novo setor
+                newSetor.itens.push(item);
+                
+                alert(`Item "${novoNome}" movido para o setor "${newSetor.nome}"!`);
+            }
+        }
+        
+        salvarDados(); 
+        renderizarLista();
+        fecharModal();
+    }
+
+
+    // *******************************************************************
+    // 7. FUNÇÕES DE BACKUP LOCAL DE EMERGÊNCIA (MANTIDAS)
+    // *******************************************************************
+    
+    function fazerBackupLocal() {
+        const jsonString = JSON.stringify(dadosConferencia, null, 2);
+        const blob = new Blob([jsonString], { type: "application/json" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'conferencia_backup_' + new Date().toISOString().slice(0, 10) + '.json';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+        alert("Backup da lista baixado como arquivo JSON.");
+    }
+    
+    function importarBackupLocal(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            try {
+                const importedData = JSON.parse(e.target.result);
+                if (!Array.isArray(importedData)) {
+                    throw new Error("O arquivo não está no formato de lista (Array) esperado.");
+                }
+                
+                if (confirm("ATENÇÃO: Este backup substituirá TODOS os dados atuais no Firebase. Continuar?")) {
+                    dadosConferencia = importedData;
+                    salvarDados(); 
+                    renderizarLista();
+                    alert("Dados importados com sucesso e sincronizados com o Firebase.");
+                }
+
+            } catch (error) {
+                alert("Erro ao importar o arquivo: " + error.message);
+            }
+        };
+        reader.readAsText(file);
+    }
+
     // *******************************************************************
     // 8. FUNÇÕES DE DRAG AND DROP (Reordenamento)
     // *******************************************************************
