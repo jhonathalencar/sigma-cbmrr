@@ -646,7 +646,7 @@
         return results === null ? '' : decodeURIComponent(results[1].replace(/\+/g, ' '));
     }
     
-    // Dados do militar
+    // Dados do militar (mantidos, apenas sem usar os parâmetros 'local' e 'posto' para o cabeçalho)
     const userInfo = {
         postoGraduacao: getUrlParameter('posto_grad') || "CAP",
         quadro: getUrlParameter('quadro_mil') || "QOCBM", 
@@ -899,16 +899,16 @@
                  const tombamentos = item.querySelectorAll('.tombamento-container');
                  
                  tombamentos.forEach(tomb => {
-                     totalItemsInSetor++; // Conta cada tombamento como um item
-                     const uniqueId = `${itemID}-${tomb.dataset.tomb}`;
-                     const tombStatus = itemStatus[uniqueId]?.status;
+                      totalItemsInSetor++; // Conta cada tombamento como um item
+                      const uniqueId = `${itemID}-${tomb.dataset.tomb}`;
+                      const tombStatus = itemStatus[uniqueId]?.status;
 
-                     if (tombStatus === 'S/A') {
-                         completedItems++;
-                     } else if (tombStatus === 'C/A') {
+                      if (tombStatus === 'S/A') {
                           completedItems++;
-                          alteredItems++;
-                     }
+                      } else if (tombStatus === 'C/A') {
+                           completedItems++;
+                           alteredItems++;
+                      }
                  });
             }
         });
@@ -1076,9 +1076,9 @@
     // Inicialização: Garante que os status estão corretos ao carregar a página
     window.onload = function() {
         
-        // Leitura e fallback dos dados de local
-        const urlLocal = getUrlParameter('local') || 'LOCAL TESTE';
-        const urlPosto = getUrlParameter('posto') || 'Posto BRAVO';
+        // **ALTERAÇÃO 1: Remoção da leitura de 'local' e 'posto' da URL.**
+        // const urlLocal = getUrlParameter('local') || 'LOCAL TESTE'; // LINHA REMOVIDA
+        // const urlPosto = getUrlParameter('posto') || 'Posto BRAVO'; // LINHA REMOVIDA
         
         // 1. Injeta os dados do militar no cabeçalho
         const militarCompleto = `${userInfo.postoGraduacao} ${userInfo.quadro} ${userInfo.nomeGuerra}`;
@@ -1088,9 +1088,9 @@
             <strong>Conferente:</strong> ${militarCompleto} (${dataConferencia})
         `;
         
-        // 2. Injeta os dados de Local/Posto
+        // **ALTERAÇÃO 2: Injeta o texto padrão "PERMANÊNCIA - BRAVO 5".**
         const localPostoElement = document.getElementById('local-posto-info');
-        localPostoElement.textContent = `${urlLocal} - ${urlPosto}`;
+        localPostoElement.textContent = `PERMANÊNCIA - BRAVO 5`; // LINHA ALTERADA
 
         // 3. Inicializa o status de todos os itens como PENDENTE
         document.querySelectorAll('.item-conferencia').forEach(item => {
