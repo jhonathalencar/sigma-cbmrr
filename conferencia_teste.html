@@ -126,6 +126,14 @@
             margin-bottom: 15px;
             padding-bottom: 5px;
             border-bottom: 1px solid #eee;
+            /* Adicionado display flex para melhor alinhamento das linhas (Conferente e Data/Hora) */
+            display: flex; 
+            flex-direction: column;
+            gap: 5px; /* Espaço entre as linhas */
+        }
+        .info-line strong {
+            display: inline-block;
+            min-width: 90px; /* Garante alinhamento dos dois pontos */
         }
         
         /* --- ESTILOS PARA SETORES (COLLAPSIBLE) --- */
@@ -341,7 +349,7 @@
             font-size: 0.85em; 
         }
 
-        /* MODIFICAÇÃO 3: Aumenta a caixa de texto da observação para 100% (margem a margem) */
+        /* MODIFICAÇÃO: Aumenta a caixa de texto da observação para 100% (margem a margem) */
         .tombamento-obs-container textarea,
         .alteracao-container textarea {
             width: 100%;
@@ -754,12 +762,23 @@
     }
 
     function updateHeaderInfo() {
-        // Injeta os dados do militar no cabeçalho
+        // Obtém dados do militar
         const militarCompleto = `${userInfo.postoGraduacao} ${userInfo.quadro} ${userInfo.nomeGuerra}`;
-        const dataConferencia = new Date().toLocaleDateString('pt-BR'); 
+        
+        // --- MODIFICAÇÃO DE DATA/HORA ---
+        const now = new Date();
+        const dataConferencia = now.toLocaleDateString('pt-BR');
+        const horaConferencia = now.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+
         const militarInfoElement = document.getElementById('militar-info');
+        // Nova estrutura para mostrar o conferente e a Data/Hora em linhas separadas
         militarInfoElement.innerHTML = `
-            <strong>Conferente:</strong> ${militarCompleto} (${dataConferencia})
+            <span class="info-line">
+                <strong>Conferente:</strong> ${militarCompleto}
+            </span>
+            <span class="info-line">
+                <strong>Data/Hora:</strong> ${dataConferencia}, ${horaConferencia}
+            </span>
         `;
         
         // Injeta o texto padrão "PERMANÊNCIA - BRAVO 5"
@@ -1198,4 +1217,3 @@
 </script>
 </body>
 </html>
-
