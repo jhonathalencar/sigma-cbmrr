@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PERMANÊNCIA BRAVO 5 - Gerenciador de Conferência</title>
+    <title>SIGMA - Gerenciador de Conferências</title>
     
     <link rel="icon" href="logo_sigma.png" type="image/png">
     <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
@@ -16,7 +16,7 @@
             padding: 20px;
             max-width: 800px;
             margin: 0 auto;
-            padding-top: 60px; /* Espaço para o header fixo */
+            padding-top: 60px;
         }
         
         .main-header {
@@ -141,6 +141,9 @@
              font-size: 0.8em;
              margin-right: 5px;
         }
+        .btn-actions-sync { /* Estilo para os botões de sync */
+             background-color: #3498db;
+        }
         .setor-actions button, .item-actions button {
              margin-left: 5px;
              flex-shrink: 0;
@@ -218,12 +221,22 @@
 
     <img src="logo_sigma.png" alt="Logo SIGMA" class="logo-admin">
     
-    
-    <h1>🛠️ PERMANÊNCIA BRAVO 5 - Gerenciador de Conferência</h1>
-    <p>Use esta interface para incluir, alterar e remover a estrutura de setores e materiais. Para reordenar, basta **arrastar** os setores ou os materiais.</p>
+    <h1>🛠️ Gerenciamento de Conferências SIGMA</h1>
+    <p>As alterações feitas aqui são salvas *localmente*. Use as opções de **Sincronização** para atualizar o arquivo `data.json` no GitHub e sincronizar para todos os usuários.</p>
     <a href="conferencia_teste.html" target="_blank">Abrir Conferência (para visualizar)</a>
     
     <hr>
+    
+    <h2>🔁 Sincronização de Dados</h2>
+    <div style="display: flex; gap: 10px; margin-bottom: 20px;">
+        <button onclick="exportarDados()" class="btn-actions-sync" style="flex-grow: 1;">
+            1. EXPORTAR JSON (SALVAR PARA O ARQUIVO)
+        </button>
+        <input type="file" id="import-json-input" accept=".json" style="display: none;">
+        <button onclick="document.getElementById('import-json-input').click()" class="btn-actions-sync" style="flex-grow: 1;">
+            2. IMPORTAR JSON (CARREGAR DO ARQUIVO)
+        </button>
+    </div>
 
     <div id="loading-message">Carregando dados...</div>
     
@@ -308,13 +321,14 @@
         ];
 
         let dadosConferencia = [];
+        const LOCAL_STORAGE_KEY = 'dadosConferencia';
 
         function carregarDados() {
-            const storedData = localStorage.getItem('dadosConferencia');
+            // Tenta carregar do Local Storage (dados da última edição local)
+            const storedData = localStorage.getItem(LOCAL_STORAGE_KEY);
             if (storedData) {
                 try {
                     const parsedData = JSON.parse(storedData);
-                    // Garante que o item.tombamentos existe para evitar erros
                     parsedData.forEach(setor => {
                         setor.itens.forEach(item => {
                             if (item.tipo === 'single' && !item.tombamentos) item.tombamentos = [];
@@ -326,13 +340,15 @@
                     dadosConferencia = DADOS_CONFERENCIA_FALLBACK;
                 }
             } else {
+                // Se nada foi salvo localmente, usa o fallback
                 dadosConferencia = DADOS_CONFERENCIA_FALLBACK;
                 salvarDados();
             }
         }
 
         function salvarDados() {
-            localStorage.setItem('dadosConferencia', JSON.stringify(dadosConferencia));
+            // Salva apenas localmente
+            localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(dadosConferencia));
             console.log("Dados de conferência salvos no Local Storage.");
         }
 
@@ -603,23 +619,18 @@
         // -------------------------------------------------------------------
 
         function reordenarSetores(evt) {
-            // Reordena o array principal de setores
             const setorMovido = dadosConferencia.splice(evt.oldIndex, 1)[0];
             dadosConferencia.splice(evt.newIndex, 0, setorMovido);
-            
             salvarDados();
         }
 
         function reordenarItens(evt) {
-            // O container (item-list) contém o atributo data-setor-id
             const setorId = evt.from.getAttribute('data-setor-id'); 
             const setor = dadosConferencia.find(s => s.id === setorId);
             
             if (setor) {
-                // Reordena o array de itens dentro do setor
                 const itemMovido = setor.itens.splice(evt.oldIndex, 1)[0];
                 setor.itens.splice(evt.newIndex, 0, itemMovido);
-                
                 salvarDados();
             }
         }
@@ -634,12 +645,9 @@
              const setorDestino = dadosConferencia.find(s => s.id === setorDestinoId);
              
              if (setorOrigem && setorDestino) {
-                 // 1. Remove o item do array de origem
                  const itemIndex = setorOrigem.itens.findIndex(i => i.id === itemMovidoId);
                  if (itemIndex > -1) {
                      const [itemMovido] = setorOrigem.itens.splice(itemIndex, 1);
-                     
-                     // 2. Insere o item no array de destino (na nova posição)
                      setorDestino.itens.splice(newIndex, 0, itemMovido);
                      
                      salvarDados();
@@ -652,23 +660,21 @@
             // 4.1. Configuração para ARRASTAR SETORES
             new Sortable(document.getElementById('setores-list-container'), {
                 animation: 150,
-                handle: 'h3', // Só arrasta clicando no cabeçalho <h3>
-                filter: 'button', // Não arrasta se clicar nos botões dentro de <h3>
+                handle: 'h3',
+                filter: 'button',
                 onEnd: reordenarSetores
             });
 
             // 4.2. Configuração para ARRASTAR MATERIAIS DENTRO DE CADA SETOR
             document.querySelectorAll('.item-list').forEach(list => {
                 new Sortable(list, {
-                    group: 'shared', // Permite arrastar materiais entre diferentes setores
+                    group: 'shared',
                     animation: 150,
-                    handle: '.item-drag-handle', // Usa o ícone ☰ como alça de arraste
+                    handle: '.item-drag-handle',
                     onEnd: (evt) => {
-                         // Se o item foi movido para um setor diferente
                         if (evt.from !== evt.to) {
                              transferirItemEntreSetores(evt);
                         } else {
-                             // Se o item foi movido dentro do mesmo setor
                              reordenarItens(evt);
                         }
                     }
@@ -676,8 +682,56 @@
             });
         }
         
+        // -------------------------------------------------------------------
+        // 5. FUNÇÕES DE EXPORTAÇÃO E IMPORTAÇÃO JSON
+        // -------------------------------------------------------------------
+        
+        function exportarDados() {
+            const dataStr = JSON.stringify(dadosConferencia, null, 2); // Formatação para legibilidade
+            const blob = new Blob([dataStr], { type: "application/json" });
+            const url = URL.createObjectURL(blob);
+            
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = 'data.json';
+            
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            
+            URL.revokeObjectURL(url);
+            alert("Arquivo 'data.json' exportado! Faça o upload dele para o GitHub.");
+        }
+
+        function importarDados(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const importedData = JSON.parse(e.target.result);
+                    
+                    if (Array.isArray(importedData) && importedData.length > 0) {
+                        // Limpa o Local Storage e carrega os novos dados
+                        localStorage.removeItem(LOCAL_STORAGE_KEY);
+                        dadosConferencia = importedData;
+                        salvarDados(); // Salva a nova cópia localmente
+                        renderizarLista();
+                        alert("Dados importados com sucesso! Recarregue a conferência para visualizar as mudanças.");
+                    } else {
+                        alert("Erro: Arquivo JSON inválido ou vazio.");
+                    }
+                } catch (error) {
+                    alert("Erro ao ler ou processar o arquivo JSON.");
+                    console.error("Erro na importação:", error);
+                }
+            };
+            reader.readAsText(file);
+        }
+
         // *******************************************************************
-        // 5. INICIALIZAÇÃO / EVENT LISTENERS
+        // 6. INICIALIZAÇÃO / EVENT LISTENERS
         // *******************************************************************
         window.onload = function() {
             carregarDados();
@@ -712,6 +766,10 @@
                 }
             };
 
+            // Listener para o campo de Importação
+            document.getElementById('import-json-input').addEventListener('change', importarDados);
+
+
             // Lógica para controle do campo Qtd no modal
             document.getElementById('edit-tombamentos').addEventListener('input', function() {
                 const qtdField = document.getElementById('edit-qtd');
@@ -743,6 +801,7 @@
         window.removerItem = removerItem;
         window.promptRenomearSetor = promptRenomearSetor;
         window.removerSetor = removerSetor;
+        window.exportarDados = exportarDados; // Exporta a função para o botão
     </script>
 </body>
 </html>
