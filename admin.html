@@ -37,10 +37,8 @@
             align-items: center;
             font-size: 1.1em;
             margin-top: 15px;
-            /* CURSOR PARA INDICAR QUE PODE ARRASTAR */
             cursor: grab;
         }
-        /* Estilo para quando o setor está sendo arrastado */
         h3:active {
             cursor: grabbing;
         }
@@ -57,11 +55,6 @@
             border-radius: 4px;
             box-sizing: border-box;
             flex-grow: 1;
-        }
-        .form-row {
-            display: flex;
-            gap: 10px;
-            align-items: center;
         }
         /* Botões */
         button {
@@ -101,22 +94,40 @@
             background-color: #fff;
         }
         .item-drag-handle {
-            /* Alça de arraste visual */
             margin-right: 10px;
             cursor: grab;
             color: #ccc;
             font-size: 1.2em;
+            flex-shrink: 0; /* Não encolhe */
         }
-        .item-list > div { /* Div wrapper para o item, agora arrastável */
+        
+        /* CORREÇÃO PRINCIPAL: Alinha o conteúdo e os botões horizontalmente */
+        .item-list > div {
             background-color: #fff;
             padding: 8px 10px;
             border: 1px solid #eee;
             margin: 5px 0;
             border-left: 4px solid #800020;
-            display: flex;
+            display: flex; /* Habilita flexbox */
             justify-content: space-between;
             align-items: center;
         }
+        
+        /* Contêiner do texto do material - Permite encolher, mas cresce o máximo possível */
+        .item-list > div > div:nth-child(2) { 
+            flex-grow: 1; 
+            min-width: 0; /* Permite que o texto quebre a linha dentro do espaço disponível */
+            margin-right: 10px;
+        }
+
+        /* Contêiner dos botões - Impede a quebra de linha interna */
+        .item-actions {
+            display: flex;
+            gap: 5px;
+            flex-shrink: 0; /* Garante que os botões não encolham */
+            white-space: nowrap; /* Impede que os botões fiquem um abaixo do outro */
+        }
+
         .tombamentos-info {
             font-size: 0.9em;
             color: #555;
@@ -316,8 +327,7 @@
                     if (item.tipo === 'multi' && item.tombamentos && item.tombamentos.length > 0) {
                         const tombs = item.tombamentos.map(t => t.tomb).join(', ');
                         tombamentosInfo = `<div class="tombamentos-info">Tombamentos: ${tombs}</div>`;
-                        // Remove o (Auto) e (MULTI)
-                        tipoInfo = `Qtd. Esperada: ${item.quantidadeEsperada}`;
+                        // A variável tipoInfo já está correta, não precisa de reatribuição aqui.
                     }
 
                     itemWrapper.innerHTML = `
@@ -565,7 +575,6 @@
                      setorDestino.itens.splice(newIndex, 0, itemMovido);
                      
                      salvarDados();
-                     // Renderiza novamente a lista para garantir que os IDs e a estrutura estejam 100% corretos
                      renderizarLista();
                  }
              }
