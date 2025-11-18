@@ -58,6 +58,11 @@
             box-sizing: border-box;
             flex-grow: 1;
         }
+        .form-row {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
         /* Botões */
         button {
             background-color: #d90f23;
@@ -261,13 +266,11 @@
             
             if (dadosConferencia.length === 0) {
                  listaContainer.innerHTML = '<p>Nenhum setor adicionado. Adicione um acima.</p>';
-                 // Se não houver setores, não há nada para tornar arrastável
                  return;
             }
 
             dadosConferencia.forEach(setor => {
                 const setorEl = document.createElement('div');
-                // Adiciona o data-id e o item que o SortableJS irá usar para arrastar
                 setorEl.className = 'setor-container';
                 setorEl.setAttribute('data-id', setor.id);
                 
@@ -306,12 +309,15 @@
                     itemWrapper.setAttribute('data-id', item.id);
                     
                     let tombamentosInfo = '';
+                    
+                    // PADRONIZAÇÃO SOLICITADA: sempre mostra "Qtd. Esperada: X"
                     let tipoInfo = `Qtd. Esperada: ${item.quantidadeEsperada}`;
                     
                     if (item.tipo === 'multi' && item.tombamentos && item.tombamentos.length > 0) {
                         const tombs = item.tombamentos.map(t => t.tomb).join(', ');
                         tombamentosInfo = `<div class="tombamentos-info">Tombamentos: ${tombs}</div>`;
-                        tipoInfo = `Qtd. (Auto): ${item.quantidadeEsperada} (${item.tipo.toUpperCase()})`;
+                        // Remove o (Auto) e (MULTI)
+                        tipoInfo = `Qtd. Esperada: ${item.quantidadeEsperada}`;
                     }
 
                     itemWrapper.innerHTML = `
@@ -336,10 +342,49 @@
             ativarDragAndDrop();
         }
 
+        // Lógica para mostrar o modal de edição (Mantida a lógica de auto-preenchimento para a edição)
+        function promptEditarItem(setorId, itemId) {
+            const setor = dadosConferencia.find(s => s.id === setorId);
+            const item = setor ? setor.itens.find(i => i.id === itemId) : null;
+
+            if (!item) return;
+
+            const modal = document.getElementById('item-edit-modal');
+            
+            // Preenche os campos do modal
+            document.getElementById('edit-setor-id').value = setorId;
+            document.getElementById('edit-item-id').value = itemId;
+            document.getElementById('edit-nome').value = item.nome;
+            document.getElementById('edit-qtd').value = item.quantidadeEsperada;
+            
+            // Preenche a textarea de tombamentos
+            const tombamentosTextArea = document.getElementById('edit-tombamentos');
+            tombamentosTextArea.value = item.tombamentos.map(t => t.tomb).join(', ');
+
+            // Esconde/mostra o campo de QTD baseado no tipo (para edição)
+            const qtdGroup = document.getElementById('edit-qtd-group');
+            const qtdWarning = document.getElementById('qtd-warning');
+
+            if (item.tipo === 'multi') {
+                qtdGroup.style.display = 'block';
+                document.getElementById('edit-qtd').readOnly = true;
+                document.getElementById('edit-qtd').style.backgroundColor = '#f0f0f0';
+                qtdWarning.style.display = 'block';
+            } else {
+                qtdGroup.style.display = 'block';
+                document.getElementById('edit-qtd').readOnly = false;
+                document.getElementById('edit-qtd').style.backgroundColor = '#fff';
+                qtdWarning.style.display = 'none';
+            }
+            
+            modal.style.display = 'block';
+            document.getElementById('edit-nome').focus();
+        }
+
         // *******************************************************************
         // 3. FUNÇÕES CRUD (CREATE, UPDATE, DELETE) E REORDENAÇÃO
         // *******************************************************************
-        
+
         // U - Update (Renomear Setor)
         function renomearSetor(setorId, novoNome) {
             const setor = dadosConferencia.find(s => s.id === setorId);
@@ -485,7 +530,6 @@
             dadosConferencia.splice(evt.newIndex, 0, setorMovido);
             
             salvarDados();
-            // Não precisa de renderizarLista(), pois o Sortable já moveu o DOM.
         }
 
         function reordenarItens(evt) {
@@ -499,8 +543,32 @@
                 setor.itens.splice(evt.newIndex, 0, itemMovido);
                 
                 salvarDados();
-                // Não precisa de renderizarLista(), pois o Sortable já moveu o DOM.
             }
+        }
+
+        function transferirItemEntreSetores(evt) {
+             const itemMovidoId = evt.item.getAttribute('data-id');
+             const setorOrigemId = evt.from.getAttribute('data-setor-id');
+             const setorDestinoId = evt.to.getAttribute('data-setor-id');
+             const newIndex = evt.newIndex;
+
+             const setorOrigem = dadosConferencia.find(s => s.id === setorOrigemId);
+             const setorDestino = dadosConferencia.find(s => s.id === setorDestinoId);
+             
+             if (setorOrigem && setorDestino) {
+                 // 1. Remove o item do array de origem
+                 const itemIndex = setorOrigem.itens.findIndex(i => i.id === itemMovidoId);
+                 if (itemIndex > -1) {
+                     const [itemMovido] = setorOrigem.itens.splice(itemIndex, 1);
+                     
+                     // 2. Insere o item no array de destino (na nova posição)
+                     setorDestino.itens.splice(newIndex, 0, itemMovido);
+                     
+                     salvarDados();
+                     // Renderiza novamente a lista para garantir que os IDs e a estrutura estejam 100% corretos
+                     renderizarLista();
+                 }
+             }
         }
 
         function ativarDragAndDrop() {
@@ -531,32 +599,6 @@
             });
         }
         
-        // 4.3. LÓGICA PARA ARRASTAR ITEM ENTRE SETORES (Ainda precisa ser implementada no Sortable)
-        function transferirItemEntreSetores(evt) {
-             const itemMovidoId = evt.item.getAttribute('data-id');
-             const setorOrigemId = evt.from.getAttribute('data-setor-id');
-             const setorDestinoId = evt.to.getAttribute('data-setor-id');
-             const newIndex = evt.newIndex;
-
-             const setorOrigem = dadosConferencia.find(s => s.id === setorOrigemId);
-             const setorDestino = dadosConferencia.find(s => s.id === setorDestinoId);
-             
-             if (setorOrigem && setorDestino) {
-                 // 1. Remove o item do array de origem
-                 const itemIndex = setorOrigem.itens.findIndex(i => i.id === itemMovidoId);
-                 if (itemIndex > -1) {
-                     const [itemMovido] = setorOrigem.itens.splice(itemIndex, 1);
-                     
-                     // 2. Insere o item no array de destino (na nova posição)
-                     setorDestino.itens.splice(newIndex, 0, itemMovido);
-                     
-                     salvarDados();
-                     // Renderiza novamente a lista para garantir que os IDs e a estrutura estejam 100% corretos
-                     renderizarLista();
-                 }
-             }
-        }
-        
         // *******************************************************************
         // 5. INICIALIZAÇÃO / EVENT LISTENERS
         // *******************************************************************
@@ -567,8 +609,6 @@
             document.getElementById('loading-message').style.display = 'none';
             document.getElementById('main-admin-content').style.display = 'block';
 
-            // ... (Listeners de Adicionar Setor e Editar Item mantidos) ...
-            
             // Listener para Adicionar Novo Setor
             const addSetorForm = document.getElementById('form-add-setor');
             if (addSetorForm) {
@@ -595,7 +635,7 @@
                 }
             };
 
-            // Lógica para controle do campo Qtd no modal (Mantida)
+            // Lógica para controle do campo Qtd no modal
             document.getElementById('edit-tombamentos').addEventListener('input', function() {
                 const qtdField = document.getElementById('edit-qtd');
                 const warning = document.getElementById('qtd-warning');
@@ -613,7 +653,7 @@
                 }
             });
             
-            // Fechar modal ao clicar fora (Mantido)
+            // Fechar modal ao clicar fora
             window.onclick = function(event) {
                 const modal = document.getElementById('item-edit-modal');
                 if (event.target == modal) {
