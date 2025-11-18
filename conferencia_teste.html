@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="icon" type="image/png" href="logo_sigma.png" onerror="this.onerror=null; this.src='https://placehold.co/16x16/800020/ffffff?text=S'">
-    <title>Conferência - LOCAL TESTE</title>
+    <title>Conferência - PERMANÊNCIA BRAVO 5</title>
     <style>
         /* ESTILOS BASE REUTILIZADOS */
         body {
@@ -464,161 +464,7 @@
         Carregando dados do conferente...
     </p>
 
-    <div class="setor" data-total-items="3" data-id="1">
-        <div class="setor-header" onclick="toggleSetor(this)">
-            <div class="setor-info">
-                <span>1. DEPÓSITO CENTRAL</span>
-                <div class="setor-status" data-completed="0">0/3</div>
-            </div>
-            <span class="arrow">▼</span>
-        </div>
-        <div class="setor-content expanded">
-            
-            <div class="item-conferencia" data-type="single" data-status="pending" data-id="1-1">
-                <div class="item-header">
-                    <span class="status-icon"></span>
-                    <span class="item-label">KIT PRIMEIROS SOCORROS</span>
-                    <span class="item-quantidade">Qtd. Esperada: 5</span>
-                </div>
-                <div class="item-options">
-                    <button class="action-button sa-ok" onclick="setItemStatus(this, 'ok')">S/A</button>
-                    <button class="action-button ca-alert" onclick="setItemStatus(this, 'alert')">C/A</button>
-                </div>
-                <p class="descricao-salva" data-text-id="1-1"></p>
-                <div class="alteracao-container">
-                    <label>Observação (Obrigatória para C/A):</label>
-                    <textarea data-id="1-1" placeholder="Descreva o tipo de alteração ou falta."></textarea>
-                    <button type="button" class="btn-salvar-alteracao" onclick="salvarItem(this)">SALVAR</button>
-                </div>
-            </div>
-
-            <div class="item-conferencia item-has-tombamentos" data-type="multi" data-total-tombamentos="2" data-status="pending" data-id="1-2">
-                <div class="item-header">
-                    <span class="status-icon"></span>
-                    <span class="item-label">LANTERNA TÁTICA</span> <span class="item-quantidade">Qtd. Esperada: 2</span>
-                </div>
-                
-                <div class="tombamento-container" data-tomb="123.456" data-item-id="1-2">
-                    <div class="tombamento-controls">
-                        <span>Tomb.: 123.456</span>
-                        <div class="tombamento-options">
-                            <button class="action-button sa-ok" onclick="setTombamentoStatus(this, 'ok')">S/A</button>
-                            <button class="action-button ca-alert" onclick="setTombamentoStatus(this, 'alert')">C/A</button>
-                        </div>
-                    </div>
-                    <p class="tombamento-descricao-salva"></p>
-                    <div class="tombamento-obs-container">
-                        <label>Observação (Obrigatória para C/A):</label>
-                        <textarea placeholder="Detalhe a alteração para este tombamento."></textarea>
-                        <button type="button" class="btn-salvar-alteracao" onclick="salvarTombamento(this)">SALVAR OBSERVAÇÃO</button>
-                    </div>
-                </div>
-                
-                <div class="tombamento-container" data-tomb="678.910" data-item-id="1-2">
-                    <div class="tombamento-controls">
-                        <span>Tomb.: 678.910</span>
-                        <div class="tombamento-options">
-                            <button class="action-button sa-ok" onclick="setTombamentoStatus(this, 'ok')">S/A</button>
-                            <button class="action-button ca-alert" onclick="setTombamentoStatus(this, 'alert')">C/A</button>
-                        </div>
-                    </div>
-                    <p class="tombamento-descricao-salva"></p>
-                    <div class="tombamento-obs-container">
-                        <label>Observação (Obrigatória para C/A):</label>
-                        <textarea placeholder="Detalhe a alteração para este tombamento."></textarea>
-                        <button type="button" class="btn-salvar-alteracao" onclick="salvarTombamento(this)">SALVAR OBSERVAÇÃO</button>
-                    </div>
-                </div>
-                
-                </div>
-
-            <div class="item-conferencia" data-type="single" data-status="pending" data-id="1-3">
-                <div class="item-header">
-                    <span class="status-icon"></span>
-                    <span class="item-label">MANGUEIRA DE INCÊNDIO (30m)</span>
-                    <span class="item-quantidade">Qtd. Esperada: 3</span>
-                </div>
-                <div class="item-options">
-                    <button class="action-button sa-ok" onclick="setItemStatus(this, 'ok')">S/A</button>
-                    <button class="action-button ca-alert" onclick="setItemStatus(this, 'alert')">C/A</button>
-                </div>
-                <p class="descricao-salva" data-text-id="1-3"></p>
-                <div class="alteracao-container">
-                    <label>Observação (Obrigatória para C/A):</label>
-                    <textarea data-id="1-3" placeholder="Descreva o tipo de alteração ou falta."></textarea>
-                    <button type="button" class="btn-salvar-alteracao" onclick="salvarItem(this)">SALVAR</button>
-                </div>
-            </div>
-
-        </div>
-    </div>
-    <div class="setor" data-total-items="3" data-id="2">
-        <div class="setor-header" onclick="toggleSetor(this)">
-            <div class="setor-info">
-                <span>2. VIATURA 13-1</span>
-                <div class="setor-status" data-completed="0">0/3</div>
-            </div>
-            <span class="arrow">►</span>
-        </div>
-        <div class="setor-content">
-            
-            <div class="item-conferencia" data-type="single" data-status="pending" data-id="2-1">
-                <div class="item-header">
-                    <span class="status-icon"></span>
-                    <span class="item-label">ALMOTOLIA 500ml</span>
-                    <span class="item-quantidade">Qtd. Esperada: 2</span>
-                </div>
-                <div class="item-options">
-                    <button class="action-button sa-ok" onclick="setItemStatus(this, 'ok')">S/A</button>
-                    <button class="action-button ca-alert" onclick="setItemStatus(this, 'alert')">C/A</button>
-                </div>
-                <p class="descricao-salva" data-text-id="2-1"></p>
-                <div class="alteracao-container">
-                    <label>Observação (Obrigatória para C/A):</label>
-                    <textarea data-id="2-1" placeholder="Descreva o tipo de alteração ou falta."></textarea>
-                    <button type="button" class="btn-salvar-alteracao" onclick="salvarItem(this)">SALVAR</button>
-                </div>
-            </div>
-
-            <div class="item-conferencia" data-type="single" data-status="pending" data-id="2-2">
-                <div class="item-header">
-                    <span class="status-icon"></span>
-                    <span class="item-label">CILINDRO DE OXIGÊNIO (portátil)</span>
-                    <span class="item-quantidade">Qtd. Esperada: 1</span>
-                </div>
-                <div class="item-options">
-                    <button class="action-button sa-ok" onclick="setItemStatus(this, 'ok')">S/A</button>
-                    <button class="action-button ca-alert" onclick="setItemStatus(this, 'alert')">C/A</button>
-                </div>
-                <p class="descricao-salva" data-text-id="2-2"></p>
-                <div class="alteracao-container">
-                    <label>Observação (Obrigatória para C/A):</label>
-                    <textarea data-id="2-2" placeholder="Descreva o tipo de alteração ou falta."></textarea>
-                    <button type="button" class="btn-salvar-alteracao" onclick="salvarItem(this)">SALVAR</button>
-                </div>
-            </div>
-
-            <div class="item-conferencia" data-type="single" data-status="pending" data-id="2-3">
-                <div class="item-header">
-                    <span class="status-icon"></span>
-                    <span class="item-label">CHAVE DE RODA</span>
-                    <span class="item-quantidade">Qtd. Esperada: 1</span>
-                </div>
-                <div class="item-options">
-                    <button class="action-button sa-ok" onclick="setItemStatus(this, 'ok')">S/A</button>
-                    <button class="action-button ca-alert" onclick="setItemStatus(this, 'alert')">C/A</button>
-                </div>
-                <p class="descricao-salva" data-text-id="2-3"></p>
-                <div class="alteracao-container">
-                    <label>Observação (Obrigatória para C/A):</label>
-                    <textarea data-id="2-3" placeholder="Descreva o tipo de alteração ou falta."></textarea>
-                    <button type="button" class="btn-salvar-alteracao" onclick="salvarItem(this)">SALVAR</button>
-                </div>
-            </div>
-
-        </div>
-    </div>
-    <button id="btn-finalizar" disabled>FINALIZAR CONFERÊNCIA (0/6 ITENS)</button>
+    <button id="btn-finalizar" disabled>FINALIZAR CONFERÊNCIA (0/X ITENS)</button>
 
 </div>
 
@@ -638,6 +484,186 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 
 <script>
+    // *******************************************************************
+    // 1. ESTRUTURA DE DADOS INICIAL / FALLBACK
+    // (Esta estrutura será usada se o Local Storage estiver vazio)
+    // *******************************************************************
+    const DADOS_CONFERENCIA_FALLBACK = [
+        {
+            id: "1",
+            nome: "DEPÓSITO CENTRAL",
+            itens: [
+                { id: "1-1", nome: "KIT PRIMEIROS SOCORROS", quantidadeEsperada: 5, tipo: "single" },
+                {
+                    id: "1-2",
+                    nome: "LANTERNA TÁTICA",
+                    quantidadeEsperada: 2,
+                    tipo: "multi",
+                    tombamentos: [
+                        { tomb: "123.456" },
+                        { tomb: "678.910" }
+                    ]
+                },
+                { id: "1-3", nome: "MANGUEIRA DE INCÊNDIO (30m)", quantidadeEsperada: 3, tipo: "single" }
+            ]
+        },
+        {
+            id: "2",
+            nome: "VIATURA 13-1",
+            itens: [
+                { id: "2-1", nome: "ALMOTOLIA 500ml", quantidadeEsperada: 2, tipo: "single" },
+                { id: "2-2", nome: "CILINDRO DE OXIGÊNIO (portátil)", quantidadeEsperada: 1, tipo: "single" },
+                { id: "2-3", nome: "CHAVE DE RODA", quantidadeEsperada: 1, tipo: "single" }
+            ]
+        }
+    ];
+
+    // Obtém os dados do Local Storage, ou usa o fallback
+    let dadosConferencia = DADOS_CONFERENCIA_FALLBACK;
+    const storedData = localStorage.getItem('dadosConferencia');
+    if (storedData) {
+        // Tenta carregar os dados armazenados. Se falhar, usa o fallback.
+        try {
+            const parsedData = JSON.parse(storedData);
+            if (Array.isArray(parsedData) && parsedData.length > 0) {
+                dadosConferencia = parsedData;
+            } else {
+                console.warn("Dados no Local Storage inválidos ou vazios. Usando fallback.");
+            }
+        } catch (e) {
+            console.error("Erro ao parsear Local Storage. Usando fallback.", e);
+        }
+    }
+    
+    // Calcula o total de itens para o contador global (somando itens simples + tombamentos)
+    let totalItensConferencia = 0;
+    dadosConferencia.forEach(setor => {
+        setor.itens.forEach(item => {
+            if (item.tipo === 'single') {
+                totalItensConferencia++;
+            } else if (item.tipo === 'multi' && item.tombamentos) {
+                totalItensConferencia += item.tombamentos.length;
+            }
+        });
+    });
+
+
+    // Variável para armazenar o status de todos os itens e tombamentos.
+    // Chave: 'item-id' (ex: 1-2) ou 'item-id-tomb-id' (ex: 1-2-123.456)
+    let itemStatus = {}; 
+
+    // Mapeamento dos setores para uso interno do JS (baseado nos novos dados)
+    const setorIds = dadosConferencia.map(s => s.id);
+
+    // *******************************************************************
+    // 2. FUNÇÃO DE GERAÇÃO DINÂMICA DE HTML
+    // *******************************************************************
+    function gerarSetoresHTML() {
+        const container = document.querySelector('.container');
+        let htmlSetores = '';
+        
+        dadosConferencia.forEach(setor => {
+            let htmlItens = '';
+            let totalItensNoSetor = 0; // Contagem real para o setor (itens simples + tombamentos)
+
+            setor.itens.forEach(item => {
+                let htmlTombamento = '';
+
+                if (item.tipo === 'multi' && item.tombamentos && item.tombamentos.length > 0) {
+                    // Item com MÚLTIPLOS TOMBAMENTOS
+                    item.tombamentos.forEach(tomb => {
+                        htmlTombamento += `
+                            <div class="tombamento-container" data-tomb="${tomb.tomb}" data-item-id="${item.id}">
+                                <div class="tombamento-controls">
+                                    <span>Tomb.: ${tomb.tomb}</span>
+                                    <div class="tombamento-options">
+                                        <button class="action-button sa-ok" onclick="setTombamentoStatus(this, 'ok')">S/A</button>
+                                        <button class="action-button ca-alert" onclick="setTombamentoStatus(this, 'alert')">C/A</button>
+                                    </div>
+                                </div>
+                                <p class="tombamento-descricao-salva"></p>
+                                <div class="tombamento-obs-container">
+                                    <label>Observação (Obrigatória para C/A):</label>
+                                    <textarea placeholder="Detalhe a alteração para este tombamento."></textarea>
+                                    <button type="button" class="btn-salvar-alteracao" onclick="salvarTombamento(this)">SALVAR OBSERVAÇÃO</button>
+                                </div>
+                            </div>
+                        `;
+                        totalItensNoSetor++;
+                    });
+                    
+                    htmlItens += `
+                        <div class="item-conferencia item-has-tombamentos" data-type="multi" data-total-tombamentos="${item.tombamentos.length}" data-status="pending" data-id="${item.id}">
+                            <div class="item-header">
+                                <span class="status-icon"></span>
+                                <span class="item-label">${item.nome}</span> <span class="item-quantidade">Qtd. Esperada: ${item.quantidadeEsperada}</span>
+                            </div>
+                            ${htmlTombamento}
+                        </div>
+                    `;
+
+                } else {
+                    // Item ÚNICO ou Simples
+                    htmlItens += `
+                        <div class="item-conferencia" data-type="single" data-status="pending" data-id="${item.id}">
+                            <div class="item-header">
+                                <span class="status-icon"></span>
+                                <span class="item-label">${item.nome}</span>
+                                <span class="item-quantidade">Qtd. Esperada: ${item.quantidadeEsperada}</span>
+                            </div>
+                            <div class="item-options">
+                                <button class="action-button sa-ok" onclick="setItemStatus(this, 'ok')">S/A</button>
+                                <button class="action-button ca-alert" onclick="setItemStatus(this, 'alert')">C/A</button>
+                            </div>
+                            <p class="descricao-salva" data-text-id="${item.id}"></p>
+                            <div class="alteracao-container">
+                                <label>Observação (Obrigatória para C/A):</label>
+                                <textarea data-id="${item.id}" placeholder="Descreva o tipo de alteração ou falta."></textarea>
+                                <button type="button" class="btn-salvar-alteracao" onclick="salvarItem(this)">SALVAR</button>
+                            </div>
+                        </div>
+                    `;
+                    totalItensNoSetor++;
+                }
+            });
+
+            // Constrói o HTML do Setor
+            htmlSetores += `
+                <div class="setor" data-total-items="${totalItensNoSetor}" data-id="${setor.id}">
+                    <div class="setor-header" onclick="toggleSetor(this)">
+                        <div class="setor-info">
+                            <span>${setor.id}. ${setor.nome}</span>
+                            <div class="setor-status" data-completed="0">0/${totalItensNoSetor}</div>
+                        </div>
+                        <span class="arrow">${setor.id === "1" ? '▼' : '►'}</span>
+                    </div>
+                    <div class="setor-content ${setor.id === "1" ? 'expanded' : ''}">
+                        ${htmlItens}
+                    </div>
+                </div>
+            `;
+        });
+        
+        // Remove o HTML estático original (garantia de limpeza)
+        document.querySelectorAll('.setor').forEach(el => el.remove());
+        
+        const btnFinalizar = document.getElementById('btn-finalizar');
+        
+        // Insere o novo conteúdo antes do botão Finalizar
+        if (btnFinalizar) {
+             btnFinalizar.insertAdjacentHTML('beforebegin', htmlSetores);
+        } else {
+             container.insertAdjacentHTML('beforeend', htmlSetores);
+        }
+
+        // Garante que o botão Finalizar tenha o total correto na primeira carga
+        btnFinalizar.textContent = `FINALIZAR CONFERÊNCIA (0/${totalItensConferencia} ITENS)`;
+
+    }
+
+    // *******************************************************************
+    // 3. LÓGICA DE CONFERÊNCIA (Mantidas as funções originais)
+    // *******************************************************************
     // Função utilitária para ler parâmetros da URL
     function getUrlParameter(name) {
         name = name.replace(/[\[]/, '\\[').replace(/[\]]/, '\\]');
@@ -646,22 +672,11 @@
         return results === null ? '' : decodeURIComponent(results[1].replace(/\+/g, ' '));
     }
     
-    // Dados do militar (mantidos, apenas sem usar os parâmetros 'local' e 'posto' para o cabeçalho)
+    // Dados do militar
     const userInfo = {
         postoGraduacao: getUrlParameter('posto_grad') || "CAP",
         quadro: getUrlParameter('quadro_mil') || "QOCBM", 
         nomeGuerra: getUrlParameter('nome_guerra') || "SOUSA", 
-    };
-    
-    // Variável para armazenar o status de todos os itens e tombamentos.
-    // Chave: 'item-id' (ex: 1-2) ou 'item-id-tomb-id' (ex: 1-2-123.456)
-    let itemStatus = {}; 
-
-    // Mapeamento dos setores (usado para auto-avançar)
-    const setorIds = ['1', '2']; 
-    const setorContentMap = {
-        '1': 'DEPÓSITO CENTRAL',
-        '2': 'VIATURA 13-1'
     };
 
     // Função para expandir/recolher o setor
@@ -1072,15 +1087,15 @@
         }
     }
 
-
-    // Inicialização: Garante que os status estão corretos ao carregar a página
+    // *******************************************************************
+    // 4. INICIALIZAÇÃO DA PÁGINA (CHAMA A GERAÇÃO DINÂMICA)
+    // *******************************************************************
     window.onload = function() {
         
-        // **ALTERAÇÃO 1: Remoção da leitura de 'local' e 'posto' da URL.**
-        // const urlLocal = getUrlParameter('local') || 'LOCAL TESTE'; // LINHA REMOVIDA
-        // const urlPosto = getUrlParameter('posto') || 'Posto BRAVO'; // LINHA REMOVIDA
+        // 1. Gera o HTML da Conferência baseado nos dados (Local Storage ou Fallback)
+        gerarSetoresHTML();
         
-        // 1. Injeta os dados do militar no cabeçalho
+        // 2. Injeta os dados do militar no cabeçalho
         const militarCompleto = `${userInfo.postoGraduacao} ${userInfo.quadro} ${userInfo.nomeGuerra}`;
         const dataConferencia = new Date().toLocaleDateString('pt-BR'); 
         const militarInfoElement = document.getElementById('militar-info');
@@ -1088,11 +1103,11 @@
             <strong>Conferente:</strong> ${militarCompleto} (${dataConferencia})
         `;
         
-        // **ALTERAÇÃO 2: Injeta o texto padrão "PERMANÊNCIA - BRAVO 5".**
+        // 3. Injeta o texto padrão "PERMANÊNCIA - BRAVO 5"
         const localPostoElement = document.getElementById('local-posto-info');
-        localPostoElement.textContent = `PERMANÊNCIA - BRAVO 5`; // LINHA ALTERADA
+        localPostoElement.textContent = `PERMANÊNCIA - BRAVO 5`;
 
-        // 3. Inicializa o status de todos os itens como PENDENTE
+        // 4. Inicializa o status de todos os itens como PENDENTE (garantindo que os novos itens sejam inicializados)
         document.querySelectorAll('.item-conferencia').forEach(item => {
             const statusIcon = item.querySelector('.status-icon');
             statusIcon.className = 'status-icon pending';
@@ -1119,8 +1134,10 @@
             item.querySelectorAll('.item-options .action-button').forEach(btn => btn.classList.remove('active'));
         });
         
-        // 4. Inicializa o status geral
+        // 5. Inicializa o status geral
         document.querySelectorAll('.setor').forEach(updateSetorStatus);
         updateOverallStatus();
     };
 </script>
+</body>
+</html>
