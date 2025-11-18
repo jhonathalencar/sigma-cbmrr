@@ -3,41 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SIGMA - Gerenciador de Conferências</title>
+    <title>PERMANÊNCIA BRAVO 5 - Gerenciador de Conferências</title>
+    
     <link rel="icon" href="logo_sigma.png" type="image/png">
     <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
     <style>
-        /* Estilos do Cabeçalho SIGMA (novo) */
-        .header-sigma {
-            background-color: #800020; /* Cor bordô */
-            color: white;
-            padding: 15px 20px;
-            text-align: center;
-            margin: -20px -20px 20px -20px; /* Expande para as bordas */
-            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-        }
-        .header-sigma h1 {
-            margin: 0;
-            font-size: 2.2em;
-            color: white;
-            border-bottom: none;
-            padding-bottom: 0;
-        }
-        .header-sigma p {
-            margin: 5px 0 0;
-            font-size: 1em;
-            opacity: 0.8;
-        }
-
-        /* Estilo para a logo centralizada */
-        .logo-admin {
-            display: block;
-            margin: 20px auto 10px auto; /* Centraliza e adiciona margem */
-            max-width: 100px; /* Tamanho da logo */
-            height: auto;
-        }
-
-        /* ESTILOS DE ADMIN (MANTIDOS E ADAPTADOS) */
+        /* ESTILOS DO CABEÇALHO FIXO (CBM-RR) - REPLICADO DO CONFERENCIA_TESTE.HTML */
         body {
             font-family: Arial, sans-serif;
             background-color: #f4f4f9;
@@ -45,14 +16,70 @@
             padding: 20px;
             max-width: 800px;
             margin: 0 auto;
+            padding-top: 60px; /* Espaço para o header fixo */
         }
-        /* Ajuste para o H1 principal do ADMIN, já que o novo cabeçalho já tem um */
-        body > h1 { /* Seleciona apenas o H1 direto do body */
+        
+        .main-header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 50px;
+            background-color: #800020;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+            z-index: 100;
+            display: flex;
+            align-items: center;
+            padding: 0 15px;
+            box-sizing: border-box;
+            gap: 10px;
+        }
+
+        .header-icon {
+            height: 40px; 
+            width: auto; 
+            vertical-align: middle; 
+            flex-shrink: 0;
+        }
+
+        .header-title-desktop, .header-title-mobile {
+            font-weight: bold;
+            font-size: 1.1em;
+            line-height: 1.2;
+            flex-grow: 1;
+        }
+
+        .text-white {
+            color: white;
+        }
+
+        .text-red {
+            color: #FF3B3B;
+        }
+
+        @media (min-width: 768px) {
+            .header-title-desktop { display: block; }
+            .header-title-mobile { display: none; }
+            .header-title-desktop { font-size: 1.2em; }
+        }
+        /* FIM DOS ESTILOS DO CABEÇALHO FIXO */
+
+        /* Estilo para a logo centralizada (SIGMA no corpo principal) */
+        .logo-admin {
+            display: block;
+            margin: 20px auto 10px auto; 
+            max-width: 100px; 
+            height: auto;
+        }
+
+        /* ESTILOS DE ADMIN (MANTIDOS E ADAPTADOS) */
+        h1 {
             color: #d90f23;
             border-bottom: 2px solid #e0e0e0;
             padding-bottom: 10px;
             margin-bottom: 25px;
-            margin-top: 20px; /* Adiciona um espaço após a logo */
+            margin-top: 20px;
+            text-align: center;
         }
         h2 {
             color: #800020;
@@ -175,12 +202,22 @@
     </style>
 </head>
 <body>
-    <div class="header-sigma">
-        <h1>SIGMA</h1>
-        <p>CONFERÊNCIA DE MATERIAIS</p>
-    </div>
+    
+    <header class="main-header">
+        <img src="cbmrr.png" alt="Ícone CBM-RR" class="header-icon" 
+                onerror="this.onerror=null; this.src='https://placehold.co/40x40/ffffff/800020/fff?text=CBM'">
+        
+        <div class="header-title-desktop">
+            <span class="text-white">CORPO DE BOMBEIROS MILITAR </span><span class="text-red">RORAIMA</span>
+        </div>
+        
+        <div class="header-title-mobile">
+            <span class="text-white">CBM</span><span class="text-red">RR</span>
+        </div>
+    </header>
 
     <img src="logo_sigma.png" alt="Logo SIGMA" class="logo-admin">
+    
     
     <h1>🛠️ Gerenciamento de Conferências SIGMA</h1>
     <p>Use esta interface para incluir, alterar e remover a estrutura de setores e materiais. Para reordenar, basta **arrastar** os setores ou os materiais.</p>
