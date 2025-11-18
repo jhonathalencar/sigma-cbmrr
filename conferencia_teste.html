@@ -126,14 +126,6 @@
             margin-bottom: 15px;
             padding-bottom: 5px;
             border-bottom: 1px solid #eee;
-            /* Adicionado display flex para melhor alinhamento das linhas (Conferente e Data/Hora) */
-            display: flex; 
-            flex-direction: column;
-            gap: 5px; /* Espaço entre as linhas */
-        }
-        .info-line strong {
-            display: inline-block;
-            min-width: 90px; /* Garante alinhamento dos dois pontos */
         }
         
         /* --- ESTILOS PARA SETORES (COLLAPSIBLE) --- */
@@ -210,21 +202,10 @@
         
         .item-header {
             display: flex;
-            /* MODIFICAÇÃO CHAVE: Garante que a quantidade vá para a direita */
-            justify-content: space-between; 
-            align-items: flex-start; /* Alinhamento superior para acomodar quebra de linha */
+            justify-content: space-between;
+            align-items: flex-start; /* Alinhamento superior */
             margin-bottom: 5px;
             flex-wrap: wrap;
-        }
-        
-        /* NOVO CONTAINER para agrupar Ícone e Nome, permitindo que o Nome quebre a linha */
-        .item-info-wrapper {
-            display: flex;
-            align-items: flex-start;
-            flex-grow: 1; /* Permite que o wrapper use o espaço restante para quebrar o texto */
-            /* Garante que o item label e o ícone não empurrem a quantidade para baixo */
-            min-width: 0; 
-            margin-right: 10px; /* Espaço entre o wrapper e a Quantidade (à direita) */
         }
 
         /* CLASSE PADRÃO PARA TODOS OS NOMES DE ITEM PRINCIPAL */
@@ -232,19 +213,16 @@
             font-weight: bold;
             color: #333;
             flex-grow: 1;
-            margin-right: 10px; 
+            margin-right: 10px;
             text-align: left;
             font-size: 0.95em;
-            /* MODIFICAÇÃO CHAVE: Força a quebra de palavras para caber no espaço flexível */
-            word-break: break-word; 
-            overflow-wrap: break-word;
         }
         
         .item-quantidade {
             font-size: 0.9em;
             color: #800020;
             font-weight: bold;
-            flex-shrink: 0; /* IMPEDE que a quantidade diminua ou quebre */
+            flex-shrink: 0;
         }
         
         .status-icon {
@@ -258,7 +236,7 @@
             color: white;
             min-width: 18px;
             text-align: center;
-            margin-right: 8px; /* Espaço entre o ícone e o nome */
+            margin-right: 10px;
             background-color: transparent;
             border: 1px dashed #aaa;
         }
@@ -363,7 +341,7 @@
             font-size: 0.85em; 
         }
 
-        /* MODIFICAÇÃO: Aumenta a caixa de texto da observação para 100% (margem a margem) */
+        /* MODIFICAÇÃO 3: Aumenta a caixa de texto da observação para 100% (margem a margem) */
         .tombamento-obs-container textarea,
         .alteracao-container textarea {
             width: 100%;
@@ -660,10 +638,8 @@
                     htmlItens += `
                         <div class="item-conferencia item-has-tombamentos ${itemStatusData.class}" data-type="multi" data-total-tombamentos="${item.tombamentos.length}" data-status="${itemStatusData.status}" data-id="${item.id}">
                             <div class="item-header">
-                                <div class="item-info-wrapper">
-                                    <span class="status-icon ${itemStatusData.status === 'ok' ? 'ok' : itemStatusData.status === 'alert' ? 'alert' : ''}"></span>
-                                    <span class="item-label">${item.nome}</span> 
-                                </div>
+                                <span class="status-icon ${itemStatusData.status === 'ok' ? 'ok' : itemStatusData.status === 'alert' ? 'alert' : ''}"></span>
+                                <span class="item-label">${item.nome}</span> 
                                 <span class="item-quantidade">Quantidade: ${item.quantidadeEsperada}</span>
                             </div>
                             ${htmlTombamento}
@@ -678,10 +654,8 @@
                     htmlItens += `
                         <div class="item-conferencia ${status === 'ok' ? 'status-ok' : status === 'C/A' ? 'status-alert' : ''}" data-type="single" data-status="${status}" data-id="${item.id}">
                             <div class="item-header">
-                                <div class="item-info-wrapper">
-                                    <span class="status-icon ${status === 'ok' ? 'ok' : status === 'C/A' ? 'alert' : ''}"></span>
-                                    <span class="item-label">${item.nome}</span>
-                                </div>
+                                <span class="status-icon ${status === 'ok' ? 'ok' : status === 'C/A' ? 'alert' : ''}"></span>
+                                <span class="item-label">${item.nome}</span>
                                 <span class="item-quantidade">Quantidade: ${item.quantidadeEsperada}</span>
                             </div>
                             <div class="item-options">
@@ -780,23 +754,12 @@
     }
 
     function updateHeaderInfo() {
-        // Obtém dados do militar
+        // Injeta os dados do militar no cabeçalho
         const militarCompleto = `${userInfo.postoGraduacao} ${userInfo.quadro} ${userInfo.nomeGuerra}`;
-        
-        // --- MODIFICAÇÃO DE DATA/HORA ---
-        const now = new Date();
-        const dataConferencia = now.toLocaleDateString('pt-BR');
-        const horaConferencia = now.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
-
+        const dataConferencia = new Date().toLocaleDateString('pt-BR'); 
         const militarInfoElement = document.getElementById('militar-info');
-        // Nova estrutura para mostrar o conferente e a Data/Hora em linhas separadas
         militarInfoElement.innerHTML = `
-            <span class="info-line">
-                <strong>Conferente:</strong> ${militarCompleto}
-            </span>
-            <span class="info-line">
-                <strong>Data/Hora:</strong> ${dataConferencia}, ${horaConferencia}
-            </span>
+            <strong>Conferente:</strong> ${militarCompleto} (${dataConferencia})
         `;
         
         // Injeta o texto padrão "PERMANÊNCIA - BRAVO 5"
@@ -1235,5 +1198,3 @@
 </script>
 </body>
 </html>
-
-
