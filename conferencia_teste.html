@@ -488,8 +488,8 @@
 </div>
 
 <div class="footer-central">
-    <strong>GOVERNO DE RORAIMA</strong><br>
-    <strong>CORPO DE BOMBEIROS MILITAR DE RORAIMA</strong><br>
+    <strong>GOVERNO DE RORAIMA</strong>
+    <strong>CORPO DE BOMBEIROS MILITAR DE RORAIMA</strong>
     <em>“Amazônia: patrimônio dos brasileiros”</em>
     
     <span class="footer-autor">
@@ -610,7 +610,7 @@
                                 <div class="tombamento-controls">
                                     <span>Tomb.: ${tomb.tomb}</span>
                                     <div class="tombamento-options">
-                                        <button class="action-button sa-ok ${status === 'S/A' ? 'active' : ''}" onclick="setItemStatus(this, 'ok')">S/A</button>
+                                        <button class="action-button sa-ok ${status === 'S/A' ? 'active' : ''}" onclick="setTombamentoStatus(this, 'ok')">S/A</button>
                                         <button class="action-button ca-alert ${status === 'C/A' ? 'active' : ''}" onclick="setTombamentoStatus(this, 'alert')">C/A</button>
                                     </div>
                                 </div>
@@ -1101,13 +1101,13 @@
             // Item ÚNICO: Se pendente, foca nele. Se C/A pendente, foca no textarea.
             if (nextItem.dataset.type === 'single') {
                  if (!itemData || itemData.status === 'PENDING') {
-                     nextItem.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                     return;
+                      nextItem.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                      return;
                  }
                  if (itemData.status === 'PENDING_CA') {
-                     nextItem.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                     nextItem.querySelector('textarea').focus();
-                     return;
+                      nextItem.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                      nextItem.querySelector('textarea').focus();
+                      return;
                  }
             } 
             
