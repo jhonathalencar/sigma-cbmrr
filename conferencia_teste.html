@@ -478,7 +478,7 @@
         Carregando dados do conferente...
     </p>
 
-    <div id="loading-message" class="loading-message">Sincronizando lista de materiais...</div>
+    <div id="loading-message" class="loading-message">Sincronizando lista de materiais do Firebase...</div>
     
     <div id="main-content" style="display: none;">
         
@@ -502,35 +502,47 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
+
 <script>
     // *******************************************************************
-    // 1. ESTRUTURA DE DADOS E CARREGAMENTO REMOTO
+    // 1. CONFIGURAÇÃO FIREBASE (COPIADA DA SUA RESPOSTA)
+    // *******************************************************************
+    const firebaseConfig = {
+        apiKey: "AIzaSyCB0PH0UgghgsvH0BgPkG4AkKON6xSQ9mc",
+        authDomain: "sigma-cbmrr.firebaseapp.com",
+        projectId: "sigma-cbmrr",
+        storageBucket: "sigma-cbmrr.firebasestorage.app",
+        messagingSenderId: "378026276038",
+        appId: "1:378026276038:web:620dd6ff57501b1a8313c7"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+    const COLECAO_NOME = 'lista_mestra'; 
+    const DOCUMENTO_ID = 'lista_completa'; 
+    
+    // *******************************************************************
+    // 2. ESTRUTURA DE DADOS E CARREGAMENTO REMOTO
     // *******************************************************************
     
     let dadosConferencia = [];
-    const DATA_JSON_URL = 'data.json'; // O nome do arquivo que será hospedado no GitHub
     
     async function carregarDadosRemotos() {
         try {
-            // Adiciona um cache-buster (?v=...) para garantir que a versão mais recente seja carregada
-            const response = await fetch(DATA_JSON_URL + '?v=' + Date.now()); 
+            console.log("Buscando lista de conferência no Firebase...");
+            const doc = await db.collection(COLECAO_NOME).doc(DOCUMENTO_ID).get();
             
-            if (!response.ok) {
-                throw new Error(`Erro ao carregar data.json: ${response.status} ${response.statusText}`);
+            if (!doc.exists || !Array.isArray(doc.data().list)) {
+                throw new Error("O documento 'lista_completa' não foi encontrado ou está vazio. Salve a lista pelo admin.html primeiro.");
             }
             
-            const data = await response.json();
-            
-            if (!Array.isArray(data)) {
-                throw new Error("O arquivo data.json não está no formato esperado (array).");
-            }
-            
-            dadosConferencia = data;
+            dadosConferencia = doc.data().list;
             
             // Chama a função para renderizar a interface com os novos dados
             renderizarConferencia();
             
-            // Exibe o conteúdo principal
             document.getElementById('loading-message').style.display = 'none'; 
             document.getElementById('main-content').style.display = 'block';
 
@@ -540,11 +552,10 @@
             const mainContainer = document.getElementById('main-content').parentNode;
             document.getElementById('loading-message').style.display = 'none';
             
-            // Substitui o conteúdo principal por uma mensagem de erro
             mainContainer.innerHTML += `
                 <div class="error-message">
-                    <h1>❌ Erro de Carregamento</h1>
-                    <p>Não foi possível sincronizar a lista de conferência. Por favor, verifique se o arquivo <strong>data.json</strong> foi enviado corretamente para o GitHub.</p>
+                    <h1>❌ Erro de Sincronização</h1>
+                    <p>Não foi possível carregar a lista. Verifique se o Firebase está configurado corretamente e se a lista foi salva pelo admin.html.</p>
                     <small>Detalhe do Erro: ${error.message}</small>
                 </div>
             `;
@@ -552,7 +563,7 @@
     }
     
     // *******************************************************************
-    // 2. FUNÇÕES DE RENDERIZAÇÃO DINÂMICA
+    // 3. FUNÇÕES DE RENDERIZAÇÃO DINÂMICA
     // *******************************************************************
 
     function renderizarConferencia() {
@@ -573,7 +584,6 @@
             });
         });
         
-        // Atualiza a variável global setorIds para funções como autoAdvanceSetor
         window.setorIds = setorIds;
 
 
@@ -588,30 +598,43 @@
                 if (item.tipo === 'multi' && item.tombamentos && item.tombamentos.length > 0) {
                     // Item com MÚLTIPLOS TOMBAMENTOS
                     item.tombamentos.forEach(tomb => {
+                        // Certifica que o tombamento tem status, senão assume pending
+                        const status = tomb.status || 'pending'; 
+                        const obs = tomb.obs || '';
+
                         htmlTombamento += `
                             <div class="tombamento-container" data-tomb="${tomb.tomb}" data-item-id="${item.id}">
                                 <div class="tombamento-controls">
                                     <span>Tomb.: ${tomb.tomb}</span>
                                     <div class="tombamento-options">
-                                        <button class="action-button sa-ok" onclick="setItemStatus(this, 'ok')">S/A</button>
-                                        <button class="action-button ca-alert" onclick="setItemStatus(this, 'alert')">C/A</button>
+                                        <button class="action-button sa-ok ${status === 'S/A' ? 'active' : ''}" onclick="setTombamentoStatus(this, 'ok')">S/A</button>
+                                        <button class="action-button ca-alert ${status === 'C/A' ? 'active' : ''}" onclick="setTombamentoStatus(this, 'alert')">C/A</button>
                                     </div>
                                 </div>
-                                <p class="tombamento-descricao-salva"></p>
-                                <div class="tombamento-obs-container">
+                                <p class="tombamento-descricao-salva" style="${status === 'C/A' && obs ? 'display: block;' : 'display: none;'}">
+                                    <span class="obs-titulo">Alteração encontrada:</span>
+                                    <span class="obs-texto">${obs}</span>
+                                </p>
+                                <div class="tombamento-obs-container" style="${status === 'PENDING_CA' ? 'display: block;' : 'display: none;'}">
                                     <label>Observação (Obrigatória para C/A):</label>
-                                    <textarea placeholder="Detalhe a alteração para este tombamento."></textarea>
+                                    <textarea placeholder="Detalhe a alteração para este tombamento.">${obs}</textarea>
                                     <button type="button" class="btn-salvar-alteracao" onclick="salvarTombamento(this)">SALVAR OBSERVAÇÃO</button>
                                 </div>
                             </div>
                         `;
                         totalItensNoSetor++;
+                        // Inicializa o status no objeto JS (usado para rastrear o progresso)
+                        window.itemStatus[`${item.id}-${tomb.tomb}`] = { status: status, obs: obs };
                     });
                     
+                    // Define o status do item pai baseado nos tombamentos
+                    const itemStatusData = determinarItemPaiStatus(item);
+
+
                     htmlItens += `
-                        <div class="item-conferencia item-has-tombamentos" data-type="multi" data-total-tombamentos="${item.tombamentos.length}" data-status="pending" data-id="${item.id}">
+                        <div class="item-conferencia item-has-tombamentos ${itemStatusData.class}" data-type="multi" data-total-tombamentos="${item.tombamentos.length}" data-status="${itemStatusData.status}" data-id="${item.id}">
                             <div class="item-header">
-                                <span class="status-icon"></span>
+                                <span class="status-icon ${itemStatusData.status === 'ok' ? 'ok' : itemStatusData.status === 'alert' ? 'alert' : ''}"></span>
                                 <span class="item-label">${item.nome}</span> <span class="item-quantidade">Qtd. Esperada: ${item.quantidadeEsperada}</span>
                             </div>
                             ${htmlTombamento}
@@ -620,26 +643,33 @@
 
                 } else {
                     // Item ÚNICO ou Simples
+                    const status = item.status || 'pending';
+                    const obs = item.obs || '';
+
                     htmlItens += `
-                        <div class="item-conferencia" data-type="single" data-status="pending" data-id="${item.id}">
+                        <div class="item-conferencia ${status === 'ok' ? 'status-ok' : status === 'C/A' ? 'status-alert' : ''}" data-type="single" data-status="${status}" data-id="${item.id}">
                             <div class="item-header">
-                                <span class="status-icon"></span>
+                                <span class="status-icon ${status === 'ok' ? 'ok' : status === 'C/A' ? 'alert' : ''}"></span>
                                 <span class="item-label">${item.nome}</span>
                                 <span class="item-quantidade">Qtd. Esperada: ${item.quantidadeEsperada}</span>
                             </div>
                             <div class="item-options">
-                                <button class="action-button sa-ok" onclick="setItemStatus(this, 'ok')">S/A</button>
-                                <button class="action-button ca-alert" onclick="setItemStatus(this, 'alert')">C/A</button>
+                                <button class="action-button sa-ok ${status === 'S/A' ? 'active' : ''}" onclick="setItemStatus(this, 'ok')">S/A</button>
+                                <button class="action-button ca-alert ${status === 'C/A' ? 'active' : ''}" onclick="setItemStatus(this, 'alert')">C/A</button>
                             </div>
-                            <p class="descricao-salva" data-text-id="${item.id}"></p>
-                            <div class="alteracao-container">
+                            <p class="descricao-salva" data-text-id="${item.id}" style="${status === 'C/A' && obs ? 'display: block;' : 'display: none;'}">
+                                <span class="obs-titulo">Alteração encontrada:</span> 
+                                <span class="obs-texto">${obs}</span>
+                            </p>
+                            <div class="alteracao-container" style="${status === 'PENDING_CA' ? 'display: block;' : 'display: none;'}">
                                 <label>Observação (Obrigatória para C/A):</label>
-                                <textarea data-id="${item.id}" placeholder="Descreva o tipo de alteração ou falta."></textarea>
+                                <textarea data-id="${item.id}" placeholder="Descreva o tipo de alteração ou falta.">${obs}</textarea>
                                 <button type="button" class="btn-salvar-alteracao" onclick="salvarItem(this)">SALVAR</button>
                             </div>
                         </div>
                     `;
                     totalItensNoSetor++;
+                    window.itemStatus[item.id] = { status: status, obs: obs };
                 }
             });
 
@@ -648,7 +678,7 @@
                 <div class="setor" data-total-items="${totalItensNoSetor}" data-id="${setor.id}">
                     <div class="setor-header" onclick="toggleSetor(this)">
                         <div class="setor-info">
-                            <span>${setor.id}. ${setor.nome}</span>
+                            <span>${setor.nome}</span>
                             <div class="setor-status" data-completed="0">0/${totalItensNoSetor}</div>
                         </div>
                         <span class="arrow">${setor.id === setorIds[0] ? '▼' : '►'}</span>
@@ -660,48 +690,41 @@
             `;
         });
         
-        // Remove o HTML estático original (garantia de limpeza)
-        mainContent.querySelectorAll('.setor').forEach(el => el.remove());
+        mainContent.querySelector('#btn-finalizar').insertAdjacentHTML('beforebegin', htmlSetores);
         
-        const btnFinalizar = document.getElementById('btn-finalizar');
-        
-        // Insere o novo conteúdo antes do botão Finalizar
-        if (btnFinalizar) {
-             btnFinalizar.insertAdjacentHTML('beforebegin', htmlSetores);
-        } else {
-             // Se o botão Finalizar não estiver lá, cria um
-             mainContent.innerHTML += htmlSetores;
-             mainContent.innerHTML += `<button id="btn-finalizar" disabled>FINALIZAR CONFERÊNCIA (0/${totalItensConferencia} ITENS)</button>`;
-        }
-
-        // 3. Atualiza o cabeçalho e inicializa status
-        updateHeaderInfo();
-        document.querySelectorAll('.setor').forEach(initializeSetorStatus);
+        // Atualiza o contador e botões (usando as funções existentes)
+        document.querySelectorAll('.setor').forEach(updateSetorStatus);
         updateOverallStatus();
     }
     
-    
-    // Funções de Inicialização de Status (Adaptadas para usar os novos dados)
-    function initializeSetorStatus(setor) {
-        // Zera o status de cada item na carga
-        setor.querySelectorAll('.item-conferencia').forEach(item => {
-            const statusIcon = item.querySelector('.status-icon');
-            statusIcon.className = 'status-icon pending';
-            item.dataset.status = 'pending';
-            itemStatus[item.dataset.id] = { status: 'PENDING', obs: '' }; 
+    // NOVO: Determina o status do item pai multi-tombamento baseado nos filhos
+    function determinarItemPaiStatus(item) {
+        let total = item.tombamentos.length;
+        let conferidos = 0;
+        let alterados = 0;
 
-            item.querySelectorAll('.tombamento-container').forEach(tomb => {
-                const uniqueId = `${item.dataset.id}-${tomb.dataset.tomb}`;
-                itemStatus[uniqueId] = { status: 'PENDING', obs: '' }; 
-                tomb.querySelectorAll('.action-button').forEach(btn => btn.classList.remove('active'));
-                tomb.querySelector('.tombamento-obs-container').style.display = 'none';
-                tomb.querySelector('.tombamento-descricao-salva').style.display = 'none';
-            });
-            item.querySelectorAll('.item-options .action-button').forEach(btn => btn.classList.remove('active'));
+        item.tombamentos.forEach(tomb => {
+            if (tomb.status === 'S/A' || tomb.status === 'C/A') {
+                conferidos++;
+                if (tomb.status === 'C/A') alterados++;
+            }
         });
-        updateSetorStatus(setor);
+
+        if (conferidos === total) {
+            return {
+                status: alterados > 0 ? 'alert' : 'ok',
+                class: alterados > 0 ? 'status-alert' : 'status-ok'
+            };
+        } else {
+            return {
+                status: 'pending',
+                class: ''
+            };
+        }
     }
-    
+
+
+    // Funções de Inicialização de Status (Adaptadas para usar os novos dados)
     function updateHeaderInfo() {
         // Injeta os dados do militar no cabeçalho
         const militarCompleto = `${userInfo.postoGraduacao} ${userInfo.quadro} ${userInfo.nomeGuerra}`;
@@ -717,7 +740,7 @@
     }
 
     // *******************************************************************
-    // 3. LÓGICA DE CONFERÊNCIA (Funções de controle mantidas)
+    // 4. LÓGICA DE CONFERÊNCIA (Funções de controle mantidas)
     // *******************************************************************
     
     // Função utilitária para ler parâmetros da URL
@@ -736,7 +759,8 @@
     };
 
     // Variável para armazenar o status de todos os itens e tombamentos.
-    let itemStatus = {}; 
+    // **NOTA:** Essa variável é usada apenas para rastrear o progresso da conferência ATUAL.
+    window.itemStatus = {}; 
     
     // Função para expandir/recolher o setor
     function toggleSetor(headerElement) {
@@ -786,12 +810,12 @@
             item.classList.add('status-ok');
             statusIcon.classList.add('ok');
             observacaoTextarea.value = ''; 
-            itemStatus[item.dataset.id] = { status: 'S/A', obs: '' };
+            window.itemStatus[item.dataset.id] = { status: 'S/A', obs: '' };
         } else if (status === 'alert') {
             item.classList.add('status-alert');
             statusIcon.classList.add('alert');
             alteracaoContainer.style.display = 'block';
-            itemStatus[item.dataset.id] = { status: 'PENDING_CA', obs: '' };
+            window.itemStatus[item.dataset.id] = { status: 'PENDING_CA', obs: '' };
             observacaoTextarea.focus();
             
             updateSetorStatus(setor);
@@ -823,13 +847,13 @@
         descricaoSalvaEl.textContent = '';
         
         if (status === 'ok') {
-            itemStatus[uniqueId] = { status: 'S/A', obs: '' };
-            updateItemMainStatus(item); 
+            window.itemStatus[uniqueId] = { status: 'S/A', obs: '' };
+            updateItemMainStatusDisplay(item); 
         } else if (status === 'alert') {
             obsContainer.style.display = 'block';
             obsContainer.querySelector('textarea').focus();
-            itemStatus[uniqueId] = { status: 'PENDING_CA', obs: '' };
-            updateItemMainStatus(item);
+            window.itemStatus[uniqueId] = { status: 'PENDING_CA', obs: '' };
+            updateItemMainStatusDisplay(item);
             return; 
         }
         
@@ -858,7 +882,7 @@
             return;
         }
 
-        itemStatus[uniqueId] = { status: 'C/A', obs: observacao };
+        window.itemStatus[uniqueId] = { status: 'C/A', obs: observacao };
 
         obsContainer.style.display = 'none';
         descricaoSalvaEl.innerHTML = `
@@ -867,17 +891,19 @@
         `;
         descricaoSalvaEl.style.display = 'block';
 
-        updateItemMainStatus(item);
+        updateItemMainStatusDisplay(item);
         updateSetorStatus(setor);
         updateOverallStatus();
         checkSetorCompletion(setor, itemId);
     }
     
-    function updateItemMainStatus(item) {
+    // Adaptação da função que verifica o status do item pai (multi-tombamento)
+    function updateItemMainStatusDisplay(item) {
         const itemId = item.dataset.id;
         const statusIcon = item.querySelector('.status-icon');
         statusIcon.className = 'status-icon'; 
-        
+        item.classList.remove('status-ok', 'status-alert');
+
         if (item.dataset.type === 'single') return;
 
         const tombamentos = item.querySelectorAll('.tombamento-container');
@@ -887,7 +913,7 @@
 
         tombamentos.forEach(tomb => {
             const uniqueId = `${itemId}-${tomb.dataset.tomb}`;
-            const status = itemStatus[uniqueId]?.status;
+            const status = window.itemStatus[uniqueId]?.status;
 
             if (status === 'S/A' || status === 'C/A') {
                 conferidos++;
@@ -900,19 +926,14 @@
                  statusIcon.classList.add('alert');
                  item.dataset.status = 'alert';
                  item.classList.add('status-alert');
-                 item.classList.remove('status-ok');
-                 itemStatus[itemId] = { status: 'C/A', obs: 'Ver tombamentos' }; 
             } else {
                  statusIcon.classList.add('ok');
                  item.dataset.status = 'ok';
-                 itemStatus[itemId] = { status: 'S/A', obs: '' }; 
                  item.classList.add('status-ok');
-                 item.classList.remove('status-alert');
             }
         } else {
             statusIcon.classList.add('pending');
             item.dataset.status = 'pending';
-            item.classList.remove('status-ok', 'status-alert');
         }
     }
 
@@ -929,7 +950,7 @@
             
             if (item.dataset.type === 'single') {
                  totalItemsInSetor++; 
-                 const itemStatusData = itemStatus[itemID];
+                 const itemStatusData = window.itemStatus[itemID];
                  if (itemStatusData?.status === 'S/A') {
                      completedItems++;
                  } else if (itemStatusData?.status === 'C/A') {
@@ -943,7 +964,7 @@
                  tombamentos.forEach(tomb => {
                       totalItemsInSetor++; 
                       const uniqueId = `${itemID}-${tomb.dataset.tomb}`;
-                      const tombStatus = itemStatus[uniqueId]?.status;
+                      const tombStatus = window.itemStatus[uniqueId]?.status;
 
                       if (tombStatus === 'S/A') {
                           completedItems++;
@@ -1006,7 +1027,7 @@
 
         item.dataset.status = 'alert';
         item.classList.add('status-alert');
-        itemStatus[itemId] = { status: 'C/A', obs: observacao };
+        window.itemStatus[itemId] = { status: 'C/A', obs: observacao };
         
         const statusIcon = item.querySelector('.status-icon');
         statusIcon.className = 'status-icon alert';
@@ -1042,7 +1063,7 @@
         for (let i = currentIndex + 1; i < allItems.length; i++) {
             const nextItem = allItems[i];
             const nextItemId = nextItem.dataset.id;
-            const itemData = itemStatus[nextItemId];
+            const itemData = window.itemStatus[nextItemId];
 
             if (nextItem.dataset.type === 'single' && (!itemData || itemData.status === 'PENDING')) {
                  nextItem.scrollIntoView({ behavior: 'smooth', block: 'center' });
@@ -1052,14 +1073,14 @@
             if (nextItem.dataset.type === 'multi') {
                 const pendingTombamento = Array.from(nextItem.querySelectorAll('.tombamento-container')).find(tomb => {
                     const uniqueId = `${nextItemId}-${tomb.dataset.tomb}`;
-                    const status = itemStatus[uniqueId]?.status;
+                    const status = window.itemStatus[uniqueId]?.status;
                     return status === 'PENDING' || status === 'PENDING_CA';
                 });
 
                 if (pendingTombamento) {
                     pendingTombamento.scrollIntoView({ behavior: 'smooth', block: 'center' });
                     
-                    if (itemStatus[`${nextItemId}-${pendingTombamento.dataset.tomb}`]?.status === 'PENDING_CA') {
+                    if (window.itemStatus[`${nextItemId}-${pendingTombamento.dataset.tomb}`]?.status === 'PENDING_CA') {
                         pendingTombamento.querySelector('textarea').focus();
                     }
                     return;
@@ -1076,7 +1097,6 @@
            toggleSetor(currentSetorEl.querySelector('.setor-header')); 
         }
 
-        // Usa o window.setorIds atualizado
         const currentSetorIndex = window.setorIds.indexOf(currentSetorId);
         const nextSetorId = window.setorIds[currentSetorIndex + 1];
 
@@ -1094,6 +1114,9 @@
     // 4. INICIALIZAÇÃO DA PÁGINA (CHAMA A GERAÇÃO DINÂMICA)
     // *******************************************************************
     window.onload = function() {
+        // Injeta a info do militar no cabeçalho antes de carregar os dados
+        updateHeaderInfo();
+        
         // Inicia o processo de carregamento remoto
         carregarDadosRemotos();
     };
