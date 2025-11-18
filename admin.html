@@ -7,7 +7,9 @@
     <title>ADMIN - Gerenciador de Conferência</title>
     <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
     <style>
-        /* ESTILOS DE ADMIN */
+        /* =================================================== */
+        /* ESTILOS BASE E CABEÇALHO FIXO (CBM-RR) */
+        /* =================================================== */
         body {
             font-family: Arial, sans-serif;
             background-color: #f4f4f9;
@@ -17,9 +19,56 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            padding: 20px;
+            padding-bottom: 20px;
+            padding-top: 60px; /* CORREÇÃO: Espaço para o header fixo */
+            box-sizing: border-box;
+        }
+        
+        .main-header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 50px;
+            background-color: #800020;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+            z-index: 100;
+            display: flex;
+            align-items: center;
+            padding: 0 15px;
+            box-sizing: border-box;
+            gap: 10px;
         }
 
+        .header-icon {
+            height: 40px; 
+            width: auto; 
+            vertical-align: middle; 
+            flex-shrink: 0;
+        }
+
+        .header-title-desktop, .header-title-mobile {
+            font-weight: bold;
+            font-size: 1.1em;
+            line-height: 1.2;
+            flex-grow: 1;
+        }
+
+        .text-white {
+            color: white;
+        }
+
+        .text-red {
+            color: #FF3B3B;
+        }
+
+        @media (min-width: 768px) {
+            .header-title-desktop { display: block; }
+            .header-title-mobile { display: none; }
+            .header-title-desktop { font-size: 1.2em; }
+        }
+        
+        /* Contêiner principal do ADMIN (centralizado) */
         .container {
             background-color: #fff;
             padding: 20px;
@@ -29,14 +78,24 @@
             max-width: 800px;
             margin-bottom: 20px;
             box-sizing: border-box;
+            text-align: center; /* Centraliza a logo */
+        }
+        
+        .logo-admin {
+            display: block;
+            margin: 0 auto 15px auto; 
+            max-width: 100px; 
+            height: auto;
         }
 
+        /* ESTILOS DE ADMIN (RESTANTE) */
         h1 {
             color: #d90f23;
             margin-bottom: 15px;
             font-size: 1.8em;
             border-bottom: 2px solid #e0e0e0;
             padding-bottom: 10px;
+            text-align: center;
         }
         
         /* Botões de Ação Global */
@@ -57,19 +116,19 @@
         }
 
         .btn-sync {
-            background-color: #1b8a3e; /* Verde para sincronização */
+            background-color: #1b8a3e;
             color: white;
         }
         .btn-sync:hover { background-color: #156d31; }
 
         .btn-add {
-            background-color: #800020; /* Vinho para Adicionar */
+            background-color: #800020;
             color: white;
         }
         .btn-add:hover { background-color: #5d0017; }
 
         .btn-admin-config {
-             background-color: #6c757d; /* Cinza para Backup */
+             background-color: #6c757d;
              color: white;
         }
         .btn-admin-config:hover { background-color: #5a6268; }
@@ -253,8 +312,22 @@
 </head>
 <body>
 
+<header class="main-header">
+    <img src="cbmrr.png" alt="Ícone CBM-RR" class="header-icon" 
+            onerror="this.onerror=null; this.src='https://placehold.co/40x40/ffffff/800020/fff?text=CBM'">
+    
+    <div class="header-title-desktop">
+        <span class="text-white">CORPO DE BOMBEIROS MILITAR </span><span class="text-red">RORAIMA</span>
+    </div>
+    
+    <div class="header-title-mobile">
+        <span class="text-white">CBM</span><span class="text-red">RR</span>
+    </div>
+</header>
 <div class="container">
+    
     <img src="logo_sigma.png" alt="Logo SIGMA" class="logo-admin">
+    
     <h1>🛠️ Administração da Conferência</h1>
     <p id="loading-message">Carregando dados do Firebase...</p>
 
@@ -321,7 +394,7 @@
 
 <script>
     // *******************************************************************
-    // 1. CONFIGURAÇÃO FIREBASE
+    // 1. CONFIGURAÇÃO FIREBASE (SUAS CREDENCIAIS)
     // *******************************************************************
     const firebaseConfig = {
       apiKey: "AIzaSyCB0PH0UgghgsvH0BgPkG4AkKON6xSQ9mc",
@@ -336,14 +409,12 @@
     firebase.initializeApp(firebaseConfig);
     const db = firebase.firestore();
     const COLECAO_NOME = 'lista_mestra'; 
-    const DOCUMENTO_ID = 'lista_completa'; // ID fixo para o documento principal
+    const DOCUMENTO_ID = 'lista_completa'; 
 
     // *******************************************************************
-    // 2. ESTRUTURA DE DADOS (Preencha com sua lista completa)
+    // 2. ESTRUTURA DE DADOS (FALLBACK)
     // *******************************************************************
     
-    // ESTA É A LISTA DE BACKUP E INICIAL. ELA SERÁ USADA PARA O PRIMEIRO UPLOAD 
-    // SE O FIREBASE ESTIVER VAZIO. SUBSTITUA COM O SEU JSON COMPLETO.
     const DADOS_CONFERENCIA_FALLBACK = [
         { 
             "id": "1", 
@@ -406,10 +477,9 @@
                 dadosConferencia = doc.data().list;
                 console.log("Dados carregados com sucesso do Firebase.");
             } else {
-                // Se o documento não existir, usa o fallback para a primeira vez
                 dadosConferencia = DADOS_CONFERENCIA_FALLBACK;
                 console.warn("Documento não encontrado no Firebase. Usando fallback e forçando o upload inicial...");
-                await salvarDados(); // Força o upload da lista de fallback
+                await salvarDados(false); // Força o upload da lista de fallback sem o alerta
             }
 
         } catch (error) {
@@ -428,19 +498,19 @@
         document.getElementById('main-admin-content').style.display = 'block';
     }
 
-    async function salvarDados() {
+    async function salvarDados(showAlert = true) {
         try {
-            // Cria um backup local de emergência
             localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(dadosConferencia)); 
             
-            // Salva no Firebase
             await db.collection(COLECAO_NOME).doc(DOCUMENTO_ID).set({
                 list: dadosConferencia,
                 updatedAt: firebase.firestore.FieldValue.serverTimestamp()
             });
 
             console.log("Dados sincronizados com sucesso no Firebase!");
-            alert("Sincronização Completa! As alterações estão online.");
+            if (showAlert) {
+                 alert("Sincronização Completa! As alterações estão online.");
+            }
 
         } catch (error) {
             console.error("ERRO ao salvar no Firebase:", error);
@@ -449,7 +519,7 @@
     }
 
     // *******************************************************************
-    // 4. FUNÇÕES CRUD (Com Chamadas a salvarDados())
+    // 4. FUNÇÕES CRUD
     // *******************************************************************
 
     function gerarNovoId() {
@@ -467,7 +537,7 @@
         });
 
         document.getElementById('input-setor-nome').value = '';
-        salvarDados(); // <--- Sincroniza
+        salvarDados(); 
         renderizarLista();
         preencherSelectSetores();
     }
@@ -477,7 +547,7 @@
 
         dadosConferencia = dadosConferencia.filter(s => s.id !== setorId);
 
-        salvarDados(); // <--- Sincroniza
+        salvarDados(); 
         renderizarLista();
         preencherSelectSetores();
     }
@@ -527,7 +597,6 @@
             tombamentos: []
         };
         
-        // Se for tipo 'multi', gera os tombamentos vazios
         if (tipo === 'multi' && quantidadeEsperada > 0) {
             for (let i = 0; i < quantidadeEsperada; i++) {
                 novoItem.tombamentos.push({ tomb: `NOVO-${i + 1}`, status: "pending", obs: "" });
@@ -541,7 +610,7 @@
         document.getElementById('input-item-qtd').value = '1';
         document.getElementById('select-setor-item').value = '';
         
-        salvarDados(); // <--- Sincroniza
+        salvarDados(); 
         renderizarLista();
     }
     
@@ -553,7 +622,7 @@
              setor.itens = setor.itens.filter(item => item.id !== itemId);
          }
          
-         salvarDados(); // <--- Sincroniza
+         salvarDados(); 
          renderizarLista();
     }
 
@@ -564,8 +633,8 @@
         const item = encontrarItemPorId(itemId);
         if (item) {
             item.tombamentos.push({ tomb: tombamento, status: "pending", obs: "" });
-            item.quantidadeEsperada = item.tombamentos.length; // Atualiza Qtd. Esperada
-            salvarDados(); // <--- Sincroniza
+            item.quantidadeEsperada = item.tombamentos.length;
+            salvarDados(); 
             renderizarLista();
         }
     }
@@ -576,8 +645,8 @@
         const item = encontrarItemPorId(itemId);
         if (item) {
             item.tombamentos = item.tombamentos.filter(t => t.tomb !== tombamento);
-            item.quantidadeEsperada = item.tombamentos.length; // Atualiza Qtd. Esperada
-            salvarDados(); // <--- Sincroniza
+            item.quantidadeEsperada = item.tombamentos.length; 
+            salvarDados(); 
             renderizarLista();
         }
     }
@@ -591,10 +660,32 @@
              const tomb = item.tombamentos.find(t => t.tomb === tombamento);
              if (tomb) {
                   tomb.tomb = novoTombamento;
-                  salvarDados(); // <--- Sincroniza
-                  // Não precisa de renderizarLista, apenas do alerta
+                  salvarDados();
                   alert(`Tombamento ${tombamento} alterado para ${novoTombamento}.`);
              }
+        }
+    }
+    
+    function salvarEdicaoItem() {
+        const itemId = document.getElementById('edit-item-original-id').value;
+        const novoNome = document.getElementById('edit-item-nome').value.trim().toUpperCase();
+        const novaQtd = parseInt(document.getElementById('edit-item-qtd').value);
+        
+        if (!novoNome) {
+            alert("O nome do item não pode ser vazio.");
+            return;
+        }
+
+        const item = encontrarItemPorId(itemId);
+        if (item) {
+            item.nome = novoNome;
+            if (item.tipo === 'single') {
+                 item.quantidadeEsperada = novaQtd;
+            }
+            
+            salvarDados(); 
+            renderizarLista();
+            fecharModal();
         }
     }
 
@@ -714,7 +805,6 @@
         document.getElementById('edit-item-qtd').value = item.quantidadeEsperada;
         document.getElementById('edit-item-tipo').value = item.tipo;
         
-        // Bloqueia edição de quantidade se for multi
         document.getElementById('edit-item-qtd').disabled = (item.tipo === 'multi');
 
         document.getElementById('modal-edicao').style.display = 'flex';
@@ -724,29 +814,6 @@
         document.getElementById('modal-edicao').style.display = 'none';
     }
 
-    function salvarEdicaoItem() {
-        const itemId = document.getElementById('edit-item-original-id').value;
-        const novoNome = document.getElementById('edit-item-nome').value.trim().toUpperCase();
-        const novaQtd = parseInt(document.getElementById('edit-item-qtd').value);
-        
-        if (!novoNome) {
-            alert("O nome do item não pode ser vazio.");
-            return;
-        }
-
-        const item = encontrarItemPorId(itemId);
-        if (item) {
-            item.nome = novoNome;
-            // Só atualiza a quantidade se for item 'single'
-            if (item.tipo === 'single') {
-                 item.quantidadeEsperada = novaQtd;
-            }
-            
-            salvarDados(); // <--- Sincroniza
-            renderizarLista();
-            fecharModal();
-        }
-    }
     
     // *******************************************************************
     // 7. FUNÇÕES DE BACKUP LOCAL DE EMERGÊNCIA
@@ -780,7 +847,7 @@
                 
                 if (confirm("ATENÇÃO: Este backup substituirá TODOS os dados atuais no Firebase. Continuar?")) {
                     dadosConferencia = importedData;
-                    salvarDados(); // <--- Sincroniza com o Firebase
+                    salvarDados(); 
                     renderizarLista();
                     preencherSelectSetores();
                     alert("Dados importados com sucesso e sincronizados com o Firebase.");
@@ -834,12 +901,10 @@
             let sourceList = null;
             let targetList = null;
 
-            // Lógica para Setores
             if (isSetor && dragSrcEl.parentNode === this.parentNode) {
                  sourceList = dadosConferencia;
                  targetList = dadosConferencia;
             } 
-            // Lógica para Itens
             else if (isItem) {
                  const dragSetorId = dragSrcEl.dataset.setorId;
                  const dropSetorId = this.dataset.setorId;
@@ -855,7 +920,7 @@
             
             if (sourceList && targetList) {
                 reordenarArray(sourceList, targetList, dragId, dropId, isItem ? 'id' : 'id');
-                salvarDados(); // <--- Sincroniza
+                salvarDados(); 
                 renderizarLista();
             }
         }
@@ -898,7 +963,6 @@
         } else {
              const temp = sourceList[dragIndex];
              sourceList.splice(dragIndex, 1);
-             // Atualiza o ID do item movido (muda de setor, precisa de um novo ID único)
              temp.id = targetList.length > 0 ? targetList[0].id.split('-')[0] + '-' + gerarNovoId() : temp.id;
              targetList.splice(dropIndex, 0, temp);
         }
