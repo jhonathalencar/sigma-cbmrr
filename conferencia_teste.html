@@ -592,6 +592,9 @@
             let htmlItens = '';
             let totalItensNoSetor = 0; 
 
+            // Determina se este é o primeiro setor para expandir
+            const isFirstSetor = setor.id === setorIds[0];
+
             setor.itens.forEach(item => {
                 let htmlTombamento = '';
 
@@ -607,7 +610,7 @@
                                 <div class="tombamento-controls">
                                     <span>Tomb.: ${tomb.tomb}</span>
                                     <div class="tombamento-options">
-                                        <button class="action-button sa-ok ${status === 'S/A' ? 'active' : ''}" onclick="setTombamentoStatus(this, 'ok')">S/A</button>
+                                        <button class="action-button sa-ok ${status === 'S/A' ? 'active' : ''}" onclick="setItemStatus(this, 'ok')">S/A</button>
                                         <button class="action-button ca-alert ${status === 'C/A' ? 'active' : ''}" onclick="setTombamentoStatus(this, 'alert')">C/A</button>
                                     </div>
                                 </div>
@@ -681,9 +684,9 @@
                             <span>${setor.nome}</span>
                             <div class="setor-status" data-completed="0">0/${totalItensNoSetor}</div>
                         </div>
-                        <span class="arrow">${setor.id === setorIds[0] ? '▼' : '►'}</span>
+                        <span class="arrow">${isFirstSetor ? '▼' : '►'}</span>
                     </div>
-                    <div class="setor-content ${setor.id === setorIds[0] ? 'expanded' : ''}">
+                    <div class="setor-content ${isFirstSetor ? 'expanded' : ''}">
                         ${htmlItens}
                     </div>
                 </div>
@@ -692,12 +695,13 @@
         
         mainContent.querySelector('#btn-finalizar').insertAdjacentHTML('beforebegin', htmlSetores);
         
-        // Atualiza o contador e botões (usando as funções existentes)
-        document.querySelectorAll('.setor').forEach(updateSetorStatus);
+        // 3. Atualiza o cabeçalho e inicializa status
+        updateHeaderInfo();
+        document.querySelectorAll('.setor').forEach(initializeSetorStatus);
         updateOverallStatus();
     }
     
-    // NOVO: Determina o status do item pai multi-tombamento baseado nos filhos
+    
     function determinarItemPaiStatus(item) {
         let total = item.tombamentos.length;
         let conferidos = 0;
@@ -725,6 +729,28 @@
 
 
     // Funções de Inicialização de Status (Adaptadas para usar os novos dados)
+    function initializeSetorStatus(setor) {
+        // Zera o status de cada item na carga (usando os dados carregados do Firebase)
+        setor.querySelectorAll('.item-conferencia').forEach(item => {
+            const itemId = item.dataset.id;
+            const itemData = dadosConferencia.flatMap(s => s.itens).find(i => i.id === itemId);
+
+            if (item.dataset.type === 'multi' && itemData) {
+                // Para itens com tombamento, inicializa o status do itemStatus global
+                itemData.tombamentos.forEach(tomb => {
+                    const uniqueId = `${itemId}-${tomb.tomb}`;
+                    window.itemStatus[uniqueId] = { status: tomb.status || 'pending', obs: tomb.obs || '' };
+                });
+                updateItemMainStatusDisplay(item);
+            } else if (itemData) {
+                // Para itens simples
+                window.itemStatus[itemId] = { status: itemData.status || 'pending', obs: itemData.obs || '' };
+            }
+            // Garante que o display inicial do status está correto
+            updateSetorStatus(setor);
+        });
+    }
+
     function updateHeaderInfo() {
         // Injeta os dados do militar no cabeçalho
         const militarCompleto = `${userInfo.postoGraduacao} ${userInfo.quadro} ${userInfo.nomeGuerra}`;
@@ -759,7 +785,6 @@
     };
 
     // Variável para armazenar o status de todos os itens e tombamentos.
-    // **NOTA:** Essa variável é usada apenas para rastrear o progresso da conferência ATUAL.
     window.itemStatus = {}; 
     
     // Função para expandir/recolher o setor
@@ -771,6 +796,7 @@
             content.classList.remove('expanded');
             arrow.textContent = '►';
         } else {
+            // Fecha todos os outros setores antes de expandir o atual
             document.querySelectorAll('.setor-content.expanded').forEach(openContent => {
                 openContent.classList.remove('expanded');
                 openContent.previousElementSibling.querySelector('.arrow').textContent = '►';
@@ -897,7 +923,6 @@
         checkSetorCompletion(setor, itemId);
     }
     
-    // Adaptação da função que verifica o status do item pai (multi-tombamento)
     function updateItemMainStatusDisplay(item) {
         const itemId = item.dataset.id;
         const statusIcon = item.querySelector('.status-icon');
@@ -1050,6 +1075,7 @@
         const completedItems = parseInt(currentSetor.querySelector('.setor-status').dataset.completed);
 
         if (completedItems === totalItems) {
+            // SE O SETOR ESTIVER COMPLETO, AVANÇA AUTOMATICAMENTE
             autoAdvanceSetor(currentSetor.dataset.id);
         } else {
             focusNextItem(currentItemId);
@@ -1065,11 +1091,20 @@
             const nextItemId = nextItem.dataset.id;
             const itemData = window.itemStatus[nextItemId];
 
-            if (nextItem.dataset.type === 'single' && (!itemData || itemData.status === 'PENDING')) {
-                 nextItem.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                 return;
+            // Item ÚNICO: Se pendente, foca nele. Se C/A pendente, foca no textarea.
+            if (nextItem.dataset.type === 'single') {
+                 if (!itemData || itemData.status === 'PENDING') {
+                     nextItem.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                     return;
+                 }
+                 if (itemData.status === 'PENDING_CA') {
+                     nextItem.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                     nextItem.querySelector('textarea').focus();
+                     return;
+                 }
             } 
             
+            // Item MULTI: Se houver tombamento pendente, foca nele.
             if (nextItem.dataset.type === 'multi') {
                 const pendingTombamento = Array.from(nextItem.querySelectorAll('.tombamento-container')).find(tomb => {
                     const uniqueId = `${nextItemId}-${tomb.dataset.tomb}`;
@@ -1093,6 +1128,7 @@
     function autoAdvanceSetor(currentSetorId) {
         const currentSetorEl = document.querySelector(`.setor[data-id="${currentSetorId}"]`);
         
+        // 1. RETRAI o setor atual
         if (currentSetorEl) {
            toggleSetor(currentSetorEl.querySelector('.setor-header')); 
         }
@@ -1101,17 +1137,20 @@
         const nextSetorId = window.setorIds[currentSetorIndex + 1];
 
         if (nextSetorId) {
+            // 2. EXPANDI o próximo setor
             const nextSetorEl = document.querySelector(`.setor[data-id="${nextSetorId}"]`);
             if (nextSetorEl) {
                toggleSetor(nextSetorEl.querySelector('.setor-header')); 
+               nextSetorEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
             }
         } else {
+             // Se for o último setor
              document.getElementById('btn-finalizar').scrollIntoView({ behavior: 'smooth', block: 'start' });
         }
     }
 
     // *******************************************************************
-    // 4. INICIALIZAÇÃO DA PÁGINA (CHAMA A GERAÇÃO DINÂMICA)
+    // 5. INICIALIZAÇÃO DA PÁGINA (CHAMA A GERAÇÃO DINÂMICA)
     // *******************************************************************
     window.onload = function() {
         // Injeta a info do militar no cabeçalho antes de carregar os dados
