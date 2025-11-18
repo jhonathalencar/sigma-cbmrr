@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="icon" type="image/png" href="logo_sigma.png" onerror="this.onerror=null; this.src='https://placehold.co/16x16/800020/ffffff?text=S'">
-    <title>ADMIN - Gerenciador de Conferência</title>
+    <title>Permanência Bravo - Gerenciador de Conferência</title>
     <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
     <style>
         /* =================================================== */
@@ -23,7 +23,7 @@
             padding-top: 60px; /* Espaço para o header fixo */
             box-sizing: border-box;
         }
-
+        
         .main-header {
             position: fixed;
             top: 0;
@@ -129,29 +129,50 @@
         }
         .btn-add:hover { background-color: #5d0017; }
         
-        /* CORREÇÃO DE LAYOUT: Barra de Adição */
-        .add-form {
-            display: flex;
-            gap: 5px; /* Reduz o gap */
-            margin-bottom: 15px;
-            padding: 10px;
-            border: 1px solid #ddd;
-            border-radius: 6px;
-            background-color: #fafafa;
-            flex-wrap: wrap; /* Permite quebrar em telas muito pequenas */
+        .btn-admin-config {
+             background-color: #6c757d;
+             color: white;
         }
-        .add-form input, .add-form select {
+        .btn-admin-config:hover { background-color: #5a6268; }
+
+
+        /* Formulários de Adição (CORREÇÃO DE LAYOUT) */
+        .add-setor-form {
+             display: flex;
+             gap: 5px;
+             margin-bottom: 15px;
+             padding: 10px;
+             border: 1px solid #ddd;
+             border-radius: 6px;
+             background-color: #fafafa;
+        }
+        .add-setor-form input {
+             flex-grow: 1;
+             padding: 8px;
+             border: 1px solid #ccc;
+             border-radius: 4px;
+        }
+        /* Novo formulário de adição dentro de cada setor */
+        .add-item-form-setor {
+            display: flex;
+            gap: 5px; 
+            padding: 10px 15px; 
+            background-color: #f0f0f0; 
+            border-bottom: 1px solid #ddd;
+            flex-wrap: wrap;
+        }
+        .add-item-form-setor input, .add-item-form-setor select {
             flex-grow: 1;
-            min-width: 60px; /* Garante que campos não fiquem microscopicamente pequenos */
+            min-width: 60px;
             padding: 8px;
             border: 1px solid #ccc;
             border-radius: 4px;
+            font-size: 0.9em;
         }
-        .add-form select#select-setor-item {
-            flex-grow: 2; /* Dá mais espaço para o nome do setor */
-            min-width: 100px;
+        .add-item-form-setor button {
+            flex-shrink: 0;
         }
-        
+
         /* ESTILOS DE BOTÕES DE AÇÃO NA LISTA (CORREÇÃO ESTÉTICA) */
         .setor-header-admin {
             background-color: #800020;
@@ -162,6 +183,11 @@
             align-items: center;
             font-weight: bold;
             cursor: grab;
+        }
+        .setor-header-admin span:last-child {
+            cursor: pointer;
+            font-size: 1.2em;
+            margin-left: 10px;
         }
 
         .setor-actions .btn-action, .item-actions-admin .btn-action {
@@ -197,8 +223,19 @@
             margin-bottom: 15px;
             border: 1px solid #800020;
             border-radius: 6px;
-            overflow: hidden;
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        
+        /* Conteúdo dos Itens (para Retrair/Expandir) */
+        .setor-content-admin {
+            max-height: 1000px; /* Será controlado por JS */
+            overflow: hidden;
+            transition: max-height 0.4s ease-out;
+        }
+        .setor-content-admin.collapsed {
+            max-height: 0;
+            padding-bottom: 0 !important;
+            border-bottom: none !important;
         }
 
         .setor-actions {
@@ -240,7 +277,8 @@
         .item-actions-admin {
             display: flex;
             gap: 5px;
-            flex-shrink: 0; /* Garante que os botões não encolham */
+            flex-shrink: 0;
+            white-space: nowrap;
         }
         
         /* Tombamentos (Dentro dos Itens) */
@@ -273,7 +311,7 @@
             flex-grow: 1;
         }
         
-        /* Modal e Edição */
+        /* Modal e Edição (Mantidos) */
         .modal-overlay {
             position: fixed;
             top: 0;
@@ -336,7 +374,7 @@
     
     <img src="logo_sigma.png" alt="Logo SIGMA" class="logo-admin">
     
-    <h1>🛠️ Administração da Conferência</h1>
+    <h1>🛠️ Permanência BRAVO - Gerenciar Conferência</h1>
     <p id="loading-message">Carregando dados do Firebase...</p>
 
     <div id="main-admin-content" style="display: none;">
@@ -348,24 +386,11 @@
             <button class="btn-admin-config" onclick="document.getElementById('import-json').click()">Importar Backup</button>
         </div>
 
-        <div class="add-form">
+        <div class="add-setor-form">
             <input type="text" id="input-setor-nome" placeholder="Nome do Novo Setor (Ex: BRAVO 5)">
             <button class="btn-add" onclick="adicionarSetor(document.getElementById('input-setor-nome').value)">+ Setor</button>
         </div>
 
-        <div class="add-form">
-            <select id="select-setor-item">
-                <option value="">Selecione um Setor</option>
-            </select>
-            <input type="text" id="input-item-nome" placeholder="Nome do Item">
-            <input type="number" id="input-item-qtd" placeholder="Qtd. Esp." min="1" value="1">
-            <select id="select-item-tipo">
-                <option value="single">Item Único</option>
-                <option value="multi">Item com Tombamento</option>
-            </select>
-            <button class="btn-add" onclick="adicionarItem()">+ Item</button>
-        </div>
-        
         <ul id="lista-setores-container" class="lista-setores">
             </ul>
     </div>
@@ -402,7 +427,7 @@
 
 <script>
     // *******************************************************************
-    // 1. CONFIGURAÇÃO FIREBASE (SUAS CREDENCIAIS)
+    // 1. CONFIGURAÇÃO FIREBASE 
     // *******************************************************************
     const firebaseConfig = {
       apiKey: "AIzaSyCB0PH0UgghgsvH0BgPkG4AkKON6xSQ9mc",
@@ -413,14 +438,13 @@
       appId: "1:378026276038:web:620dd6ff57501b1a8313c7"
     };
 
-    // Inicialização do Firebase e Firestore
     firebase.initializeApp(firebaseConfig);
     const db = firebase.firestore();
     const COLECAO_NOME = 'lista_mestra'; 
     const DOCUMENTO_ID = 'lista_completa'; 
 
     // *******************************************************************
-    // 2. ESTRUTURA DE DADOS (FALLBACK)
+    // 2. ESTRUTURA DE DADOS (FALLBACK) - SUBSTITUIR COM JSON ATUALIZADO
     // *******************************************************************
     
     const DADOS_CONFERENCIA_FALLBACK = [
@@ -428,45 +452,17 @@
             "id": "1", 
             "nome": "DEPÓSITO CENTRAL", 
             "itens": [
-                {
-                    "id": "1-1",
-                    "nome": "KIT PRIMEIROS SOCORROS",
-                    "quantidadeEsperada": 5,
-                    "tipo": "single",
-                    "tombamentos": []
-                },
-                {
-                    "id": "1-2",
-                    "nome": "LANTERNA TÁTICA",
-                    "quantidadeEsperada": 2,
-                    "tipo": "multi",
-                    "tombamentos": [
-                        {"tomb": "123.456", "status": "pending", "obs": ""},
-                        {"tomb": "678.910", "status": "pending", "obs": ""},
-                    ]
-                }
+                { "id": "1-1", "nome": "KIT PRIMEIROS SOCORROS", "quantidadeEsperada": 5, "tipo": "single", "tombamentos": [] },
+                { "id": "1-2", "nome": "LANTERNA TÁTICA", "quantidadeEsperada": 2, "tipo": "multi", "tombamentos": [
+                    {"tomb": "123.456", "status": "pending", "obs": ""},
+                    {"tomb": "678.910", "status": "pending", "obs": ""},
+                ]}
             ]
         },
-        { 
-            "id": "2", 
-            "nome": "VIATURA 13-1", 
-            "itens": [
-                 {
-                    "id": "2-1",
-                    "nome": "ALMOTOLIA 500ML",
-                    "quantidadeEsperada": 2,
-                    "tipo": "single",
-                    "tombamentos": []
-                },
-                {
-                    "id": "2-2",
-                    "nome": "CHAVE DE RODA",
-                    "quantidadeEsperada": 1,
-                    "tipo": "single",
-                    "tombamentos": []
-                }
-            ]
-        },
+        { "id": "2", "nome": "VIATURA 13-1", "itens": [
+             { "id": "2-1", "nome": "ALMOTOLIA 500ML", "quantidadeEsperada": 2, "tipo": "single", "tombamentos": [] },
+             { "id": "2-2", "nome": "CHAVE DE RODA", "quantidadeEsperada": 1, "tipo": "single", "tombamentos": [] }
+        ]},
     ];
 
     let dadosConferencia = [];
@@ -483,10 +479,9 @@
 
             if (doc.exists && Array.isArray(doc.data().list)) {
                 dadosConferencia = doc.data().list;
-                console.log("Dados carregados com sucesso do Firebase.");
             } else {
                 dadosConferencia = DADOS_CONFERENCIA_FALLBACK;
-                console.warn("Documento não encontrado no Firebase. Usando fallback e forçando o upload inicial...");
+                console.warn("Documento não encontrado no Firebase. Forçando o upload inicial...");
                 await salvarDados(false); 
             }
 
@@ -522,7 +517,7 @@
 
         } catch (error) {
             console.error("ERRO ao salvar no Firebase:", error);
-            alert("ERRO ao sincronizar dados com o Firebase. Verifique as regras de segurança e o ID do projeto.");
+            alert("ERRO ao sincronizar dados com o Firebase. Verifique as regras de segurança.");
         }
     }
 
@@ -583,12 +578,8 @@
     }
 
 
-    function adicionarItem() {
-        const setorId = document.getElementById('select-setor-item').value;
-        const nome = document.getElementById('input-item-nome').value.trim().toUpperCase();
-        const quantidadeEsperada = parseInt(document.getElementById('input-item-qtd').value);
-        const tipo = document.getElementById('select-item-tipo').value;
-
+    function adicionarItem(setorId, nome, quantidadeEsperada, tipo) {
+        nome = nome.trim().toUpperCase();
         if (!setorId || !nome || isNaN(quantidadeEsperada) || quantidadeEsperada < 1) {
             alert("Preencha todos os campos corretamente.");
             return;
@@ -611,13 +602,7 @@
             }
         }
 
-
         setor.itens.push(novoItem);
-
-        document.getElementById('input-item-nome').value = '';
-        document.getElementById('input-item-qtd').value = '1';
-        document.getElementById('select-setor-item').value = '';
-        
         salvarDados(); 
         renderizarLista();
     }
@@ -715,15 +700,22 @@
     }
 
     function preencherSelectSetores() {
-        const select = document.getElementById('select-setor-item');
-        select.innerHTML = '<option value="">Selecione um Setor</option>';
-        dadosConferencia.forEach(setor => {
-            const option = document.createElement('option');
-            option.value = setor.id;
-            option.textContent = `${setor.nome} (${setor.id})`;
-            select.appendChild(option);
-        });
+        // Esta função não é mais usada para o formulário global
     }
+
+    function toggleSetorContent(headerElement) {
+         const content = headerElement.nextElementSibling;
+         const arrow = headerElement.querySelector('span:last-child');
+         
+         if (content.classList.contains('collapsed')) {
+             content.classList.remove('collapsed');
+             arrow.textContent = '▼';
+         } else {
+             content.classList.add('collapsed');
+             arrow.textContent = '►';
+         }
+    }
+
 
     function renderizarLista() {
         const container = document.getElementById('lista-setores-container');
@@ -734,6 +726,19 @@
             setorLi.className = 'setor-item';
             setorLi.setAttribute('data-id', setor.id);
             setorLi.setAttribute('draggable', true);
+
+            // 1. FORMULÁRIO DE ADIÇÃO POR SETOR
+            const addItemFormHtml = `
+                 <div class="add-item-form-setor">
+                     <input type="text" id="input-item-nome-${setor.id}" placeholder="Nome do Item">
+                     <input type="number" id="input-item-qtd-${setor.id}" placeholder="Qtd. Esp." min="1" value="1">
+                     <select id="select-item-tipo-${setor.id}">
+                         <option value="single">Item Único</option>
+                         <option value="multi">Item c/ Tombamento</option>
+                     </select>
+                     <button class="btn-add" onclick="adicionarItemPorSetor('${setor.id}')">+ Item</button>
+                 </div>
+            `;
 
             let itensHtml = '';
             setor.itens.forEach(item => {
@@ -758,7 +763,7 @@
                             <li style="border-bottom:none;">
                                 <div class="add-tombamento-form">
                                     <input type="text" id="tomb-input-${item.id}" placeholder="Novo Tombamento">
-                                    <button class="btn-add" onclick="adicionarTombamento('${item.id}', document.getElementById('tomb-input-${item.id}'))">+ Add</button>
+                                    <button class="btn-add" onclick="adicionarTombamento('${item.id}', document.getElementById('tomb-input-${item.id}'))">+</button>
                                 </div>
                             </li>
                         </ul>
@@ -776,22 +781,26 @@
                             <button class="btn-action btn-edit-alt" onclick="abrirModalEdicao('${setor.id}', '${item.id}')">Editar</button>
                             <button class="btn-action btn-remover" onclick="removerItem('${setor.id}', '${item.id}')">Remover</button>
                         </div>
-                        ${tombamentosHtml}
+                        ${item.tipo === 'multi' ? tombamentosHtml : ''}
                     </li>
                 `;
             });
 
             setorLi.innerHTML = `
-                <div class="setor-header-admin">
+                <div class="setor-header-admin" onclick="toggleSetorContent(this)">
                     <span>${setor.nome} (${setor.id})</span>
                     <div class="setor-actions">
-                        <button class="btn-action btn-edit-alt" onclick="promptRenomearSetor('${setor.id}', '${setor.nome}')">Renomear</button>
-                        <button class="btn-action btn-remover" onclick="removerSetor('${setor.id}')">Remover Setor</button>
+                        <button class="btn-action btn-edit-alt" onclick="event.stopPropagation(); promptRenomearSetor('${setor.id}', '${setor.nome}')">Renomear</button>
+                        <button class="btn-action btn-remover" onclick="event.stopPropagation(); removerSetor('${setor.id}')">Remover Setor</button>
                     </div>
+                    <span>▼</span>
                 </div>
-                <ul class="item-list-admin" data-setor-id="${setor.id}">
-                    ${itensHtml}
-                </ul>
+                <div class="setor-content-admin">
+                    ${addItemFormHtml}
+                    <ul class="item-list-admin" data-setor-id="${setor.id}">
+                        ${itensHtml}
+                    </ul>
+                </div>
             `;
             container.appendChild(setorLi);
         });
@@ -799,8 +808,31 @@
         aplicarDragAndDrop();
     }
     
+    // Funcao auxiliar para adicionar item (chamada do botao no loop de renderizacao)
+    function adicionarItemPorSetor(setorId) {
+        const nomeInput = document.getElementById(`input-item-nome-${setorId}`);
+        const qtdInput = document.getElementById(`input-item-qtd-${setorId}`);
+        const tipoSelect = document.getElementById(`select-item-tipo-${setorId}`);
+
+        const nome = nomeInput.value.trim();
+        const quantidadeEsperada = parseInt(qtdInput.value);
+        const tipo = tipoSelect.value;
+        
+        if (!nome || isNaN(quantidadeEsperada) || quantidadeEsperada < 1) {
+            alert("Preencha todos os campos do item corretamente.");
+            return;
+        }
+
+        adicionarItem(setorId, nome, quantidadeEsperada, tipo);
+
+        // Limpa os campos após a adição
+        nomeInput.value = '';
+        qtdInput.value = '1';
+    }
+
+
     // *******************************************************************
-    // 6. FUNÇÕES DE EDIÇÃO (MODAL)
+    // 6. FUNÇÕES DE EDIÇÃO (MODAL) (MANTIDAS)
     // *******************************************************************
     
     function abrirModalEdicao(setorId, itemId) {
@@ -822,9 +854,32 @@
         document.getElementById('modal-edicao').style.display = 'none';
     }
 
-    
+    function salvarEdicaoItem() {
+        const itemId = document.getElementById('edit-item-original-id').value;
+        const novoNome = document.getElementById('edit-item-nome').value.trim().toUpperCase();
+        const novaQtd = parseInt(document.getElementById('edit-item-qtd').value);
+        
+        if (!novoNome) {
+            alert("O nome do item não pode ser vazio.");
+            return;
+        }
+
+        const item = encontrarItemPorId(itemId);
+        if (item) {
+            item.nome = novoNome;
+            if (item.tipo === 'single') {
+                 item.quantidadeEsperada = novaQtd;
+            }
+            
+            salvarDados(); 
+            renderizarLista();
+            fecharModal();
+        }
+    }
+
+
     // *******************************************************************
-    // 7. FUNÇÕES DE BACKUP LOCAL DE EMERGÊNCIA
+    // 7. FUNÇÕES DE BACKUP LOCAL DE EMERGÊNCIA (MANTIDAS)
     // *******************************************************************
     
     function fazerBackupLocal() {
@@ -857,7 +912,6 @@
                     dadosConferencia = importedData;
                     salvarDados(); 
                     renderizarLista();
-                    preencherSelectSetores();
                     alert("Dados importados com sucesso e sincronizados com o Firebase.");
                 }
 
@@ -869,7 +923,7 @@
     }
 
     // *******************************************************************
-    // 8. FUNÇÕES DE DRAG AND DROP (Reordenamento)
+    // 8. FUNÇÕES DE DRAG AND DROP (Reordenamento - MANTIDAS)
     // *******************************************************************
 
     let dragSrcEl = null;
@@ -998,6 +1052,8 @@
     window.importarBackupLocal = importarBackupLocal;
     window.salvarDados = salvarDados;
     window.promptRenomearSetor = promptRenomearSetor;
+    window.toggleSetorContent = toggleSetorContent;
+    window.adicionarItemPorSetor = adicionarItemPorSetor;
 </script>
 </body>
 </html>
