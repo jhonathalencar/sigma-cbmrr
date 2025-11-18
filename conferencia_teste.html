@@ -175,7 +175,7 @@
         }
 
         .setor-content.expanded {
-            max-height: 1000px; 
+            max-height: 5000px; /* CRÍTICO: Aumentado para garantir que a lista inteira caiba */
             padding-bottom: 20px;
             border-bottom: 1px solid #e0e0e0;
             border-radius: 0 0 6px 6px;
@@ -610,7 +610,7 @@
                                 <div class="tombamento-controls">
                                     <span>Tomb.: ${tomb.tomb}</span>
                                     <div class="tombamento-options">
-                                        <button class="action-button sa-ok ${status === 'S/A' ? 'active' : ''}" onclick="setTombamentoStatus(this, 'ok')">S/A</button>
+                                        <button class="action-button sa-ok ${status === 'S/A' ? 'active' : ''}" onclick="setItemStatus(this, 'ok')">S/A</button>
                                         <button class="action-button ca-alert ${status === 'C/A' ? 'active' : ''}" onclick="setTombamentoStatus(this, 'alert')">C/A</button>
                                     </div>
                                 </div>
@@ -1044,11 +1044,18 @@
         const observacao = observacaoTextarea.value.trim();
         const itemId = item.dataset.id;
 
-        if (observacao.length < 5) {
+        if (observacao.length < 5 && item.dataset.status === 'alert') {
+             // OBRIGATÓRIO: Se status for ALERT, a observação deve ser salva
             alert("A descrição da alteração é muito curta. Por favor, detalhe.");
             observacaoTextarea.focus();
             return;
+        } else if (item.dataset.status === 'PENDING_CA' && observacao.length < 5) {
+             // CRÍTICO: Não permite salvar se for PENDING_CA e observação for vazia
+             alert("A descrição da alteração é muito curta. Por favor, detalhe.");
+             observacaoTextarea.focus();
+             return;
         }
+
 
         item.dataset.status = 'alert';
         item.classList.add('status-alert');
