@@ -67,6 +67,15 @@
             padding: 5px 8px;
             font-size: 0.8em;
         }
+        .btn-renomear {
+             background-color: #f39c12; /* Laranja para renomear */
+             padding: 5px 8px;
+             font-size: 0.8em;
+             margin-right: 5px;
+        }
+        .setor-actions button {
+             margin-left: 5px;
+        }
         .item-list p {
             background-color: #fff;
             padding: 8px 10px;
@@ -184,10 +193,13 @@
                 const setorEl = document.createElement('div');
                 setorEl.className = 'setor-container';
                 
-                // --- Cabeçalho do Setor ---
+                // --- Cabeçalho do Setor com botão de Renomear e Remover ---
                 setorEl.innerHTML = `
-                    <h3>${setor.nome} 
-                        <button onclick="removerSetor('${setor.id}')" class="btn-remover">Remover Setor</button>
+                    <h3>${setor.nome}
+                        <div class="setor-actions">
+                            <button onclick="promptRenomearSetor('${setor.id}', '${setor.nome}')" class="btn-renomear">Renomear</button>
+                            <button onclick="removerSetor('${setor.id}')" class="btn-remover">Remover Setor</button>
+                        </div>
                     </h3>
                 `;
                 
@@ -252,7 +264,31 @@
             salvarDados();
             renderizarLista();
         }
+        
+        // U - Update (Renomear Setor)
+        function renomearSetor(setorId, novoNome) {
+            const setor = dadosConferencia.find(s => s.id === setorId);
+            if (setor && novoNome.trim().length > 0) {
+                setor.nome = novoNome.toUpperCase();
+                salvarDados();
+                renderizarLista();
+                return true;
+            }
+            return false;
+        }
 
+        // Função que aciona o prompt para renomear
+        function promptRenomearSetor(setorId, nomeAtual) {
+            const novoNome = prompt(`Renomear o setor "${nomeAtual}":`, nomeAtual);
+            if (novoNome !== null) { // Usuário não cancelou
+                if (renomearSetor(setorId, novoNome)) {
+                    alert(`Setor renomeado para: ${novoNome.toUpperCase()}`);
+                } else {
+                    alert("O nome não pode ser vazio.");
+                }
+            }
+        }
+        
         // C - Create Item
         function adicionarItem(setorId, nomeItem, quantidade, tombamentosStr, tipo) {
             const setor = dadosConferencia.find(s => s.id === setorId);
