@@ -231,7 +231,7 @@
         .setor-content-admin {
             transition: max-height 0.4s ease-out;
             overflow: hidden;
-            max-height: 1000px; /* Valor alto para estado expandido */
+            max-height: 1000px; 
         }
         .setor-content-admin.collapsed {
             max-height: 0;
@@ -259,7 +259,7 @@
             list-style: none;
             padding: 10px;
             margin: 0;
-            min-height: 10px; /* Importante para soltar itens em listas vazias */
+            min-height: 10px; 
         }
 
         /* Itens de Conferência */
@@ -299,20 +299,13 @@
             word-wrap: break-word; 
         }
         
-        /* Contêiner dos botões: Força a ficar lado a lado */
+        /* CONTÊINER DOS BOTÕES: Força a ficar lado a lado */
         .item-actions-admin {
             display: flex;
             gap: 5px;
             flex-shrink: 0; 
-            white-space: nowrap; 
-            align-self: flex-start; 
-        }
-        
-        /* Wrapper para o conteúdo interno de um item, incluindo tombamentos */
-        .item-conferencia-admin > div:nth-child(2) {
-             display: flex;
-             flex-direction: column;
-             width: 100%;
+            white-space: nowrap; /* IMPEDE A QUEBRA DE LINHA */
+            align-self: flex-start; /* Alinha os botões ao topo */
         }
         
         /* Classe fantasma do SortableJS */
@@ -324,13 +317,13 @@
         }
 
         /* =================================================== */
-        /* CORREÇÃO E MELHORIA DO LAYOUT DE TOMBAMENTOS */
+        /* LAYOUT DE TOMBAMENTOS */
         /* =================================================== */
         .tombamento-container-wrapper {
             width: 100%;
             margin-top: 10px;
             padding-left: 30px; 
-            box-sizing: border-box; /* Inclui o padding no cálculo da largura */
+            box-sizing: border-box; 
         }
         .tombamento-section {
             background-color: #f7f7f7;
@@ -353,7 +346,6 @@
             margin: 0;
         }
         .tombamento-list li {
-            /* CORREÇÃO: Usar flexbox no LI para alinhamento */
             display: flex;
             align-items: center;
             justify-content: space-between;
@@ -362,16 +354,13 @@
             font-size: 0.85em;
         }
         .tombamento-list li input[type="text"] {
-            flex-grow: 1; /* O input cresce o máximo possível */
+            flex-grow: 1;
             padding: 4px 8px;
             margin-right: 5px;
             border: 1px solid #ddd;
             border-radius: 3px;
             font-size: 0.9em;
             min-width: 50px; 
-        }
-        .tombamento-actions {
-            flex-shrink: 0; /* Garante que o botão não encolha */
         }
         .tombamento-actions .btn-action.btn-remover {
             padding: 3px 8px;
@@ -443,7 +432,7 @@
     </div>
 </div>
 
-<div id="modal-edicao" class="modal-overlay">
+<div id="modal-edicao" class="modal-overlay" style="display: none; align-items: center; justify-content: center;">
     <div class="modal-content">
         <h2>Editar Item</h2>
         <input type="hidden" id="edit-setor-id">
