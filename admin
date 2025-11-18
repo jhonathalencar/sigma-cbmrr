@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SIGMA - Gerenciador de Conferências</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f9;
+            color: #333;
+            padding: 20px;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        h1 {
+            color: #d90f23;
+            border-bottom: 2px solid #e0e0e0;
+            padding-bottom: 10px;
+            margin-bottom: 25px;
+        }
+        h2 {
+            color: #800020;
+            border-bottom: 1px dashed #ccc;
+            padding-bottom: 5px;
+            margin-top: 30px;
+        }
+        h3 {
+            background-color: #800020;
+            color: white;
+            padding: 10px;
+            border-radius: 5px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 1.1em;
+            margin-top: 15px;
+        }
+        form {
+            display: flex;
+            gap: 10px;
+            padding: 10px 0;
+            border-bottom: 1px dotted #eee;
+        }
+        input[type="text"], input[type="number"] {
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+            flex-grow: 1;
+        }
+        button {
+            background-color: #d90f23;
+            color: white;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: background-color 0.2s;
+        }
+        .btn-adicionar {
+            background-color: #1b8a3e; /* Verde para adicionar */
+        }
+        .btn-remover {
+            background-color: #d90f23; /* Vermelho para remover */
+            padding: 5px 8px;
+            font-size: 0.8em;
+        }
+        .item-list p {
+            background-color: #fff;
+            padding: 8px 10px;
+            border: 1px solid #eee;
+            margin: 5px 0;
+            border-left: 4px solid #800020;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .tombamentos-list {
+            margin-left: 20px;
+            font-size: 0.9em;
+            color: #555;
+            padding-top: 5px;
+        }
+    </style>
+</head>
+<body>
+    <h1>🛠️ Gerenciamento de Conferências SIGMA</h1>
+    <p>Use esta interface para incluir, alterar e remover a estrutura de setores e materiais. As alterações são salvas automaticamente no seu navegador (Local Storage).</p>
+    <a href="conferencia_teste.html" target="_blank">Abrir Conferência (para visualizar)</a>
+    
+    <hr>
+
+    <div id="loading-message">Carregando dados...</div>
+    
+    <div id="main-admin-content" style="display: none;">
+        
+        <h2>➕ Adicionar Novo Setor</h2>
+        <form id="form-add-setor">
+            <input type="text" name="nomeSetor" placeholder="Nome do Novo Setor (Ex: POSTO CHARLIE)" required>
+            <button type="submit" class="btn-adicionar">Adicionar Setor</button>
+        </form>
+        
+        <hr>
+        
+        <h2>📦 Materiais Atuais por Setor</h2>
+        <div id="lista-administracao">
+            </div>
+        
+    </div>
+
+    <script>
+        // *******************************************************************
+        // 1. ESTRUTURA DE DADOS INICIAL / CARREGAMENTO
+        // *******************************************************************
+        const DADOS_CONFERENCIA_FALLBACK = [
+            {
+                id: "1",
+                nome: "DEPÓSITO CENTRAL",
+                itens: [
+                    { id: "1-1", nome: "KIT PRIMEIROS SOCORROS", quantidadeEsperada: 5, tipo: "single" },
+                    {
+                        id: "1-2",
+                        nome: "LANTERNA TÁTICA",
+                        quantidadeEsperada: 2,
+                        tipo: "multi",
+                        tombamentos: [
+                            { tomb: "123.456" },
+                            { tomb: "678.910" }
+                        ]
+                    },
+                    { id: "1-3", nome: "MANGUEIRA DE INCÊNDIO (30m)", quantidadeEsperada: 3, tipo: "single" }
+                ]
+            },
+            {
+                id: "2",
+                nome: "VIATURA 13-1",
+                itens: [
+                    { id: "2-1", nome: "ALMOTOLIA 500ml", quantidadeEsperada: 2, tipo: "single" },
+                    { id: "2-2", nome: "CILINDRO DE OXIGÊNIO (portátil)", quantidadeEsperada: 1, tipo: "single" },
+                    { id: "2-3", nome: "CHAVE DE RODA", quantidadeEsperada: 1, tipo: "single" }
+                ]
+            }
+        ];
+
+        let dadosConferencia = [];
+
+        function carregarDados() {
+            const storedData = localStorage.getItem('dadosConferencia');
+            if (storedData) {
+                try {
+                    dadosConferencia = JSON.parse(storedData);
+                } catch (e) {
+                    console.error("Erro ao carregar dados do Local Storage. Usando fallback.", e);
+                    dadosConferencia = DADOS_CONFERENCIA_FALLBACK;
+                }
+            } else {
+                // Se não há nada salvo, usa o fallback e salva imediatamente
+                dadosConferencia = DADOS_CONFERENCIA_FALLBACK;
+                salvarDados();
+            }
+        }
+
+        function salvarDados() {
+            localStorage.setItem('dadosConferencia', JSON.stringify(dadosConferencia));
+            console.log("Dados de conferência salvos no Local Storage.");
+        }
+
+        // *******************************************************************
+        // 2. FUNÇÕES DE RENDERIZAÇÃO
+        // *******************************************************************
+
+        function renderizarLista() {
+            const lista = document.getElementById('lista-administracao');
+            lista.innerHTML = '';
+            
+            if (dadosConferencia.length === 0) {
+                 lista.innerHTML = '<p>Nenhum setor adicionado. Adicione um acima.</p>';
+                 return;
+            }
+
+            dadosConferencia.forEach(setor => {
+                const setorEl = document.createElement('div');
+                setorEl.className = 'setor-container';
+                
+                // --- Cabeçalho do Setor ---
+                setorEl.innerHTML = `
+                    <h3>${setor.nome} 
+                        <button onclick="removerSetor('${setor.id}')" class="btn-remover">Remover Setor</button>
+                    </h3>
+                `;
+                
+                // --- Formulário para Adicionar Material ---
+                const addItemForm = document.createElement('form');
+                addItemForm.onsubmit = function(e) {
+                    e.preventDefault();
+                    // Passa o tipo 'multi' se o campo de tombamento for preenchido
+                    const tipo = this.elements.tomb.value.trim() ? 'multi' : 'single'; 
+                    adicionarItem(setor.id, this.elements.nome.value, this.elements.qtd.value, this.elements.tomb.value, tipo);
+                    this.reset();
+                };
+                addItemForm.innerHTML = `
+                    <input type="text" name="nome" placeholder="Novo Material" required>
+                    <input type="number" name="qtd" placeholder="Qtd" style="max-width: 60px;" required>
+                    <input type="text" name="tomb" placeholder="Tombamentos (Ex: 123.456, 678.910)" style="flex-grow: 2;">
+                    <button type="submit" class="btn-adicionar">Add Material</button>
+                `;
+                setorEl.appendChild(addItemForm);
+
+                // --- Lista de Itens ---
+                const itemListEl = document.createElement('div');
+                itemListEl.className = 'item-list';
+
+                setor.itens.forEach(item => {
+                    const itemEl = document.createElement('p');
+                    let tombamentosInfo = '';
+                    
+                    if (item.tipo === 'multi' && item.tombamentos && item.tombamentos.length > 0) {
+                        const tombs = item.tombamentos.map(t => t.tomb).join(', ');
+                        tombamentosInfo = `<div class="tombamentos-list">Tombamentos: ${tombs}</div>`;
+                    }
+
+                    itemEl.innerHTML = `
+                        <div>
+                            <strong>${item.nome}</strong> (Qtd: ${item.quantidadeEsperada})
+                            ${tombamentosInfo}
+                        </div>
+                        <button onclick="removerItem('${setor.id}', '${item.id}')" class="btn-remover">Remover</button>
+                    `;
+                    itemListEl.appendChild(itemEl);
+                });
+                
+                setorEl.appendChild(itemListEl);
+                lista.appendChild(setorEl);
+            });
+        }
+
+        // *******************************************************************
+        // 3. FUNÇÕES CRUD (CREATE, READ, UPDATE, DELETE)
+        // *******************************************************************
+
+        // C - Create Setor
+        function adicionarSetor(nomeSetor) {
+            // Gerador de ID simples (usando timestamp para maior segurança de unicidade)
+            const novoId = Date.now().toString().slice(-4); 
+            dadosConferencia.push({
+                id: novoId,
+                nome: nomeSetor.toUpperCase(),
+                itens: []
+            });
+            salvarDados();
+            renderizarLista();
+        }
+
+        // C - Create Item
+        function adicionarItem(setorId, nomeItem, quantidade, tombamentosStr, tipo) {
+            const setor = dadosConferencia.find(s => s.id === setorId);
+            if (setor) {
+                const novoId = `${setorId}-${Date.now().toString().slice(-4)}`; // ID Único para o item
+                
+                let tombamentosArray = [];
+                if (tipo === 'multi' && tombamentosStr) {
+                    // Divide a string de tombamentos e cria o array de objetos
+                    tombamentosArray = tombamentosStr.split(',').map(t => ({ tomb: t.trim() }));
+                }
+
+                setor.itens.push({
+                    id: novoId,
+                    nome: nomeItem.toUpperCase(),
+                    quantidadeEsperada: parseInt(quantidade),
+                    tipo: tipo,
+                    tombamentos: tombamentosArray
+                });
+                salvarDados();
+                renderizarLista();
+            }
+        }
+
+        // D - Delete Setor
+        function removerSetor(setorId) {
+            if (confirm("Tem certeza que deseja remover este setor e todos os seus materiais? Esta ação é IRREVERSÍVEL!")) {
+                dadosConferencia = dadosConferencia.filter(s => s.id !== setorId);
+                salvarDados();
+                renderizarLista();
+            }
+        }
+
+        // D - Delete Item
+        function removerItem(setorId, itemId) {
+            const setor = dadosConferencia.find(s => s.id === setorId);
+            if (setor) {
+                setor.itens = setor.itens.filter(i => i.id !== itemId);
+                salvarDados();
+                renderizarLista();
+            }
+        }
+
+        // *******************************************************************
+        // 4. INICIALIZAÇÃO
+        // *******************************************************************
+        window.onload = function() {
+            carregarDados();
+            renderizarLista();
+            
+            document.getElementById('loading-message').style.display = 'none';
+            document.getElementById('main-admin-content').style.display = 'block';
+
+            // Configura o formulário para adicionar novo setor
+            const addSetorForm = document.getElementById('form-add-setor');
+            if (addSetorForm) {
+                addSetorForm.onsubmit = function(e) {
+                    e.preventDefault();
+                    adicionarSetor(this.elements.nomeSetor.value);
+                    this.reset();
+                };
+            }
+        };
+    </script>
+</body>
+</html>
