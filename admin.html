@@ -20,10 +20,10 @@
             flex-direction: column;
             align-items: center;
             padding-bottom: 20px;
-            padding-top: 60px; /* CORREÇÃO: Espaço para o header fixo */
+            padding-top: 60px; /* Espaço para o header fixo */
             box-sizing: border-box;
         }
-        
+
         .main-header {
             position: fixed;
             top: 0;
@@ -78,7 +78,7 @@
             max-width: 800px;
             margin-bottom: 20px;
             box-sizing: border-box;
-            text-align: center; /* Centraliza a logo */
+            text-align: center;
         }
         
         .logo-admin {
@@ -104,6 +104,7 @@
             gap: 10px;
             margin-bottom: 20px;
             justify-content: flex-start;
+            flex-wrap: wrap;
         }
 
         .global-actions button, .btn-salvar-alteracao, .btn-action {
@@ -116,46 +117,75 @@
         }
 
         .btn-sync {
-            background-color: #1b8a3e;
+            background-color: #1b8a3e; /* Verde para sincronização */
             color: white;
         }
         .btn-sync:hover { background-color: #156d31; }
 
         .btn-add {
-            background-color: #800020;
+            background-color: #800020; /* Vinho para Adicionar */
             color: white;
+            flex-shrink: 0;
         }
         .btn-add:hover { background-color: #5d0017; }
-
-        .btn-admin-config {
-             background-color: #6c757d;
-             color: white;
-        }
-        .btn-admin-config:hover { background-color: #5a6268; }
-
-
-        /* Formulários de Adição */
+        
+        /* CORREÇÃO DE LAYOUT: Barra de Adição */
         .add-form {
             display: flex;
-            gap: 10px;
+            gap: 5px; /* Reduz o gap */
             margin-bottom: 15px;
             padding: 10px;
             border: 1px solid #ddd;
             border-radius: 6px;
             background-color: #fafafa;
+            flex-wrap: wrap; /* Permite quebrar em telas muito pequenas */
         }
-        .add-form input {
+        .add-form input, .add-form select {
             flex-grow: 1;
+            min-width: 60px; /* Garante que campos não fiquem microscopicamente pequenos */
             padding: 8px;
             border: 1px solid #ccc;
             border-radius: 4px;
         }
-        .add-form select {
-            padding: 8px;
-            border: 1px solid #ccc;
-            border-radius: 4px;
+        .add-form select#select-setor-item {
+            flex-grow: 2; /* Dá mais espaço para o nome do setor */
+            min-width: 100px;
+        }
+        
+        /* ESTILOS DE BOTÕES DE AÇÃO NA LISTA (CORREÇÃO ESTÉTICA) */
+        .setor-header-admin {
+            background-color: #800020;
+            color: white;
+            padding: 10px 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-weight: bold;
+            cursor: grab;
         }
 
+        .setor-actions .btn-action, .item-actions-admin .btn-action {
+            font-size: 0.8em;
+            padding: 5px 10px;
+        }
+        
+        /* COR: REMOVER (VERMELHO) */
+        .btn-action.btn-remover {
+            background-color: #d90f23;
+            color: white;
+        }
+        .btn-action.btn-remover:hover {
+            background-color: #b80d1e;
+        }
+        
+        /* COR: EDITAR/RENOMEAR (AZUL/CINZA PARA MODIFICAÇÃO) */
+        .btn-action.btn-edit-alt { 
+            background-color: #7f8c8d; /* Cinza Metálico */
+            color: white;
+        }
+        .btn-action.btn-edit-alt:hover {
+            background-color: #5d6667;
+        }
 
         /* Listas de Setores e Itens */
         .lista-setores {
@@ -171,28 +201,10 @@
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
         }
 
-        .setor-header-admin {
-            background-color: #800020;
-            color: white;
-            padding: 10px 15px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            font-weight: bold;
-            cursor: grab;
-        }
-
         .setor-actions {
             display: flex;
             gap: 5px;
         }
-
-        .setor-actions .btn-action {
-            background-color: #d90f23;
-            font-size: 0.8em;
-            padding: 5px 10px;
-        }
-        .setor-actions .btn-action:hover { background-color: #b80d1e; }
         
         .item-list-admin {
             list-style: none;
@@ -220,6 +232,7 @@
             display: flex;
             flex-direction: column;
             text-align: left;
+            margin-right: 10px;
         }
         .item-info strong { font-size: 1em; }
         .item-info small { color: #666; font-size: 0.85em; }
@@ -227,14 +240,9 @@
         .item-actions-admin {
             display: flex;
             gap: 5px;
+            flex-shrink: 0; /* Garante que os botões não encolham */
         }
         
-        .item-actions-admin .btn-action {
-            background-color: #d90f23;
-            font-size: 0.75em;
-            padding: 5px 8px;
-        }
-
         /* Tombamentos (Dentro dos Itens) */
         .tombamento-list {
             list-style: none;
@@ -479,7 +487,7 @@
             } else {
                 dadosConferencia = DADOS_CONFERENCIA_FALLBACK;
                 console.warn("Documento não encontrado no Firebase. Usando fallback e forçando o upload inicial...");
-                await salvarDados(false); // Força o upload da lista de fallback sem o alerta
+                await salvarDados(false); 
             }
 
         } catch (error) {
@@ -633,7 +641,7 @@
         const item = encontrarItemPorId(itemId);
         if (item) {
             item.tombamentos.push({ tomb: tombamento, status: "pending", obs: "" });
-            item.quantidadeEsperada = item.tombamentos.length;
+            item.quantidadeEsperada = item.tombamentos.length; 
             salvarDados(); 
             renderizarLista();
         }
@@ -739,7 +747,7 @@
                                        onblur="editarTombamento('${item.id}', '${tomb.tomb}', this)">
                             </span>
                             <div class="tombamento-actions">
-                                <button class="btn-action" onclick="removerTombamento('${item.id}', '${tomb.tomb}')">X</button>
+                                <button class="btn-action btn-remover" onclick="removerTombamento('${item.id}', '${tomb.tomb}')">X</button>
                             </div>
                         </li>
                     `).join('');
@@ -765,8 +773,8 @@
                             <small>Qtd: ${item.quantidadeEsperada} | Tipo: ${item.tipo === 'multi' ? 'Tombamento' : 'Único'}</small>
                         </div>
                         <div class="item-actions-admin">
-                            <button class="btn-action" onclick="abrirModalEdicao('${setor.id}', '${item.id}')">Editar</button>
-                            <button class="btn-action" onclick="removerItem('${setor.id}', '${item.id}')">Remover</button>
+                            <button class="btn-action btn-edit-alt" onclick="abrirModalEdicao('${setor.id}', '${item.id}')">Editar</button>
+                            <button class="btn-action btn-remover" onclick="removerItem('${setor.id}', '${item.id}')">Remover</button>
                         </div>
                         ${tombamentosHtml}
                     </li>
@@ -777,8 +785,8 @@
                 <div class="setor-header-admin">
                     <span>${setor.nome} (${setor.id})</span>
                     <div class="setor-actions">
-                        <button class="btn-action" onclick="promptRenomearSetor('${setor.id}', '${setor.nome}')">Renomear</button>
-                        <button class="btn-action" onclick="removerSetor('${setor.id}')">Remover Setor</button>
+                        <button class="btn-action btn-edit-alt" onclick="promptRenomearSetor('${setor.id}', '${setor.nome}')">Renomear</button>
+                        <button class="btn-action btn-remover" onclick="removerSetor('${setor.id}')">Remover Setor</button>
                     </div>
                 </div>
                 <ul class="item-list-admin" data-setor-id="${setor.id}">
