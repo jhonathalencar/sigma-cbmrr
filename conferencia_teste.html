@@ -210,10 +210,21 @@
         
         .item-header {
             display: flex;
-            justify-content: space-between;
-            align-items: flex-start; /* Alinhamento superior */
+            /* MODIFICAÇÃO CHAVE: Garante que a quantidade vá para a direita */
+            justify-content: space-between; 
+            align-items: flex-start; /* Alinhamento superior para acomodar quebra de linha */
             margin-bottom: 5px;
             flex-wrap: wrap;
+        }
+        
+        /* NOVO CONTAINER para agrupar Ícone e Nome, permitindo que o Nome quebre a linha */
+        .item-info-wrapper {
+            display: flex;
+            align-items: flex-start;
+            flex-grow: 1; /* Permite que o wrapper use o espaço restante para quebrar o texto */
+            /* Garante que o item label e o ícone não empurrem a quantidade para baixo */
+            min-width: 0; 
+            margin-right: 10px; /* Espaço entre o wrapper e a Quantidade (à direita) */
         }
 
         /* CLASSE PADRÃO PARA TODOS OS NOMES DE ITEM PRINCIPAL */
@@ -221,16 +232,19 @@
             font-weight: bold;
             color: #333;
             flex-grow: 1;
-            margin-right: 10px;
+            margin-right: 10px; 
             text-align: left;
             font-size: 0.95em;
+            /* MODIFICAÇÃO CHAVE: Força a quebra de palavras para caber no espaço flexível */
+            word-break: break-word; 
+            overflow-wrap: break-word;
         }
         
         .item-quantidade {
             font-size: 0.9em;
             color: #800020;
             font-weight: bold;
-            flex-shrink: 0;
+            flex-shrink: 0; /* IMPEDE que a quantidade diminua ou quebre */
         }
         
         .status-icon {
@@ -244,7 +258,7 @@
             color: white;
             min-width: 18px;
             text-align: center;
-            margin-right: 10px;
+            margin-right: 8px; /* Espaço entre o ícone e o nome */
             background-color: transparent;
             border: 1px dashed #aaa;
         }
@@ -498,9 +512,9 @@
 </div>
 
 <div class="footer-central">
-    <strong>GOVERNO DE RORAIMA</strong>
-    <strong>CORPO DE BOMBEIROS MILITAR DE RORAIMA</strong>
-    <em>“Amazônia: patrimônio dos brasileiros”</em><br>
+    <strong>GOVERNO DE RORAIMA</strong><br>
+    <strong>CORPO DE BOMBEIROS MILITAR DE RORAIMA</strong><br>
+    <em>“Amazônia: patrimônio dos brasileiros”</em>
     
     <span class="footer-autor">
         Elaborado por: 3º SGT QPCBM JHONATH
@@ -646,8 +660,10 @@
                     htmlItens += `
                         <div class="item-conferencia item-has-tombamentos ${itemStatusData.class}" data-type="multi" data-total-tombamentos="${item.tombamentos.length}" data-status="${itemStatusData.status}" data-id="${item.id}">
                             <div class="item-header">
-                                <span class="status-icon ${itemStatusData.status === 'ok' ? 'ok' : itemStatusData.status === 'alert' ? 'alert' : ''}"></span>
-                                <span class="item-label">${item.nome}</span> 
+                                <div class="item-info-wrapper">
+                                    <span class="status-icon ${itemStatusData.status === 'ok' ? 'ok' : itemStatusData.status === 'alert' ? 'alert' : ''}"></span>
+                                    <span class="item-label">${item.nome}</span> 
+                                </div>
                                 <span class="item-quantidade">Quantidade: ${item.quantidadeEsperada}</span>
                             </div>
                             ${htmlTombamento}
@@ -662,8 +678,10 @@
                     htmlItens += `
                         <div class="item-conferencia ${status === 'ok' ? 'status-ok' : status === 'C/A' ? 'status-alert' : ''}" data-type="single" data-status="${status}" data-id="${item.id}">
                             <div class="item-header">
-                                <span class="status-icon ${status === 'ok' ? 'ok' : status === 'C/A' ? 'alert' : ''}"></span>
-                                <span class="item-label">${item.nome}</span>
+                                <div class="item-info-wrapper">
+                                    <span class="status-icon ${status === 'ok' ? 'ok' : status === 'C/A' ? 'alert' : ''}"></span>
+                                    <span class="item-label">${item.nome}</span>
+                                </div>
                                 <span class="item-quantidade">Quantidade: ${item.quantidadeEsperada}</span>
                             </div>
                             <div class="item-options">
