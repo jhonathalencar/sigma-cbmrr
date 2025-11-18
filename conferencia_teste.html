@@ -337,10 +337,13 @@
             margin-bottom: 5px;
             font-weight: bold;
             color: #d90f23;
-            font-size: 0.85em;
+            /* Alterado o texto no JS, mas mantendo o estilo para a label */
+            font-size: 0.85em; 
         }
 
-        .tombamento-obs-container textarea {
+        /* MODIFICAÇÃO 3: Aumenta a caixa de texto da observação para 100% (margem a margem) */
+        .tombamento-obs-container textarea,
+        .alteracao-container textarea {
             width: 100%;
             padding: 8px;
             border-radius: 4px;
@@ -403,10 +406,9 @@
             margin-bottom: 5px;
             font-weight: bold;
             color: #d90f23;
-            font-size: 0.9em;
+            /* Alterado o texto no JS, mas mantendo o estilo para a label */
+            font-size: 0.9em; 
         }
-        
-        /* ... outros estilos de botão/rodapé ... */
         
         .btn-salvar-alteracao {
             background-color: #800020;
@@ -488,9 +490,9 @@
 </div>
 
 <div class="footer-central">
-    <strong>GOVERNO DE RORAIMA</strong>
-    <strong>CORPO DE BOMBEIROS MILITAR DE RORAIMA</strong>
-    <em>“Amazônia: patrimônio dos brasileiros”</em><br>
+    <strong>GOVERNO DE RORAIMA</strong><br>
+    <strong>CORPO DE BOMBEIROS MILITAR DE RORAIMA</strong><br>
+    <em>“Amazônia: patrimônio dos brasileiros”</em>
     
     <span class="footer-autor">
         Elaborado por: 3º SGT QPCBM JHONATH
@@ -618,7 +620,7 @@
                                     <span class="obs-texto">${obs}</span>
                                 </p>
                                 <div class="tombamento-obs-container" style="${status === 'PENDING_CA' ? 'display: block;' : 'display: none;'}">
-                                    <label>Observação (Obrigatória para C/A):</label>
+                                    <label>Alteração encontrada:</label>
                                     <textarea placeholder="Detalhe a alteração para este tombamento.">${obs}</textarea>
                                     <button type="button" class="btn-salvar-alteracao" onclick="salvarTombamento(this)">SALVAR OBSERVAÇÃO</button>
                                 </div>
@@ -637,7 +639,8 @@
                         <div class="item-conferencia item-has-tombamentos ${itemStatusData.class}" data-type="multi" data-total-tombamentos="${item.tombamentos.length}" data-status="${itemStatusData.status}" data-id="${item.id}">
                             <div class="item-header">
                                 <span class="status-icon ${itemStatusData.status === 'ok' ? 'ok' : itemStatusData.status === 'alert' ? 'alert' : ''}"></span>
-                                <span class="item-label">${item.nome}</span> <span class="item-quantidade">Qtd. Esperada: ${item.quantidadeEsperada}</span>
+                                <span class="item-label">${item.nome}</span> 
+                                <span class="item-quantidade">Quantidade: ${item.quantidadeEsperada}</span>
                             </div>
                             ${htmlTombamento}
                         </div>
@@ -653,7 +656,7 @@
                             <div class="item-header">
                                 <span class="status-icon ${status === 'ok' ? 'ok' : status === 'C/A' ? 'alert' : ''}"></span>
                                 <span class="item-label">${item.nome}</span>
-                                <span class="item-quantidade">Qtd. Esperada: ${item.quantidadeEsperada}</span>
+                                <span class="item-quantidade">Quantidade: ${item.quantidadeEsperada}</span>
                             </div>
                             <div class="item-options">
                                 <button class="action-button sa-ok ${status === 'S/A' ? 'active' : ''}" onclick="setItemStatus(this, 'ok')">S/A</button>
@@ -664,7 +667,7 @@
                                 <span class="obs-texto">${obs}</span>
                             </p>
                             <div class="alteracao-container" style="${status === 'PENDING_CA' ? 'display: block;' : 'display: none;'}">
-                                <label>Observação (Obrigatória para C/A):</label>
+                                <label>Alteração encontrada:</label>
                                 <textarea data-id="${item.id}" placeholder="Descreva o tipo de alteração ou falta.">${obs}</textarea>
                                 <button type="button" class="btn-salvar-alteracao" onclick="salvarItem(this)">SALVAR</button>
                             </div>
@@ -1088,7 +1091,7 @@
         }
     }
     
-    // CORREÇÃO 2: Adiciona verificação de visibilidade para evitar scroll desnecessário
+    // CORREÇÃO: Adiciona verificação de visibilidade para evitar scroll desnecessário
     function isElementInViewport(el) {
         const rect = el.getBoundingClientRect();
         // Verifica se o elemento está, pelo menos parcialmente, dentro do viewport
