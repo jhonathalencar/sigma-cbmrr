@@ -4,8 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="icon" type="image/png" href="logo_sigma.png" onerror="this.onerror=null; this.src='https://placehold.co/16x16/800020/ffffff?text=S'">
-    <title>Permanência BRAVO - Gerenciador de Conferência</title>
+    <title>ADMIN - Gerenciador de Conferência</title>
     <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
         /* =================================================== */
         /* ESTILOS BASE E CABEÇALHO FIXO (CBM-RR) */
@@ -184,7 +185,7 @@
             font-weight: bold;
             cursor: grab;
         }
-        .setor-header-admin span:last-child {
+        .setor-header-admin .toggle-arrow {
             cursor: pointer;
             font-size: 1.2em;
             margin-left: 10px;
@@ -239,15 +240,12 @@
         
         /* ESTILOS DE DRAG & DROP */
         .lista-setores {
-            /* Fixa a lista principal para arrastar setores */
             padding: 0;
         }
         .setor-item {
-             /* Garante que o setor seja arrastável */
              cursor: grab;
         }
         .setor-header-admin {
-             /* Garante que só o cabeçalho seja a alça de arraste do setor */
              cursor: grab;
         }
 
@@ -267,12 +265,10 @@
         .item-conferencia-admin {
             display: flex;
             justify-content: space-between;
-            align-items: center;
-            padding: 10px;
+            align-items: flex-start; /* CRÍTICO: Alinha itens no topo */
+            padding: 10px 0; /* Padding superior e inferior para os blocos */
             border-bottom: 1px solid #eee;
             background-color: #fff;
-            
-            /* Para SortableJS */
             cursor: move; 
         }
 
@@ -295,6 +291,7 @@
             flex-direction: column;
             text-align: left;
             margin-right: 10px;
+            min-width: 150px; /* Garante que o nome tenha espaço */
         }
         
         /* Classe fantasma do SortableJS */
@@ -303,6 +300,86 @@
             background-color: #f0fff0 !important;
             border: 1px dashed #1b8a3e;
             box-shadow: none;
+        }
+
+        /* =================================================== */
+        /* CORREÇÃO E MELHORIA DO LAYOUT DE TOMBAMENTOS */
+        /* =================================================== */
+        .tombamento-container-wrapper {
+             /* Wrapper para o conteúdo do tombamento */
+            width: 100%;
+            margin-top: 10px;
+        }
+        .tombamento-section {
+            background-color: #f7f7f7;
+            border-radius: 4px;
+            padding: 10px;
+        }
+        
+        .tombamento-section h4 {
+            margin: 0 0 10px 0;
+            font-size: 0.9em;
+            color: #555;
+            text-align: left;
+            border-bottom: 1px dotted #ccc;
+            padding-bottom: 5px;
+        }
+
+        .tombamento-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        .tombamento-list li {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 5px 0;
+            border-bottom: 1px dotted #eee;
+            font-size: 0.85em;
+        }
+        .tombamento-list li:last-child {
+            border-bottom: none;
+        }
+        .tombamento-list li input[type="text"] {
+            flex-grow: 1;
+            padding: 4px 8px;
+            margin-right: 5px;
+            border: 1px solid #ddd;
+            border-radius: 3px;
+            font-size: 0.9em;
+            max-width: calc(100% - 30px);
+        }
+        .tombamento-actions .btn-action.btn-remover {
+            padding: 3px 8px;
+            font-size: 0.7em;
+            border-radius: 3px;
+        }
+
+        .add-tombamento-form {
+            display: flex;
+            gap: 5px;
+            margin-top: 10px;
+            padding-top: 10px;
+            border-top: 1px dashed #e0e0e0;
+        }
+        .add-tombamento-form input {
+            padding: 6px 10px;
+            font-size: 0.9em;
+            flex-grow: 1;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        .add-tombamento-form .btn-add {
+            padding: 6px 10px;
+            font-size: 0.9em;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .add-tombamento-form .btn-add i {
+            margin: 0;
         }
 
         /* Modal e Edição (Mantidos) */
@@ -338,7 +415,7 @@
     
     <img src="logo_sigma.png" alt="Logo SIGMA" class="logo-admin">
     
-    <h1>🛠️ Permanência BRAVO - Gerenciador de Conferência 🛠️</h1>
+    <h1>🛠️ Administração da Conferência</h1>
     <p id="loading-message">Carregando dados do Firebase...</p>
 
     <div id="main-admin-content" style="display: none;">
@@ -640,6 +717,11 @@
         
         const item = encontrarItemPorId(itemId);
         if (item) {
+            // Verifica se o tombamento já existe para evitar duplicatas
+            if (item.tombamentos.some(t => t.tomb === tombamento)) {
+                alert(`Tombamento '${tombamento}' já existe neste item.`);
+                return;
+            }
             item.tombamentos.push({ tomb: tombamento, status: "pending", obs: "" });
             item.quantidadeEsperada = item.tombamentos.length; 
             salvarDados(); 
@@ -659,17 +741,24 @@
         }
     }
     
-    function editarTombamento(itemId, tombamento, inputElement) {
+    function editarTombamento(itemId, tombamentoAtual, inputElement) {
         const novoTombamento = inputElement.value.trim().toUpperCase();
-        if (!novoTombamento || novoTombamento === tombamento) return;
+        if (!novoTombamento || novoTombamento === tombamentoAtual) return;
 
         const item = encontrarItemPorId(itemId);
         if (item) {
-             const tomb = item.tombamentos.find(t => t.tomb === tombamento);
+             const tomb = item.tombamentos.find(t => t.tomb === tombamentoAtual);
              if (tomb) {
+                  // Verifica se o NOVO tombamento já existe em outro item
+                  const isDuplicate = item.tombamentos.some(t => t.tomb === novoTombamento && t.tomb !== tombamentoAtual);
+                  if (isDuplicate) {
+                      alert(`Tombamento '${novoTombamento}' já existe em outro item.`);
+                      return;
+                  }
+                  
                   tomb.tomb = novoTombamento;
                   salvarDados();
-                  alert(`Tombamento ${tombamento} alterado para ${novoTombamento}.`);
+                  alert(`Tombamento ${tombamentoAtual} alterado para ${novoTombamento}.`);
              }
         }
     }
@@ -714,13 +803,9 @@
          return null;
     }
 
-    function preencherSelectSetores() {
-        // Não é mais usada para formulários globais
-    }
-
     function toggleSetorContent(headerElement) {
          const content = headerElement.nextElementSibling;
-         const arrow = headerElement.querySelector('span:last-child');
+         const arrow = headerElement.querySelector('.toggle-arrow');
          
          if (content.classList.contains('collapsed')) {
              content.classList.remove('collapsed');
@@ -740,7 +825,6 @@
             const setorLi = document.createElement('li');
             setorLi.className = 'setor-item';
             setorLi.setAttribute('data-id', setor.id);
-            setorLi.setAttribute('draggable', true);
 
             // 1. FORMULÁRIO DE ADIÇÃO POR SETOR
             const addItemFormHtml = `
@@ -767,21 +851,24 @@
                                        onblur="editarTombamento('${item.id}', '${tomb.tomb}', this)">
                             </span>
                             <div class="tombamento-actions">
-                                <button class="btn-action btn-remover" onclick="removerTombamento('${item.id}', '${tomb.tomb}')">X</button>
+                                <button class="btn-action btn-remover" onclick="removerTombamento('${item.id}', '${tomb.tomb}')"><i class="fas fa-trash"></i></button>
                             </div>
                         </li>
                     `).join('');
 
                     tombamentosHtml = `
-                        <ul class="tombamento-list">
-                            ${tombamentosList}
-                            <li style="border-bottom:none;">
+                        <div class="tombamento-container-wrapper">
+                            <div class="tombamento-section">
+                                <h4>Tombamentos Individuais (${item.tombamentos.length})</h4>
+                                <ul class="tombamento-list">
+                                    ${tombamentosList}
+                                </ul>
                                 <div class="add-tombamento-form">
                                     <input type="text" id="tomb-input-${item.id}" placeholder="Novo Tombamento">
-                                    <button class="btn-add" onclick="adicionarTombamento('${item.id}', document.getElementById('tomb-input-${item.id}'))">+</button>
+                                    <button class="btn-add" onclick="adicionarTombamento('${item.id}', document.getElementById('tomb-input-${item.id}'))"><i class="fas fa-plus"></i></button>
                                 </div>
-                            </li>
-                        </ul>
+                            </div>
+                        </div>
                     `;
                 }
 
@@ -789,15 +876,19 @@
                 itensHtml += `
                     <li class="item-conferencia-admin" data-id="${item.id}" data-setor-id="${setor.id}" draggable="true">
                         <span class="item-drag-handle">☰</span> 
-                        <div class="item-info">
-                            <strong>${item.nome}</strong>
-                            <small>Qtd: ${item.quantidadeEsperada} | Tipo: ${item.tipo === 'multi' ? 'Tombamento' : 'Único'}</small>
+                        <div style="display: flex; flex-direction: column; width: 100%;">
+                            <div style="display: flex; justify-content: space-between; align-items: flex-start; width: 100%;">
+                                <div class="item-info">
+                                    <strong>${item.nome}</strong>
+                                    <small>Qtd: ${item.quantidadeEsperada} | Tipo: ${item.tipo === 'multi' ? 'Tombamento' : 'Único'}</small>
+                                </div>
+                                <div class="item-actions-admin">
+                                    <button class="btn-action btn-edit-alt" onclick="abrirModalEdicao('${setor.id}', '${item.id}')">Editar</button>
+                                    <button class="btn-action btn-remover" onclick="removerItem('${setor.id}', '${item.id}')">Remover</button>
+                                </div>
+                            </div>
+                            ${item.tipo === 'multi' ? tombamentosHtml : ''}
                         </div>
-                        <div class="item-actions-admin">
-                            <button class="btn-action btn-edit-alt" onclick="abrirModalEdicao('${setor.id}', '${item.id}')">Editar</button>
-                            <button class="btn-action btn-remover" onclick="removerItem('${setor.id}', '${item.id}')">Remover</button>
-                        </div>
-                        ${item.tipo === 'multi' ? tombamentosHtml : ''}
                     </li>
                 `;
             });
@@ -809,7 +900,7 @@
                         <button class="btn-action btn-edit-alt" onclick="event.stopPropagation(); promptRenomearSetor('${setor.id}', '${setor.nome}')">Renomear</button>
                         <button class="btn-action btn-remover" onclick="event.stopPropagation(); removerSetor('${setor.id}')">Remover Setor</button>
                     </div>
-                    <span>▼</span>
+                    <span class="toggle-arrow">▼</span>
                 </div>
                 <div class="setor-content-admin">
                     ${addItemFormHtml}
@@ -825,10 +916,100 @@
     }
     
     // *******************************************************************
+    // 6. FUNÇÕES DE EDIÇÃO (MODAL) (MANTIDAS)
+    // *******************************************************************
+    
+    function abrirModalEdicao(setorId, itemId) {
+        const item = encontrarItemPorId(itemId);
+        if (!item) return;
+
+        document.getElementById('edit-setor-id').value = setorId;
+        document.getElementById('edit-item-original-id').value = itemId;
+        document.getElementById('edit-item-nome').value = item.nome;
+        document.getElementById('edit-item-qtd').value = item.quantidadeEsperada;
+        document.getElementById('edit-item-tipo').value = item.tipo;
+        
+        document.getElementById('edit-item-qtd').disabled = (item.tipo === 'multi');
+
+        document.getElementById('modal-edicao').style.display = 'flex';
+    }
+
+    function fecharModal() {
+        document.getElementById('modal-edicao').style.display = 'none';
+    }
+
+    function salvarEdicaoItem() {
+        const itemId = document.getElementById('edit-item-original-id').value;
+        const novoNome = document.getElementById('edit-item-nome').value.trim().toUpperCase();
+        const novaQtd = parseInt(document.getElementById('edit-item-qtd').value);
+        
+        if (!novoNome) {
+            alert("O nome do item não pode ser vazio.");
+            return;
+        }
+
+        const item = encontrarItemPorId(itemId);
+        if (item) {
+            item.nome = novoNome;
+            if (item.tipo === 'single') {
+                 item.quantidadeEsperada = novaQtd;
+            }
+            
+            salvarDados(); 
+            renderizarLista();
+            fecharModal();
+        }
+    }
+
+
+    // *******************************************************************
+    // 7. FUNÇÕES DE BACKUP LOCAL DE EMERGÊNCIA (MANTIDAS)
+    // *******************************************************************
+    
+    function fazerBackupLocal() {
+        const jsonString = JSON.stringify(dadosConferencia, null, 2);
+        const blob = new Blob([jsonString], { type: "application/json" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'conferencia_backup_' + new Date().toISOString().slice(0, 10) + '.json';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+        alert("Backup da lista baixado como arquivo JSON.");
+    }
+    
+    function importarBackupLocal(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            try {
+                const importedData = JSON.parse(e.target.result);
+                if (!Array.isArray(importedData)) {
+                    throw new Error("O arquivo não está no formato de lista (Array) esperado.");
+                }
+                
+                if (confirm("ATENÇÃO: Este backup substituirá TODOS os dados atuais no Firebase. Continuar?")) {
+                    dadosConferencia = importedData;
+                    salvarDados(); 
+                    renderizarLista();
+                    alert("Dados importados com sucesso e sincronizados com o Firebase.");
+                }
+
+            } catch (error) {
+                alert("Erro ao importar o arquivo: " + error.message);
+            }
+        };
+        reader.readAsText(file);
+    }
+
+    // *******************************************************************
     // 8. FUNÇÕES DE DRAG AND DROP (Reordenamento)
     // *******************************************************************
 
-    let dragSrcEl = null;
     let listContainerEl = document.getElementById('lista-setores-container');
 
     function reordenarArray(sourceList, targetList, dragId, dropId, key) {
@@ -842,6 +1023,7 @@
         } else {
              const temp = sourceList[dragIndex];
              sourceList.splice(dragIndex, 1);
+             // Reajusta o ID do item movido (muda de setor, precisa de um novo ID único)
              temp.id = targetList.length > 0 ? targetList[0].id.split('-')[0] + '-' + gerarNovoId() : temp.id;
              targetList.splice(dropIndex, 0, temp);
         }
@@ -849,12 +1031,11 @@
 
     function aplicarDragAndDrop() {
         // DRAG & DROP PARA SETORES
-        new Sortable(listContainerEl, {
+        new Sortable(document.getElementById('lista-setores-container'), {
             animation: 150,
             handle: '.setor-header-admin',
             filter: 'button', 
             onEnd: function(evt) {
-                // Reordena o array principal de setores (dadosConferencia)
                 reordenarArray(dadosConferencia, dadosConferencia, evt.item.dataset.id, evt.item.nextElementSibling ? evt.item.nextElementSibling.dataset.id : null, 'id');
                 salvarDados();
             }
@@ -863,9 +1044,9 @@
         // DRAG & DROP PARA ITENS
         document.querySelectorAll('.item-list-admin').forEach(list => {
             new Sortable(list, {
-                group: 'shared-items', // Permite arrastar entre listas
+                group: 'shared-items', 
                 animation: 150,
-                handle: '.item-drag-handle', // Alça de arraste
+                handle: '.item-drag-handle', 
                 onEnd: function(evt) {
                     const itemID = evt.item.dataset.id;
                     const dragListId = evt.from.dataset.setorId;
@@ -874,20 +1055,16 @@
                     const dropSetor = encontrarSetorPorId(dropListId);
                     
                     if (dragListId === dropListId) {
-                        // Reordena dentro do mesmo setor
                         reordenarArray(dragSetor.itens, dragSetor.itens, itemID, evt.item.nextElementSibling ? evt.item.nextElementSibling.dataset.id : null, 'id');
                     } else {
-                        // Transfere entre setores
                         const itemMovido = dragSetor.itens.find(i => i.id === itemID);
                         if (itemMovido) {
-                             const novoIdBase = dropSetor.id;
-                             // Simula a lógica de drop para que o novo item entre no lugar correto
                              reordenarArray(dragSetor.itens, dropSetor.itens, itemID, evt.item.nextElementSibling ? evt.item.nextElementSibling.dataset.id : null, 'id');
                         }
                     }
 
                     salvarDados();
-                    renderizarLista(); // Renderiza para atualizar IDs e estrutura
+                    renderizarLista(); 
                 }
             });
         });
