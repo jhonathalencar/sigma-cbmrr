@@ -497,7 +497,7 @@
     <strong>GOVERNO DE RORAIMA</strong>
     <strong>CORPO DE BOMBEIROS MILITAR DE RORAIMA</strong>
     <em>“Amazônia: patrimônio dos brasileiros”</em><br>
-    
+    <br>
     <span class="footer-autor">
         Elaborado por: 3º SGT QPCBM JHONATH
     </span>
@@ -757,10 +757,13 @@
         });
     }
 
+    // ***************************************************************
+    // FUNÇÃO MODIFICADA AQUI
+    // ***************************************************************
     function updateHeaderInfo() {
         // Injeta os dados do militar no cabeçalho
         const militarCompleto = `${userInfo.postoGraduacao} ${userInfo.quadro} ${userInfo.nomeGuerra}`;
-        // Obtém data e hora atuais e formata
+        // Obtém data e hora atuais e formata (Data/Hora: 18/11/2025, 19:27:02)
         const now = new Date();
         const datePart = now.toLocaleDateString('pt-BR');
         const timePart = now.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
