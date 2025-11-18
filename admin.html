@@ -42,13 +42,20 @@
             padding: 10px 0;
             border-bottom: 1px dotted #eee;
         }
-        input[type="text"], input[type="number"] {
+        /* Estilos dos campos */
+        input[type="text"], input[type="number"], .tombamentos-tag-container {
             padding: 8px;
             border: 1px solid #ccc;
             border-radius: 4px;
             box-sizing: border-box;
             flex-grow: 1;
         }
+        .form-row {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+        /* Botões */
         button {
             background-color: #d90f23;
             color: white;
@@ -60,22 +67,24 @@
             transition: background-color 0.2s;
         }
         .btn-adicionar {
-            background-color: #1b8a3e; /* Verde para adicionar */
+            background-color: #1b8a3e; /* Verde */
         }
         .btn-remover {
-            background-color: #d90f23; /* Vermelho para remover */
+            background-color: #d90f23; /* Vermelho */
             padding: 5px 8px;
             font-size: 0.8em;
         }
-        .btn-renomear {
-             background-color: #f39c12; /* Laranja para renomear */
+        .btn-renomear, .btn-editar {
+             background-color: #f39c12; /* Laranja */
              padding: 5px 8px;
              font-size: 0.8em;
              margin-right: 5px;
         }
-        .setor-actions button {
+        .setor-actions button, .item-actions button {
              margin-left: 5px;
+             flex-shrink: 0;
         }
+        /* Lista de Itens */
         .item-list p {
             background-color: #fff;
             padding: 8px 10px;
@@ -86,11 +95,60 @@
             justify-content: space-between;
             align-items: center;
         }
-        .tombamentos-list {
-            margin-left: 20px;
+        .tombamentos-info {
             font-size: 0.9em;
             color: #555;
             padding-top: 5px;
+        }
+        /* Popup Modal para Edição */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0,0,0,0.4);
+        }
+        .modal-content {
+            background-color: #fefefe;
+            margin: 10% auto;
+            padding: 20px;
+            border: 1px solid #888;
+            width: 80%;
+            max-width: 500px;
+            border-radius: 8px;
+        }
+        .modal-content h2 {
+            border: none;
+        }
+        .close-btn {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+        }
+        .close-btn:hover, .close-btn:focus {
+            color: #000;
+            text-decoration: none;
+            cursor: pointer;
+        }
+        .modal .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            font-size: 0.9em;
+            color: #555;
+            margin-top: 10px;
+        }
+        .modal .form-group input, .modal .form-group textarea {
+             width: 100%;
+             padding: 8px;
+        }
+        .modal button {
+            margin-top: 20px;
         }
     </style>
 </head>
@@ -119,6 +177,36 @@
         
     </div>
 
+    <div id="item-edit-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-btn" onclick="document.getElementById('item-edit-modal').style.display='none'">&times;</span>
+            <h2>Editar Material</h2>
+            <form id="form-edit-item">
+                <input type="hidden" id="edit-setor-id" name="setorId">
+                <input type="hidden" id="edit-item-id" name="itemId">
+
+                <div class="form-group">
+                    <label for="edit-nome">Nome do Material</label>
+                    <input type="text" id="edit-nome" name="nome" required>
+                </div>
+
+                <div class="form-group" id="edit-qtd-group">
+                    <label for="edit-qtd">Quantidade Esperada</label>
+                    <input type="number" id="edit-qtd" name="qtd" min="1">
+                    <small style="color: red; display: none;" id="qtd-warning">A quantidade será calculada pelos tombamentos.</small>
+                </div>
+                
+                <div class="form-group">
+                    <label for="edit-tombamentos">Tombamentos (Separados por vírgula)</label>
+                    <textarea id="edit-tombamentos" name="tombamentos" placeholder="Ex: 123.456, 678.910"></textarea>
+                    <small>Se preenchido, a quantidade será contada automaticamente.</small>
+                </div>
+
+                <button type="submit" class="btn-adicionar">Salvar Alterações</button>
+            </form>
+        </div>
+    </div>
+    
     <script>
         // *******************************************************************
         // 1. ESTRUTURA DE DADOS INICIAL / CARREGAMENTO
@@ -128,7 +216,7 @@
                 id: "1",
                 nome: "DEPÓSITO CENTRAL",
                 itens: [
-                    { id: "1-1", nome: "KIT PRIMEIROS SOCORROS", quantidadeEsperada: 5, tipo: "single" },
+                    { id: "1-1", nome: "KIT PRIMEIROS SOCORROS", quantidadeEsperada: 5, tipo: "single", tombamentos: [] },
                     {
                         id: "1-2",
                         nome: "LANTERNA TÁTICA",
@@ -139,16 +227,16 @@
                             { tomb: "678.910" }
                         ]
                     },
-                    { id: "1-3", nome: "MANGUEIRA DE INCÊNDIO (30m)", quantidadeEsperada: 3, tipo: "single" }
+                    { id: "1-3", nome: "MANGUEIRA DE INCÊNDIO (30m)", quantidadeEsperada: 3, tipo: "single", tombamentos: [] }
                 ]
             },
             {
                 id: "2",
                 nome: "VIATURA 13-1",
                 itens: [
-                    { id: "2-1", nome: "ALMOTOLIA 500ml", quantidadeEsperada: 2, tipo: "single" },
-                    { id: "2-2", nome: "CILINDRO DE OXIGÊNIO (portátil)", quantidadeEsperada: 1, tipo: "single" },
-                    { id: "2-3", nome: "CHAVE DE RODA", quantidadeEsperada: 1, tipo: "single" }
+                    { id: "2-1", nome: "ALMOTOLIA 500ml", quantidadeEsperada: 2, tipo: "single", tombamentos: [] },
+                    { id: "2-2", nome: "CILINDRO DE OXIGÊNIO (portátil)", quantidadeEsperada: 1, tipo: "single", tombamentos: [] },
+                    { id: "2-3", nome: "CHAVE DE RODA", quantidadeEsperada: 1, tipo: "single", tombamentos: [] }
                 ]
             }
         ];
@@ -159,13 +247,19 @@
             const storedData = localStorage.getItem('dadosConferencia');
             if (storedData) {
                 try {
-                    dadosConferencia = JSON.parse(storedData);
+                    const parsedData = JSON.parse(storedData);
+                    // Garante que o item.tombamentos existe para evitar erros
+                    parsedData.forEach(setor => {
+                        setor.itens.forEach(item => {
+                            if (item.tipo === 'single' && !item.tombamentos) item.tombamentos = [];
+                        });
+                    });
+                    dadosConferencia = parsedData;
                 } catch (e) {
                     console.error("Erro ao carregar dados do Local Storage. Usando fallback.", e);
                     dadosConferencia = DADOS_CONFERENCIA_FALLBACK;
                 }
             } else {
-                // Se não há nada salvo, usa o fallback e salva imediatamente
                 dadosConferencia = DADOS_CONFERENCIA_FALLBACK;
                 salvarDados();
             }
@@ -177,7 +271,7 @@
         }
 
         // *******************************************************************
-        // 2. FUNÇÕES DE RENDERIZAÇÃO
+        // 2. FUNÇÕES DE RENDERIZAÇÃO E INTERFACE
         // *******************************************************************
 
         function renderizarLista() {
@@ -193,7 +287,7 @@
                 const setorEl = document.createElement('div');
                 setorEl.className = 'setor-container';
                 
-                // --- Cabeçalho do Setor com botão de Renomear e Remover ---
+                // --- Cabeçalho do Setor com Renomear e Remover ---
                 setorEl.innerHTML = `
                     <h3>${setor.nome}
                         <div class="setor-actions">
@@ -203,19 +297,17 @@
                     </h3>
                 `;
                 
-                // --- Formulário para Adicionar Material ---
+                // --- Formulário para Adicionar Material (Adicionado campo de tombamento separado) ---
                 const addItemForm = document.createElement('form');
                 addItemForm.onsubmit = function(e) {
                     e.preventDefault();
-                    // Passa o tipo 'multi' se o campo de tombamento for preenchido
-                    const tipo = this.elements.tomb.value.trim() ? 'multi' : 'single'; 
-                    adicionarItem(setor.id, this.elements.nome.value, this.elements.qtd.value, this.elements.tomb.value, tipo);
+                    adicionarItem(setor.id, this.elements.nome.value, this.elements.qtd.value, this.elements.tombamentos.value);
                     this.reset();
                 };
                 addItemForm.innerHTML = `
-                    <input type="text" name="nome" placeholder="Novo Material" required>
-                    <input type="number" name="qtd" placeholder="Qtd" style="max-width: 60px;" required>
-                    <input type="text" name="tomb" placeholder="Tombamentos (Ex: 123.456, 678.910)" style="flex-grow: 2;">
+                    <input type="text" name="nome" placeholder="1. Material (Ex: MANGUEIRA)" required>
+                    <input type="text" name="tombamentos" placeholder="2. Tombamentos (Ex: 123.456, 678.910)">
+                    <input type="number" name="qtd" placeholder="3. Qtd" style="max-width: 60px;">
                     <button type="submit" class="btn-adicionar">Add Material</button>
                 `;
                 setorEl.appendChild(addItemForm);
@@ -227,18 +319,23 @@
                 setor.itens.forEach(item => {
                     const itemEl = document.createElement('p');
                     let tombamentosInfo = '';
+                    let tipoInfo = `Qtd. Esperada: ${item.quantidadeEsperada}`;
                     
                     if (item.tipo === 'multi' && item.tombamentos && item.tombamentos.length > 0) {
                         const tombs = item.tombamentos.map(t => t.tomb).join(', ');
-                        tombamentosInfo = `<div class="tombamentos-list">Tombamentos: ${tombs}</div>`;
+                        tombamentosInfo = `<div class="tombamentos-info">Tombamentos: ${tombs}</div>`;
+                        tipoInfo = `Qtd. (Auto): ${item.quantidadeEsperada} (${item.tipo.toUpperCase()})`;
                     }
 
                     itemEl.innerHTML = `
                         <div>
-                            <strong>${item.nome}</strong> (Qtd: ${item.quantidadeEsperada})
+                            <strong>${item.nome}</strong> (${tipoInfo})
                             ${tombamentosInfo}
                         </div>
-                        <button onclick="removerItem('${setor.id}', '${item.id}')" class="btn-remover">Remover</button>
+                        <div class="item-actions">
+                            <button onclick="promptEditarItem('${setor.id}', '${item.id}')" class="btn-editar">Editar</button>
+                            <button onclick="removerItem('${setor.id}', '${item.id}')" class="btn-remover">Remover</button>
+                        </div>
                     `;
                     itemListEl.appendChild(itemEl);
                 });
@@ -248,13 +345,51 @@
             });
         }
 
+        // Lógica para mostrar o modal de edição
+        function promptEditarItem(setorId, itemId) {
+            const setor = dadosConferencia.find(s => s.id === setorId);
+            const item = setor ? setor.itens.find(i => i.id === itemId) : null;
+
+            if (!item) return;
+
+            const modal = document.getElementById('item-edit-modal');
+            
+            // Preenche os campos do modal
+            document.getElementById('edit-setor-id').value = setorId;
+            document.getElementById('edit-item-id').value = itemId;
+            document.getElementById('edit-nome').value = item.nome;
+            document.getElementById('edit-qtd').value = item.quantidadeEsperada;
+            
+            // Preenche a textarea de tombamentos
+            const tombamentosTextArea = document.getElementById('edit-tombamentos');
+            tombamentosTextArea.value = item.tombamentos.map(t => t.tomb).join(', ');
+
+            // Esconde/mostra o campo de QTD baseado no tipo (para edição)
+            const qtdGroup = document.getElementById('edit-qtd-group');
+            const qtdWarning = document.getElementById('qtd-warning');
+
+            if (item.tipo === 'multi') {
+                qtdGroup.style.display = 'block';
+                document.getElementById('edit-qtd').readOnly = true;
+                document.getElementById('edit-qtd').style.backgroundColor = '#f0f0f0';
+                qtdWarning.style.display = 'block';
+            } else {
+                qtdGroup.style.display = 'block';
+                document.getElementById('edit-qtd').readOnly = false;
+                document.getElementById('edit-qtd').style.backgroundColor = '#fff';
+                qtdWarning.style.display = 'none';
+            }
+            
+            modal.style.display = 'block';
+            document.getElementById('edit-nome').focus();
+        }
+
         // *******************************************************************
-        // 3. FUNÇÕES CRUD (CREATE, READ, UPDATE, DELETE)
+        // 3. FUNÇÕES CRUD (CREATE, UPDATE, DELETE)
         // *******************************************************************
 
         // C - Create Setor
         function adicionarSetor(nomeSetor) {
-            // Gerador de ID simples (usando timestamp para maior segurança de unicidade)
             const novoId = Date.now().toString().slice(-4); 
             dadosConferencia.push({
                 id: novoId,
@@ -277,10 +412,9 @@
             return false;
         }
 
-        // Função que aciona o prompt para renomear
         function promptRenomearSetor(setorId, nomeAtual) {
             const novoNome = prompt(`Renomear o setor "${nomeAtual}":`, nomeAtual);
-            if (novoNome !== null) { // Usuário não cancelou
+            if (novoNome !== null) { 
                 if (renomearSetor(setorId, novoNome)) {
                     alert(`Setor renomeado para: ${novoNome.toUpperCase()}`);
                 } else {
@@ -289,29 +423,87 @@
             }
         }
         
-        // C - Create Item
-        function adicionarItem(setorId, nomeItem, quantidade, tombamentosStr, tipo) {
+        // C - Create Item (Lógica de contagem de tombamento atualizada)
+        function adicionarItem(setorId, nomeItem, quantidade, tombamentosStr) {
             const setor = dadosConferencia.find(s => s.id === setorId);
-            if (setor) {
-                const novoId = `${setorId}-${Date.now().toString().slice(-4)}`; // ID Único para o item
-                
-                let tombamentosArray = [];
-                if (tipo === 'multi' && tombamentosStr) {
-                    // Divide a string de tombamentos e cria o array de objetos
-                    tombamentosArray = tombamentosStr.split(',').map(t => ({ tomb: t.trim() }));
-                }
+            if (!setor) return;
 
-                setor.itens.push({
-                    id: novoId,
-                    nome: nomeItem.toUpperCase(),
-                    quantidadeEsperada: parseInt(quantidade),
-                    tipo: tipo,
-                    tombamentos: tombamentosArray
-                });
-                salvarDados();
-                renderizarLista();
+            let tipo = 'single';
+            let quantidadeFinal = parseInt(quantidade) || 0;
+            let tombamentosArray = [];
+
+            if (tombamentosStr.trim().length > 0) {
+                tipo = 'multi';
+                // Processa a string de tombamentos: remove espaços, filtra vazios
+                tombamentosArray = tombamentosStr.split(',')
+                                    .map(t => t.trim())
+                                    .filter(t => t.length > 0)
+                                    .map(t => ({ tomb: t }));
+                
+                // Se for MULTI, a quantidade é o número de tombamentos
+                quantidadeFinal = tombamentosArray.length;
+            } else {
+                // Se for SINGLE, valida a quantidade
+                if (quantidadeFinal <= 0) {
+                    alert("Informe uma quantidade válida se não houver tombamento.");
+                    return;
+                }
             }
+
+            const novoId = `${setorId}-${Date.now().toString().slice(-4)}`; 
+            
+            setor.itens.push({
+                id: novoId,
+                nome: nomeItem.toUpperCase(),
+                quantidadeEsperada: quantidadeFinal,
+                tipo: tipo,
+                tombamentos: tombamentosArray
+            });
+            salvarDados();
+            renderizarLista();
         }
+        
+        // U - Update Item (Nova função de edição)
+        function editarItem(setorId, itemId, novoNome, novaQtd, novosTombamentosStr) {
+            const setor = dadosConferencia.find(s => s.id === setorId);
+            const item = setor ? setor.itens.find(i => i.id === itemId) : null;
+
+            if (!item || novoNome.trim().length === 0) {
+                alert("Nome do item não pode ser vazio.");
+                return false;
+            }
+
+            let tipo = 'single';
+            let quantidadeFinal = parseInt(novaQtd) || 0;
+            let tombamentosArray = [];
+
+            if (novosTombamentosStr.trim().length > 0) {
+                tipo = 'multi';
+                tombamentosArray = novosTombamentosStr.split(',')
+                                    .map(t => t.trim())
+                                    .filter(t => t.length > 0)
+                                    .map(t => ({ tomb: t }));
+                
+                quantidadeFinal = tombamentosArray.length;
+            } else {
+                 // Se for SINGLE, valida a quantidade
+                if (quantidadeFinal <= 0) {
+                    alert("Informe uma quantidade válida se não houver tombamento.");
+                    return false;
+                }
+            }
+
+            // Aplica as alterações
+            item.nome = novoNome.toUpperCase();
+            item.quantidadeEsperada = quantidadeFinal;
+            item.tipo = tipo;
+            item.tombamentos = tombamentosArray;
+
+            salvarDados();
+            renderizarLista();
+            return true;
+        }
+
 
         // D - Delete Setor
         function removerSetor(setorId) {
@@ -333,7 +525,7 @@
         }
 
         // *******************************************************************
-        // 4. INICIALIZAÇÃO
+        // 4. INICIALIZAÇÃO / EVENT LISTENERS
         // *******************************************************************
         window.onload = function() {
             carregarDados();
@@ -342,7 +534,7 @@
             document.getElementById('loading-message').style.display = 'none';
             document.getElementById('main-admin-content').style.display = 'block';
 
-            // Configura o formulário para adicionar novo setor
+            // Listener para Adicionar Novo Setor
             const addSetorForm = document.getElementById('form-add-setor');
             if (addSetorForm) {
                 addSetorForm.onsubmit = function(e) {
@@ -350,6 +542,49 @@
                     adicionarSetor(this.elements.nomeSetor.value);
                     this.reset();
                 };
+            }
+            
+            // Listener para Salvar Edição do Item
+            const editItemForm = document.getElementById('form-edit-item');
+            editItemForm.onsubmit = function(e) {
+                e.preventDefault();
+                const setorId = this.elements.setorId.value;
+                const itemId = this.elements.itemId.value;
+                const novoNome = this.elements.nome.value;
+                const novaQtd = this.elements.qtd.value;
+                const novosTombamentos = this.elements.tombamentos.value;
+                
+                if (editarItem(setorId, itemId, novoNome, novaQtd, novosTombamentos)) {
+                    document.getElementById('item-edit-modal').style.display = 'none';
+                    alert(`Material "${novoNome}" alterado com sucesso!`);
+                }
+            };
+
+            // Lógica para controle do campo Qtd no modal
+            document.getElementById('edit-tombamentos').addEventListener('input', function() {
+                const qtdField = document.getElementById('edit-qtd');
+                const warning = document.getElementById('qtd-warning');
+                
+                if (this.value.trim().length > 0) {
+                    qtdField.readOnly = true;
+                    qtdField.style.backgroundColor = '#f0f0f0';
+                    warning.style.display = 'block';
+                    // Calcula a quantidade de tombamentos para o campo
+                    const count = this.value.split(',').filter(t => t.trim().length > 0).length;
+                    qtdField.value = count;
+                } else {
+                    qtdField.readOnly = false;
+                    qtdField.style.backgroundColor = '#fff';
+                    warning.style.display = 'none';
+                }
+            });
+            
+            // Fechar modal ao clicar fora (opcional)
+            window.onclick = function(event) {
+                const modal = document.getElementById('item-edit-modal');
+                if (event.target == modal) {
+                    modal.style.display = "none";
+                }
             }
         };
     </script>
