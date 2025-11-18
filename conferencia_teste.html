@@ -35,7 +35,6 @@
             align-items: center;
             padding: 0 15px;
             box-sizing: border-box;
-            gap: 10px;
         }
 
         .header-icon {
@@ -195,49 +194,37 @@
             margin: 10px;
             background-color: #fafafa;
             transition: border-left-color 0.3s ease, background-color 0.3s ease;
-            position: relative; /* Mantido para o status icon */
         }
 
         .item-conferencia.status-ok { border-left-color: #1b8a3e; background-color: #f0fff0; }
         .item-conferencia.status-alert { border-left-color: #d90f23; background-color: #fff0f0; }
         
         .item-header {
-            /* Removido o display: flex aqui para que os elementos fiquem na mesma coluna (verticalmente) */
-            margin-bottom: 5px;
-            position: relative; /* Adicionado para posicionamento absoluto do status icon */
-            padding-left: 35px; /* Compensa o Status Icon */
-        }
-        
-        /* NOVO: Container para empilhar Nome e QTD */
-        .item-info-stack {
             display: flex;
-            flex-direction: column; /* Empilha o nome e a quantidade */
-            text-align: left;
-            width: 100%;
+            justify-content: space-between;
+            align-items: flex-start; /* Alinhamento superior */
+            margin-bottom: 5px;
+            flex-wrap: wrap;
         }
 
         /* CLASSE PADRÃO PARA TODOS OS NOMES DE ITEM PRINCIPAL */
         .item-label { 
             font-weight: bold;
             color: #333;
+            flex-grow: 1;
+            margin-right: 10px;
+            text-align: left;
             font-size: 0.95em;
-            white-space: normal; /* Permite a quebra de linha do nome do item */
-            line-height: 1.2;
         }
         
-        /* NOVO ESTILO: Quantidade abaixo do nome */
         .item-quantidade {
-            font-size: 0.85em; /* Reduzido para destaque secundário */
+            font-size: 0.9em;
             color: #800020;
             font-weight: bold;
-            margin-top: 2px; /* Pequeno espaçamento do nome */
-            text-align: left; /* Garante que a QTD alinhe com o nome */
+            flex-shrink: 0;
         }
         
         .status-icon {
-            position: absolute; /* Tira o ícone do fluxo do Flexbox (e agora do fluxo normal) */
-            left: 0; /* Alinha com o padding-left do .item-header */
-            top: 0; /* Alinha com o topo da informação */
             font-weight: bold;
             font-size: 0; 
             padding: 0; 
@@ -248,6 +235,7 @@
             color: white;
             min-width: 18px;
             text-align: center;
+            margin-right: 10px;
             background-color: transparent;
             border: 1px dashed #aaa;
         }
@@ -650,11 +638,8 @@
                         <div class="item-conferencia item-has-tombamentos ${itemStatusData.class}" data-type="multi" data-total-tombamentos="${item.tombamentos.length}" data-status="${itemStatusData.status}" data-id="${item.id}">
                             <div class="item-header">
                                 <span class="status-icon ${itemStatusData.status === 'ok' ? 'ok' : itemStatusData.status === 'alert' ? 'alert' : ''}"></span>
-                                <div class="item-info-stack">
-                                    <span class="item-label">${item.nome}</span> 
-                                    <span class="item-quantidade">QTD: ${item.quantidadeEsperada}</span>
-                                </div>
-                            </div>
+                                <span class="item-label">${item.nome}</span> 
+                                <span class="item-quantidade">QTD: ${item.quantidadeEsperada}</span>                             </div>
                             ${htmlTombamento}
                         </div>
                     `;
@@ -668,11 +653,8 @@
                         <div class="item-conferencia ${status === 'ok' ? 'status-ok' : status === 'C/A' ? 'status-alert' : ''}" data-type="single" data-status="${status}" data-id="${item.id}">
                             <div class="item-header">
                                 <span class="status-icon ${status === 'ok' ? 'ok' : status === 'C/A' ? 'alert' : ''}"></span>
-                                <div class="item-info-stack">
-                                    <span class="item-label">${item.nome}</span>
-                                    <span class="item-quantidade">QTD: ${item.quantidadeEsperada}</span>
-                                </div>
-                            </div>
+                                <span class="item-label">${item.nome}</span>
+                                <span class="item-quantidade">QTD: ${item.quantidadeEsperada}</span>                             </div>
                             <div class="item-options">
                                 <button class="action-button sa-ok ${status === 'S/A' ? 'active' : ''}" onclick="setItemStatus(this, 'ok')">S/A</button>
                                 <button class="action-button ca-alert ${status === 'C/A' ? 'active' : ''}" onclick="setItemStatus(this, 'alert')">C/A</button>
