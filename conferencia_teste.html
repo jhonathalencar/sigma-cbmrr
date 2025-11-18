@@ -610,7 +610,7 @@
                                 <div class="tombamento-controls">
                                     <span>Tomb.: ${tomb.tomb}</span>
                                     <div class="tombamento-options">
-                                        <button class="action-button sa-ok ${status === 'S/A' ? 'active' : ''}" onclick="setItemStatus(this, 'ok')">S/A</button>
+                                        <button class="action-button sa-ok ${status === 'S/A' ? 'active' : ''}" onclick="setTombamentoStatus(this, 'ok')">S/A</button>
                                         <button class="action-button ca-alert ${status === 'C/A' ? 'active' : ''}" onclick="setTombamentoStatus(this, 'alert')">C/A</button>
                                     </div>
                                 </div>
@@ -1094,11 +1094,11 @@
             // Item ÚNICO: Se pendente, foca nele. Se C/A pendente, foca no textarea.
             if (nextItem.dataset.type === 'single') {
                  if (!itemData || itemData.status === 'PENDING') {
-                     nextItem.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                     nextItem.scrollIntoView({ behavior: 'smooth', block: 'start' });
                      return;
                  }
                  if (itemData.status === 'PENDING_CA') {
-                     nextItem.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                     nextItem.scrollIntoView({ behavior: 'smooth', block: 'start' });
                      nextItem.querySelector('textarea').focus();
                      return;
                  }
@@ -1113,7 +1113,7 @@
                 });
 
                 if (pendingTombamento) {
-                    pendingTombamento.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    pendingTombamento.scrollIntoView({ behavior: 'smooth', block: 'start' });
                     
                     if (window.itemStatus[`${nextItemId}-${pendingTombamento.dataset.tomb}`]?.status === 'PENDING_CA') {
                         pendingTombamento.querySelector('textarea').focus();
