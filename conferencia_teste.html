@@ -490,7 +490,7 @@
 <div class="footer-central">
     <strong>GOVERNO DE RORAIMA</strong>
     <strong>CORPO DE BOMBEIROS MILITAR DE RORAIMA</strong>
-    <em>“Amazônia: patrimônio dos brasileiros”</em>
+    <em>“Amazônia: patrimônio dos brasileiros”</em><br>
     
     <span class="footer-autor">
         Elaborado por: 3º SGT QPCBM JHONATH
@@ -507,7 +507,7 @@
 
 <script>
     // *******************************************************************
-    // 1. CONFIGURAÇÃO FIREBASE (COPIADA DA SUA RESPOSTA)
+    // 1. CONFIGURAÇÃO FIREBASE
     // *******************************************************************
     const firebaseConfig = {
         apiKey: "AIzaSyCB0PH0UgghgsvH0BgPkG4AkKON6xSQ9mc",
@@ -540,7 +540,6 @@
             
             dadosConferencia = doc.data().list;
             
-            // Chama a função para renderizar a interface com os novos dados
             renderizarConferencia();
             
             document.getElementById('loading-message').style.display = 'none'; 
@@ -766,7 +765,7 @@
     }
 
     // *******************************************************************
-    // 4. LÓGICA DE CONFERÊNCIA (Funções de controle mantidas)
+    // 4. LÓGICA DE CONFERÊNCIA (Funções de controle)
     // *******************************************************************
     
     // Função utilitária para ler parâmetros da URL
@@ -777,7 +776,7 @@
         return results === null ? '' : decodeURIComponent(results[1].replace(/\+/g, ' '));
     }
     
-    // Dados do militar
+    // Dados do militar (preenchidos via URL ou padrão)
     const userInfo = {
         postoGraduacao: getUrlParameter('posto_grad') || "CAP",
         quadro: getUrlParameter('quadro_mil') || "QOCBM", 
@@ -1089,46 +1088,73 @@
         }
     }
     
+    // CORREÇÃO 2: Adiciona verificação de visibilidade para evitar scroll desnecessário
+    function isElementInViewport(el) {
+        const rect = el.getBoundingClientRect();
+        // Verifica se o elemento está, pelo menos parcialmente, dentro do viewport
+        // O valor 60 é uma margem superior para compensar o header fixo
+        return (
+            rect.top >= 60 && 
+            rect.left >= 0 &&
+            rect.bottom <= (window.innerHeight || document.documentElement.clientHeight) &&
+            rect.right <= (window.innerWidth || document.documentElement.clientWidth)
+        );
+    }
+    
     function focusNextItem(currentItemId) {
         const allItems = Array.from(document.querySelectorAll('.item-conferencia'));
-        const currentIndex = allItems.findIndex(item => item.dataset.id === currentItemId);
+        
+        // Se o currentItemId for de um tombamento (ex: "ITEM_X-TOMB_Y"), encontramos o item principal.
+        let baseItemId = currentItemId.split('-')[0];
 
-        for (let i = currentIndex + 1; i < allItems.length; i++) {
-            const nextItem = allItems[i];
-            const nextItemId = nextItem.dataset.id;
-            const itemData = window.itemStatus[nextItemId];
+        // Encontra o item que acabou de ser marcado (ou seu item pai no caso de tombamento)
+        const currentIndex = allItems.findIndex(item => item.dataset.id === baseItemId);
 
-            // Item ÚNICO: Se pendente, foca nele. Se C/A pendente, foca no textarea.
-            if (nextItem.dataset.type === 'single') {
-                 if (!itemData || itemData.status === 'PENDING') {
-                      nextItem.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                      return;
-                 }
-                 if (itemData.status === 'PENDING_CA') {
-                      nextItem.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                      nextItem.querySelector('textarea').focus();
-                      return;
-                 }
-            } 
+        // Percorre a lista a partir do item atual (ou do item pai)
+        for (let i = currentIndex; i < allItems.length; i++) { 
+            const currentItem = allItems[i];
+            const currentId = currentItem.dataset.id;
             
-            // Item MULTI: Se houver tombamento pendente, foca nele.
-            if (nextItem.dataset.type === 'multi') {
-                const pendingTombamento = Array.from(nextItem.querySelectorAll('.tombamento-container')).find(tomb => {
-                    const uniqueId = `${nextItemId}-${tomb.dataset.tomb}`;
+            // --- 1. Lógica para Itens Únicos ---
+            if (currentItem.dataset.type === 'single') {
+                const itemData = window.itemStatus[currentId];
+                
+                if (!itemData || itemData.status === 'PENDING' || itemData.status === 'PENDING_CA') {
+                    // Se o item único estiver pendente ou C/A pendente, foca.
+                    if (!isElementInViewport(currentItem)) {
+                         currentItem.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    }
+                    if (itemData && itemData.status === 'PENDING_CA') {
+                         currentItem.querySelector('textarea').focus();
+                    }
+                    // Se estiver pendente, para a busca para focar nele.
+                    if (!itemData || itemData.status === 'PENDING' || itemData.status === 'PENDING_CA') return; 
+                }
+            }
+            
+            // --- 2. Lógica para Itens com Múltiplos Tombamentos ---
+            if (currentItem.dataset.type === 'multi') {
+                const pendingTombamento = Array.from(currentItem.querySelectorAll('.tombamento-container')).find(tomb => {
+                    const uniqueId = `${currentId}-${tomb.dataset.tomb}`;
                     const status = window.itemStatus[uniqueId]?.status;
                     return status === 'PENDING' || status === 'PENDING_CA';
                 });
 
                 if (pendingTombamento) {
-                    pendingTombamento.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    // Foca no primeiro tombamento pendente encontrado.
+                    if (!isElementInViewport(pendingTombamento)) {
+                        pendingTombamento.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    }
                     
-                    if (window.itemStatus[`${nextItemId}-${pendingTombamento.dataset.tomb}`]?.status === 'PENDING_CA') {
+                    if (window.itemStatus[`${currentId}-${pendingTombamento.dataset.tomb}`]?.status === 'PENDING_CA') {
                         pendingTombamento.querySelector('textarea').focus();
                     }
-                    return;
+                    return; // Encontrou o próximo item para foco, para a busca.
                 }
             }
         }
+
+        // Se todos os itens estiverem conferidos, rola para o botão finalizar.
         document.getElementById('btn-finalizar').scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
 
