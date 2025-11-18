@@ -195,6 +195,7 @@
             margin: 10px;
             background-color: #fafafa;
             transition: border-left-color 0.3s ease, background-color 0.3s ease;
+            position: relative; /* Necessário para o ícone de status absolute */
         }
 
         .item-conferencia.status-ok { border-left-color: #1b8a3e; background-color: #f0fff0; }
@@ -205,7 +206,7 @@
             justify-content: space-between;
             align-items: flex-start; /* Alinhamento superior */
             margin-bottom: 5px;
-            /* flex-wrap: wrap; */ /* Removido para garantir que tudo fique na linha */
+            /* Retiramos o flex-wrap para garantir que a linha não quebre se o nome do item for grande */
         }
 
         /* CLASSE PADRÃO PARA TODOS OS NOMES DE ITEM PRINCIPAL */
@@ -213,13 +214,17 @@
             font-weight: bold;
             color: #333;
             flex-grow: 1;
-            flex-shrink: 1; /* Permite que o texto encolha */
-            margin-right: 10px; /* Mantém um pequeno espaço entre nome e QTD */
+            flex-shrink: 1; 
+            margin-left: 35px; /* Compensa o Status Icon (18px icon + 10px margin-right + 7px padding) */
+            margin-right: 5px; /* Pequena margem entre label e QTD */
             text-align: left;
             font-size: 0.95em;
+            overflow: hidden; /* Evita que o nome do item force a linha se for muito longo */
+            text-overflow: ellipsis; 
+            white-space: nowrap; /* Tenta manter o nome na linha, truncando se necessário */
         }
         
-        /* CORREÇÃO CHAVE: Força o alinhamento à direita e garante que não quebre a linha */
+        /* CORREÇÃO CHAVE: Alinhamento à direita e rótulo "QTD:" */
         .item-quantidade {
             font-size: 0.95em;
             color: #800020;
@@ -229,6 +234,9 @@
         }
         
         .status-icon {
+            position: absolute; /* Tira o ícone do fluxo do Flexbox */
+            left: 10px; /* Alinha com a borda esquerda do item */
+            top: 10px; /* Alinha com o topo do item */
             font-weight: bold;
             font-size: 0; 
             padding: 0; 
@@ -239,7 +247,7 @@
             color: white;
             min-width: 18px;
             text-align: center;
-            margin-right: 10px;
+            /* margin-right: 10px; */ /* Removida do ícone para evitar conflito de layout */
             background-color: transparent;
             border: 1px dashed #aaa;
         }
