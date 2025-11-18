@@ -35,7 +35,6 @@
             align-items: center;
             padding: 0 15px;
             box-sizing: border-box;
-            gap: 10px;
         }
 
         .header-icon {
@@ -205,37 +204,37 @@
             justify-content: space-between;
             align-items: flex-start; /* Alinhamento superior */
             margin-bottom: 5px;
-            flex-wrap: wrap; /* CRUCIAL: Permite quebra de linha para empilhamento */
+            flex-wrap: wrap;
         }
 
-        /* NOVO CONTAINER para Nome e Quantidade */
+        /* NOVO CONTAINER ENVOLVENDO NOME E QUANTIDADE (Para fins de agrupamento e quebra) */
         .item-details {
-            display: flex;
-            flex-direction: column; /* Empilha os elementos */
-            flex-grow: 1; /* Ocupa o espaço restante */
-            text-align: left;
-            /* Removendo a margem do container principal de detalhes para que o padding no item-label funcione */
+            /* Ele só existe para agrupar e garantir que ele ocupe o espaço restante */
+            flex-grow: 1; 
+            display: flex; /* Internamente, flex para quebrar em coluna */
+            flex-direction: column; /* FORÇA O EMPILHAMENTO */
+            margin-right: 10px; /* Mantém o espaço à direita do nome */
+            /* A div item-header já é flex, então o ícone e o .item-details ficam lado a lado */
         }
-
+        
         /* CLASSE PADRÃO PARA TODOS OS NOMES DE ITEM PRINCIPAL */
         .item-label { 
             font-weight: bold;
             color: #333;
-            /* flex-grow: 1; Removido, está no .item-details */
-            /* margin-right: 10px; Removido, agora está encapsulado no .item-details */
+            /* flex-grow: 1; Removido, .item-details já controla */
+            /* margin-right: 10px; Removido, .item-details já controla */
             text-align: left;
             font-size: 0.95em;
-             width: 100%; /* Força o label a ocupar a linha inteira */
-             margin-bottom: 0; /* Ajuste para espaçamento da QTD ser controlado abaixo */
+             width: 100%; /* Permite que o label ocupe toda a largura do .item-details */
         }
         
         .item-quantidade {
             font-size: 0.9em;
             color: #800020;
             font-weight: bold;
-            /* flex-shrink: 0; Removido */
-             width: 100%; /* Ocupa a largura do pai */
-             margin-top: 2px; /* Adiciona espaço vertical */
+            /* flex-shrink: 0; Removido, pois o pai é column */
+             width: 100%; /* Garante que a quantidade ocupe a largura total */
+             margin-top: 2px; /* Espaçamento entre nome e QTD */
              text-align: left; /* Garante alinhamento esquerdo */
         }
         
@@ -653,7 +652,7 @@
                         <div class="item-conferencia item-has-tombamentos ${itemStatusData.class}" data-type="multi" data-total-tombamentos="${item.tombamentos.length}" data-status="${itemStatusData.status}" data-id="${item.id}">
                             <div class="item-header">
                                 <span class="status-icon ${itemStatusData.status === 'ok' ? 'ok' : itemStatusData.status === 'alert' ? 'alert' : ''}"></span>
-                                <div class="item-details">
+                                 <div class="item-details">
                                     <span class="item-label">${item.nome}</span> 
                                     <span class="item-quantidade">Quantidade: ${item.quantidadeEsperada}</span>
                                  </div>
@@ -671,7 +670,7 @@
                         <div class="item-conferencia ${status === 'ok' ? 'status-ok' : status === 'C/A' ? 'status-alert' : ''}" data-type="single" data-status="${status}" data-id="${item.id}">
                             <div class="item-header">
                                 <span class="status-icon ${status === 'ok' ? 'ok' : status === 'C/A' ? 'alert' : ''}"></span>
-                                <div class="item-details">
+                                 <div class="item-details">
                                      <span class="item-label">${item.nome}</span>
                                      <span class="item-quantidade">Quantidade: ${item.quantidadeEsperada}</span>
                                  </div>
@@ -1068,6 +1067,7 @@
              // OBRIGATÓRIO: Se status for ALERT, a observação deve ser salva
             alert("A descrição da alteração é muito curta. Por favor, detalhe.");
             observacaoTextarea.focus();
+            return;
         } else if (item.dataset.status === 'PENDING_CA' && observacao.length < 5) {
              // CRÍTICO: Não permite salvar se for PENDING_CA e observação for vazia
              alert("A descrição da alteração é muito curta. Por favor, detalhe.");
