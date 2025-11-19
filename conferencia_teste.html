@@ -1269,6 +1269,7 @@
         const local = document.getElementById('local-posto-info').innerText;
         
         const PDF_MARGIN_X = 14;
+        const PAGE_WIDTH = doc.internal.pageSize.width;
         const RED_COLOR = '#D90F23';
         const MAROON_COLOR = '#800020';
         const GREEN_COLOR = '#1B8A3E';
@@ -1336,7 +1337,6 @@
 
         // --- 2. CABEÇALHO DO PDF (com base nas especificações e ajustes) ---
         
-        const PAGE_WIDTH = doc.internal.pageSize.width;
         const HEADER_Y = 10;
         const LOGO_SIZE = 15;
         const CENTER_X = PAGE_WIDTH / 2;
@@ -1344,22 +1344,21 @@
         doc.setFontSize(10);
         doc.setTextColor(51); 
 
-        // Tenta buscar as imagens para o PDF (roraima.png e logo_sigma.png)
-        // Como o roraima.png não está disponível, usaremos o cbmrr.png (fallback) e logo_sigma.png (existente no HTML).
-        const cbmrrLogo = document.querySelector('.header-icon');
-        const sigmaLogo = document.querySelector('.logo');
-        
-        const logoDraw = (logoEl, x) => {
+        // Função para desenhar logo
+        const logoDraw = (logoId, x) => {
+            const logoEl = document.getElementById(logoId) || document.querySelector(`img[src*="${logoId}"]`);
             if (logoEl) {
                 try {
+                    // Tenta criar o canvas para obter o base64 da imagem (requer que a imagem esteja na mesma origem)
                     const canvas = document.createElement('canvas');
-                    canvas.width = logoEl.naturalWidth;
-                    canvas.height = logoEl.naturalHeight;
+                    canvas.width = 40; // Usando tamanho fixo para renderização do canvas
+                    canvas.height = 40;
                     const ctx = canvas.getContext('2d');
-                    ctx.drawImage(logoEl, 0, 0, logoEl.naturalWidth, logoEl.naturalHeight);
+                    ctx.drawImage(logoEl, 0, 0, 40, 40);
                     const logoData = canvas.toDataURL('image/png');
                     doc.addImage(logoData, 'PNG', x, HEADER_Y, LOGO_SIZE, LOGO_SIZE);
                 } catch (e) {
+                    // Fallback visual se a imagem não puder ser lida (erro CORS, etc.)
                     doc.rect(x, HEADER_Y, LOGO_SIZE, LOGO_SIZE);
                     doc.text('LOGO', x + 4, HEADER_Y + 7);
                 }
@@ -1367,9 +1366,12 @@
         };
 
         // Logo 1 (CBM-RR / roraima.png) - Esquerda
-        logoDraw(cbmrrLogo, PDF_MARGIN_X);
+        // Usamos 'cbmrr.png' como identificador, que está no elemento .header-icon
+        logoDraw('cbmrr.png', PDF_MARGIN_X); 
+        
         // Logo 2 (SIGMA) - Direita
-        logoDraw(sigmaLogo, PAGE_WIDTH - PDF_MARGIN_X - LOGO_SIZE);
+        // Usamos 'logo_sigma.png' como identificador, que está no elemento .logo
+        logoDraw('logo_sigma.png', PAGE_WIDTH - PDF_MARGIN_X - LOGO_SIZE);
 
 
         // Textos Centralizados
@@ -1398,36 +1400,28 @@
         doc.setFontSize(10);
         doc.setFont('helvetica', 'normal');
         
-        // Função utilitária para imprimir com negrito na label
-        const printInfo = (label, value) => {
-            doc.setFont('helvetica', 'bold');
-            doc.text(label, PDF_MARGIN_X, currentY);
-            doc.setFont('helvetica', 'normal');
-            
-            const labelWidth = doc.getStringUnitWidth(label) * doc.internal.getFontSize();
-            const textOffset = PDF_MARGIN_X + (labelWidth * 0.35); // Ajuste de espaçamento
-
-            doc.text(value, PDF_MARGIN_X + 40, currentY); // Ajuste para alinhar o valor
-            currentY += 5;
-        };
+        // Espaçamento horizontal fixo para os valores
+        const VALUE_OFFSET = PDF_MARGIN_X + 45; 
         
-        // Informações
-        doc.setFont('helvetica', 'bold'); // Configura negrito para as labels
-        doc.text('Conferência Concluída em:', PDF_MARGIN_X, currentY);
+        // Local
+        doc.setFont('helvetica', 'bold'); // Configura negrito para a label
+        doc.text('Local:', PDF_MARGIN_X, currentY); // <-- TEXTO ALTERADO AQUI
         doc.setFont('helvetica', 'normal'); // Retorna normal para o valor
-        doc.text(local, PDF_MARGIN_X + 45, currentY);
+        doc.text(local, VALUE_OFFSET, currentY);
         currentY += 5;
         
+        // Conferente
         doc.setFont('helvetica', 'bold');
         doc.text('Conferente:', PDF_MARGIN_X, currentY);
         doc.setFont('helvetica', 'normal');
-        doc.text(militarCompleto, PDF_MARGIN_X + 45, currentY);
+        doc.text(militarCompleto, VALUE_OFFSET, currentY);
         currentY += 5;
         
+        // Data/Hora
         doc.setFont('helvetica', 'bold');
         doc.text('Data/Hora:', PDF_MARGIN_X, currentY);
         doc.setFont('helvetica', 'normal');
-        doc.text(dataHora, PDF_MARGIN_X + 45, currentY);
+        doc.text(dataHora, VALUE_OFFSET, currentY);
         currentY += 10;
 
 
