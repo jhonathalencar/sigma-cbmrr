@@ -565,7 +565,7 @@
     // *******************************************************************
 
     async function carregarDadosRemotos() {
-        // Inicialização do Firebase
+        // Inicialização do Firebase movida para dentro desta função ASYNC
         if (!db) {
             try {
                 if (!firebase.apps.length) {
@@ -1181,7 +1181,7 @@
                 const itemData = window.itemStatus[currentId];
                 
                 if (!itemData || itemData.status === 'PENDING' || itemData.status === 'PENDING_CA') {
-                    // *** ROLAGEM REMOVIDA PARA EVITAR O ARRASTO/SALTO ***
+                    // *** ROLAGEM REMOVIDA ***
                     
                     if (itemData && itemData.status === 'PENDING_CA') {
                          currentItem.querySelector('textarea').focus();
@@ -1199,7 +1199,7 @@
                 });
 
                 if (pendingTombamento) {
-                    // *** ROLAGEM REMOVIDA PARA EVITAR O ARRASTO/SALTO ***
+                    // *** ROLAGEM REMOVIDA ***
                     
                     if (window.itemStatus[`${currentId}-${pendingTombamento.dataset.tomb}`]?.status === 'PENDING_CA') {
                         pendingTombamento.querySelector('textarea').focus();
@@ -1255,7 +1255,7 @@
 
         // --- 1. DECLARAÇÃO DE CONSTANTES E PREPARAÇÃO DE DADOS ---
         try {
-            // CORREÇÃO 3: Variáveis de cor declaradas no topo do bloco try (resolvendo ReferenceError)
+            // Variáveis de cor declaradas no topo do bloco try (resolvendo ReferenceError)
             const RED_COLOR = '#D90F23';
             const MAROON_COLOR = '#800020';
             const GREEN_COLOR = '#1B8A3E';
@@ -1379,12 +1379,9 @@
                         canvas.height = 40 * SCALE_FACTOR;
                         const ctx = canvas.getContext('2d');
                         
-                        // Desenha a imagem no canvas com resolução aumentada
                         ctx.drawImage(logoEl, 0, 0, canvas.width, canvas.height);
-                        // A compressão do PNG Base64 ocorre aqui
                         const logoData = canvas.toDataURL('image/png');
                         
-                        // Adiciona a imagem, escalando de volta para o tamanho final (15mm)
                         doc.addImage(logoData, 'PNG', x, HEADER_Y, LOGO_SIZE, LOGO_SIZE);
 
                     } catch (e) {
