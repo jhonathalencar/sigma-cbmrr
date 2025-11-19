@@ -138,7 +138,7 @@
          
         /* --- ESTILOS PARA SETORES (COLLAPSIBLE) --- */
         
-        /* NOVO: Regra de compensação para cabeçalhos fixos */
+        /* CORREÇÃO CRÍTICA: Regra de compensação para cabeçalhos fixos */
         .setor {
             scroll-margin-top: 60px; /* Compensa 50px do header + 10px de margem */
         }
@@ -1223,13 +1223,18 @@
             // 2. EXPANDI o próximo setor
             const nextSetorEl = document.querySelector(`.setor[data-id="${nextSetorId}"]`);
             if (nextSetorEl) {
-               // Expande o setor
-               toggleSetor(nextSetorEl.querySelector('.setor-header')); 
+               const nextContent = nextSetorEl.querySelector('.setor-content');
+               
+               // Expande o setor (alternativa de expansão para forçar renderização)
+               // Se o setor não estiver expandido, o toggleSetor expande e aplica o '▼'
+               if (!nextContent.classList.contains('expanded')) {
+                   toggleSetor(nextSetorEl.querySelector('.setor-header')); 
+               }
                
                // === CORREÇÃO FINAL: Usa scroll-margin-top do CSS para compensar o header ===
-               // Rola instantaneamente (behavior: 'auto') para o topo.
-               // O CSS .setor { scroll-margin-top: 60px; } fará a compensação automaticamente.
-               nextSetorEl.scrollIntoView({ behavior: 'auto', block: 'start' });
+               // Rola com animação suave para o topo do elemento.
+               // O CSS .setor { scroll-margin-top: 60px; } fará a compensação da barra fixa.
+               nextSetorEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
                // === FIM DA CORREÇÃO FINAL ===
             }
         } else {
