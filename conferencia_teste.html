@@ -36,7 +36,6 @@
             align-items: center;
             padding: 0 15px;
             box-sizing: border-box;
-            gap: 10px;
         }
 
         .header-icon {
@@ -1218,17 +1217,22 @@
             // 2. EXPANDI o próximo setor
             const nextSetorEl = document.querySelector(`.setor[data-id="${nextSetorId}"]`);
             if (nextSetorEl) {
+               // Expande o setor
                toggleSetor(nextSetorEl.querySelector('.setor-header')); 
                
-               // === INÍCIO DA CORREÇÃO DE ROLAGEM ===
-               const headerHeight = 65; // Altura do cabeçalho fixo (50px) + margem (15px)
+               // === INÍCIO DA CORREÇÃO ROBUSTA DE ROLAGEM ===
+               // Altura do cabeçalho fixo + margem de conforto (total 60px)
+               const fixedHeaderOffset = 60; 
                
-               // Rola o elemento para o topo da viewport
-               nextSetorEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
-               
-               // Aplica a compensação de rolagem para deixar o setor abaixo do cabeçalho fixo
-               window.scrollBy(0, -headerHeight); 
-               // === FIM DA CORREÇÃO DE ROLAGEM ===
+               // Calcula a posição do topo do novo setor em relação ao topo da página
+               const setorTopPosition = nextSetorEl.offsetTop;
+
+               // Rola a janela para a posição do setor menos o offset do cabeçalho
+               window.scrollTo({
+                   top: setorTopPosition - fixedHeaderOffset,
+                   behavior: 'smooth'
+               });
+               // === FIM DA CORREÇÃO ROBUSTA DE ROLAGEM ===
             }
         } else {
              // Se for o último setor
