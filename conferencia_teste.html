@@ -23,6 +23,22 @@
             box-sizing: border-box;
         }
 
+        /* --- ELEMENTO PARA ROUBO DE FOCO --- */
+        #focus-stealer {
+            /* Posição fixa logo abaixo do header */
+            position: fixed;
+            top: 50px; /* Logo abaixo do header (50px) */
+            left: 0;
+            width: 1px;
+            height: 1px;
+            overflow: hidden;
+            opacity: 0;
+            z-index: 99; 
+            /* Permite que receba foco via JS/Tab */
+            /* CRÍTICO: Usar tabindex=0 para que possa receber foco */
+            tabindex: 0; 
+        }
+
         .main-header {
             position: fixed;
             top: 0;
@@ -504,6 +520,9 @@
         <span class="text-white">CBM</span><span class="text-red">RR</span>
     </div>
 </header>
+
+<div id="focus-stealer"></div>
+
 <div class="container">
      
     <img id="logo-sigma" src="logo_sigma.png" alt="Logo do Sistema SIGMA" class="logo" 
@@ -672,8 +691,8 @@
                                 <div class="tombamento-controls">
                                     <span>Tomb.: ${tomb.tomb}</span>
                                     <div class="tombamento-options">
-                                        <button class="action-button sa-ok ${status === 'S/A' ? 'active' : ''}" onclick="setTombamentoStatus(this, 'ok', event)">S/A</button>
-                                        <button class="action-button ca-alert ${status === 'C/A' ? 'active' : ''}" onclick="setTombamentoStatus(this, 'alert', event)">C/A</button>
+                                        <button class="action-button sa-ok ${status === 'S/A' ? 'active' : ''}" onclick="setTombamentoStatus(this, 'ok', event)" tabindex="-1">S/A</button>
+                                        <button class="action-button ca-alert ${status === 'C/A' ? 'active' : ''}" onclick="setTombamentoStatus(this, 'alert', event)" tabindex="-1">C/A</button>
                                     </div>
                                 </div>
                                 <p class="tombamento-descricao-salva" data-text-id="${item.id}-${tomb.tomb}" style="${status === 'C/A' && obs ? 'display: block;' : 'display: none;'}">
@@ -718,8 +737,8 @@
                                 <span class="item-quantidade">QTD: ${item.quantidadeEsperada}</span>
                             </div>
                             <div class="item-options">
-                                <button class="action-button sa-ok ${status === 'S/A' ? 'active' : ''}" onclick="setItemStatus(this, 'ok', event)">S/A</button>
-                                <button class="action-button ca-alert ${status === 'C/A' ? 'active' : ''}" onclick="setItemStatus(this, 'alert', event)">C/A</button>
+                                <button class="action-button sa-ok ${status === 'S/A' ? 'active' : ''}" onclick="setItemStatus(this, 'ok', event)" tabindex="-1">S/A</button>
+                                <button class="action-button ca-alert ${status === 'C/A' ? 'active' : ''}" onclick="setItemStatus(this, 'alert', event)" tabindex="-1">C/A</button>
                             </div>
                             <p class="descricao-salva" data-text-id="${item.id}" style="${status === 'C/A' && obs ? 'display: block;' : 'display: none;'}">
                                 <span class="obs-titulo">Alteração encontrada:</span> 
