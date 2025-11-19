@@ -526,7 +526,7 @@
      
     <div id="main-content" style="display: none;">
          
-        <button id="btn-finalizar" disabled>FINALIZar CONFERÊNCIA (0/X ITENS)</button>
+        <button id="btn-finalizar" disabled>FINALIZAR CONFERÊNCIA (0/X ITENS)</button>
     </div>
 
 </div>
@@ -1230,18 +1230,25 @@
                    toggleSetor(nextSetorEl.querySelector('.setor-header')); 
                }
 
-               // === CORREÇÃO DEFINITIVA: Estabilizar o layout antes de rolar ===
+               // === CORREÇÃO FINAL: Focar a rolagem no primeiro item visível do novo setor ===
                window.requestAnimationFrame(() => {
                    
-                   // Força o navegador a recalcular o layout e altura atual do elemento.
-                   // Isso é crucial quando transições CSS estão ativas.
+                   // 1. Força o navegador a recalcular o layout e altura atual do elemento.
                    nextSetorEl.offsetHeight; 
+
+                   // 2. Localiza o primeiro item dentro do novo setor
+                   const firstItem = nextSetorEl.querySelector('.item-conferencia');
                    
-                   // Rola com animação suave para o topo do elemento.
-                   // O CSS .setor { scroll-margin-top: 60px; } fará a compensação da barra fixa.
-                   nextSetorEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                   if (firstItem) {
+                       // Rola suavemente para o topo do primeiro item do novo setor.
+                       // O CSS .setor { scroll-margin-top: 60px; } compensa o cabeçalho.
+                       firstItem.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                   } else {
+                       // Se não houver itens, rola para o cabeçalho do setor
+                       nextSetorEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                   }
                });
-               // === FIM DA CORREÇÃO DEFINITIVA ===
+               // === FIM DA CORREÇÃO FINAL ===
             }
         } else {
              // Se for o último setor, rola para o botão finalizar.
