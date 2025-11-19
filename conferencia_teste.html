@@ -211,6 +211,7 @@
          
         .item-header {
             display: flex;
+            flex-direction: column; /* NOVO: FORÇA NOME E QTD A SE EMPILHAREM */
             justify-content: space-between;
             align-items: flex-start; /* Alinhamento superior */
             margin-bottom: 5px;
@@ -225,6 +226,7 @@
             margin-right: 10px;
             text-align: left;
             font-size: 0.95em;
+            width: 100%; /* NOVO: Ocupa toda a linha para forçar a QTD para baixo */
         }
          
         .item-quantidade {
@@ -232,6 +234,7 @@
             color: #800020;
             font-weight: bold;
             flex-shrink: 0;
+            margin-top: 5px; /* NOVO: Espaçamento entre o nome e a QTD */
         }
          
         .status-icon {
@@ -672,7 +675,7 @@
                             <div class="item-header">
                                 <span class="status-icon ${itemStatusData.status === 'ok' ? 'ok' : itemStatusData.status === 'alert' ? 'alert' : ''}"></span>
                                 <span class="item-label">${item.nome}</span> 
-                                <span class="item-quantidade">Quantidade: ${item.quantidadeEsperada}</span>
+                                <span class="item-quantidade">QTD: ${item.quantidadeEsperada}</span>
                             </div>
                             ${htmlTombamento}
                         </div>
@@ -688,7 +691,7 @@
                             <div class="item-header">
                                 <span class="status-icon ${status === 'ok' ? 'ok' : status === 'C/A' ? 'alert' : ''}"></span>
                                 <span class="item-label">${item.nome}</span>
-                                <span class="item-quantidade">Quantidade: ${item.quantidadeEsperada}</span>
+                                <span class="item-quantidade">QTD: ${item.quantidadeEsperada}</span>
                             </div>
                             <div class="item-options">
                                 <button class="action-button sa-ok ${status === 'S/A' ? 'active' : ''}" onclick="setItemStatus(this, 'ok')">S/A</button>
