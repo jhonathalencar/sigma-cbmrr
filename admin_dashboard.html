@@ -1,19 +1,34 @@
+Sim, é perfeitamente possível. Vamos transformar o seu `admin_dashboard.html` em uma **Single Page Application (SPA)** simples.
+
+A ideia é:
+
+1.  Manter o menu lateral fixo.
+2.  Criar duas "divs" principais na área de conteúdo: uma para o **Dashboard (C/A)** e outra para o **Gerenciador (Permanência)**.
+3.  Usar JavaScript para alternar qual div está visível sem recarregar a página.
+
+Aqui está o código completo unificado. Eu integrei todo o CSS e JS do arquivo `admin.html` dentro do `admin_dashboard.html`, resolvendo conflitos de estilo.
+
+### `admin_dashboard.html` (Atualizado com Submenu Permanência)
+
+```html
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="icon" type="image/png" href="logo_sigma.png" onerror="this.onerror=null; this.src='https://placehold.co/16x16/800020/ffffff?text=S'">
-    <title>Dashboard | SIGMA - Gestão de Conferências</title>
+    <title>SIGMA - Painel Administrativo</title>
+    
+    <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+
     <style>
         /* =========================================
-           1. ESTILOS DO INDEX.HTML (CABEÇALHO E RODAPÉ)
+           1. ESTILOS GERAIS DO LAYOUT (DASHBOARD)
            ========================================= */
-        
-        /* BASE & RESET */
         body {
             font-family: Arial, sans-serif;
-            background-color: #f4f4f9; /* Fundo geral levemente cinza */
+            background-color: #f4f4f9;
             color: #333;
             margin: 0;
             display: flex;
@@ -21,16 +36,17 @@
             padding-top: 50px; 
             padding-bottom: 60px; 
             box-sizing: border-box;
+            overflow-x: hidden; /* Evita rolagem lateral indesejada */
         }
 
-        /* CABEÇALHO COM TARJA VINHO (MANTIDO ESCURO) */
+        /* CABEÇALHO */
         .main-header {
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 50px; 
-            background-color: #800020; /* Cor Vinho Principal */
+            background-color: #800020;
             box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
             z-index: 100; 
             display: flex;
@@ -39,31 +55,18 @@
             box-sizing: border-box;
             gap: 10px;
         }
-        
-        .header-icon {
-            height: 40px;
-            width: auto;
-        }
-
-        .header-title-desktop, .header-title-mobile {
-            font-weight: bold;
-            font-size: 1.1em;
-            line-height: 1.2;
-        }
-        
+        .header-icon { height: 40px; width: auto; }
+        .header-title-desktop, .header-title-mobile { font-weight: bold; font-size: 1.1em; line-height: 1.2; }
         .text-white { color: white; }
         .text-red { color: #FF3B3B; }
-
-        /* Responsividade do Título do Header */
         .header-title-desktop { display: none; }
         .header-title-mobile { display: block; }
-        
         @media (min-width: 768px) { 
             .header-title-desktop { display: block; font-size: 1.2em; }
             .header-title-mobile { display: none; }
         }
 
-        /* RODAPÉ FIXO */
+        /* RODAPÉ */
         .footer-central {
             position: fixed;
             bottom: 0;
@@ -78,33 +81,20 @@
             z-index: 100; 
             box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.05); 
         }
-        
-        .footer-central strong, .footer-autor {
-             display: block; 
-             width: 100%;
-             text-align: center;
-        }
-        
+        .footer-central strong, .footer-autor { display: block; width: 100%; text-align: center; }
         .footer-central strong { font-weight: bold; }
-
-        .footer-autor {
-            margin-top: 10px; 
-            color: #888;
-            font-size: 0.9em; 
-        }
+        .footer-autor { margin-top: 10px; color: #888; font-size: 0.9em; }
 
         /* =========================================
-           2. ESTILOS DO DASHBOARD (ADAPTADOS)
+           2. MENU LATERAL (SIDEBAR)
            ========================================= */
-
-        /* --- MENU LATERAL (Sidebar) - AGORA CLARO --- */
         .sidebar {
             width: 250px;
-            background-color: #ffffff; /* Fundo Branco */
-            color: #333; /* Texto Escuro */
+            background-color: #ffffff;
+            color: #333;
             padding-top: 20px;
-            box-shadow: 2px 0 5px rgba(0, 0, 0, 0.05); /* Sombra mais suave */
-            border-right: 1px solid #e0e0e0; /* Linha separadora sutil */
+            box-shadow: 2px 0 5px rgba(0, 0, 0, 0.05);
+            border-right: 1px solid #e0e0e0;
             position: fixed;
             top: 50px; 
             left: 0;
@@ -118,48 +108,37 @@
         .sidebar-header {
             text-align: center;
             padding: 10px 0 20px 0;
-            border-bottom: 1px solid #eee; /* Divisor claro */
+            border-bottom: 1px solid #eee;
             margin-bottom: 10px;
         }
+        .sidebar-header img { width: 50px; height: auto; margin-bottom: 5px; }
+        .sidebar-header h2 { font-size: 1.1em; margin: 0; color: #800020; }
 
-        .sidebar-header img {
-            width: 50px;
-            height: auto;
-            margin-bottom: 5px;
-        }
-
-        .sidebar-header h2 {
-            font-size: 1.1em;
-            margin: 0;
-            color: #800020; /* Título Vinho para combinar com Header */
-        }
-
-        /* Links do Menu */
         .sidebar a {
             padding: 15px 20px;
             text-decoration: none;
             font-size: 1em;
-            color: #555; /* Cinza escuro */
+            color: #555;
             display: block;
             transition: all 0.3s ease;
-            border-left: 4px solid transparent; /* Prepara para o efeito active */
+            border-left: 4px solid transparent;
+            cursor: pointer;
         }
+        .sidebar a:hover { background-color: #fff5f5; color: #800020; }
+        .sidebar a.active { background-color: #ffecec; color: #800020; font-weight: bold; border-left: 4px solid #d90f23; }
 
-        /* Hover (Mouse em cima) */
-        .sidebar a:hover {
-            background-color: #fff5f5; /* Fundo avermelhado bem claro */
-            color: #800020; /* Texto Vinho */
-        }
-
-        /* Item Ativo (Selecionado) */
-        .sidebar a.active {
-            background-color: #ffecec; /* Fundo destaque claro */
-            color: #800020; /* Texto Vinho */
+        /* Submenu Label */
+        .menu-label {
+            padding: 15px 20px 5px;
+            font-size: 0.85em;
+            color: #999;
+            text-transform: uppercase;
             font-weight: bold;
-            border-left: 4px solid #d90f23; /* Tarja vermelha na esquerda */
         }
 
-        /* --- CONTEÚDO PRINCIPAL --- */
+        /* =========================================
+           3. ÁREA DE CONTEÚDO PRINCIPAL
+           ========================================= */
         .content {
             margin-left: 250px; 
             flex-grow: 1;
@@ -169,21 +148,13 @@
             padding-bottom: 80px; 
         }
 
-        h1 {
-            color: #d90f23;
-            font-size: 1.8em;
-            margin-top: 0;
-            border-bottom: 2px solid #eee;
-            padding-bottom: 10px;
-        }
-        
-        #loading-message {
-             text-align: center;
-             font-size: 1.2em;
-             margin-top: 50px;
-        }
+        /* Ocultar/Mostrar Views */
+        .view-section { display: none; }
+        .view-section.active-view { display: block; }
 
-        /* --- ESTATÍSTICAS E SUMÁRIO --- */
+        /* =========================================
+           4. ESTILOS ESPECÍFICOS DO DASHBOARD (C/A)
+           ========================================= */
         .summary-box {
             background-color: white;
             padding: 20px;
@@ -191,22 +162,10 @@
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
             margin-bottom: 20px;
             display: inline-block;
-            border-left: 4px solid #1b8a3e; /* Detalhe verde */
+            border-left: 4px solid #1b8a3e;
         }
-
-        .summary-box h3 {
-            margin-top: 0;
-            font-size: 1.1em;
-            color: #333;
-        }
-
-        .summary-value {
-            font-size: 2.5em;
-            font-weight: bold;
-            color: #d90f23;
-        }
+        .summary-value { font-size: 2.5em; font-weight: bold; color: #d90f23; }
         
-        /* --- TABELA DE DETALHES C/A --- */
         .ca-table-container {
             overflow-x: auto;
             background-color: white;
@@ -214,100 +173,96 @@
             border-radius: 8px;
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
         }
+        .ca-table { width: 100%; border-collapse: collapse; font-size: 0.9em; }
+        .ca-table th, .ca-table td { padding: 12px 15px; text-align: left; border-bottom: 1px solid #ddd; }
+        .ca-table th { background-color: #f8f8f8; color: #800020; font-weight: bold; text-transform: uppercase; }
 
-        .ca-table {
+        /* =========================================
+           5. ESTILOS ESPECÍFICOS DO GERENCIADOR (ADMIN.HTML)
+           ========================================= */
+        /* Ajuste do container interno do admin para não conflitar */
+        .admin-container {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
             width: 100%;
-            border-collapse: collapse;
-            font-size: 0.9em;
-        }
-
-        .ca-table th, .ca-table td {
-            padding: 12px 15px;
-            text-align: left;
-            border-bottom: 1px solid #ddd;
-        }
-
-        .ca-table th {
-            background-color: #f8f8f8;
-            color: #800020;
-            font-weight: bold;
-            text-transform: uppercase;
-        }
-
-        .ca-table tr:hover {
-            background-color: #fffafb;
+            max-width: 900px; /* Um pouco mais largo para o dashboard */
+            margin: 0 auto 20px auto;
+            box-sizing: border-box;
+            text-align: center;
         }
         
-        .ca-table td:nth-child(2) {
-            max-width: 300px;
-            white-space: normal;
+        .logo-admin { display: block; margin: 0 auto 15px auto; max-width: 80px; height: auto; }
+        h1.page-title { color: #d90f23; margin-bottom: 15px; font-size: 1.8em; border-bottom: 2px solid #e0e0e0; padding-bottom: 10px; text-align: center; }
+
+        /* Botões e Inputs do Admin */
+        .global-actions { display: flex; gap: 10px; margin-bottom: 20px; justify-content: flex-start; flex-wrap: wrap; }
+        .global-actions button, .btn-action { padding: 8px 15px; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; color: white; }
+        .btn-sync { background-color: #1b8a3e; }
+        .btn-admin-config { background-color: #6c757d; }
+        .btn-add { background-color: #800020; color: white; border: none; padding: 8px 15px; border-radius: 4px; cursor: pointer; }
+        
+        /* Lista de Setores */
+        .lista-setores { padding: 0; list-style: none; text-align: left; }
+        .setor-item { margin-bottom: 15px; border: 1px solid #800020; border-radius: 6px; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); background: #fff; }
+        
+        .setor-header-admin {
+            background-color: #800020;
+            color: white;
+            padding: 10px 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-weight: bold;
+            cursor: grab;
         }
+        
+        .setor-content-admin { transition: max-height 0.4s ease-out; overflow: hidden; max-height: 2000px; padding: 10px; }
+        .setor-content-admin.collapsed { max-height: 0; padding: 0 !important; }
 
-        /* --- RESPONSIVIDADE (Mobile) --- */
+        .item-conferencia-admin {
+            display: flex; justify-content: space-between; align-items: flex-start;
+            padding: 10px 0; border-bottom: 1px solid #eee; cursor: move;
+        }
+        
+        /* Formulários internos */
+        .add-setor-form, .add-item-form-setor { display: flex; gap: 5px; margin-bottom: 10px; }
+        .add-setor-form input, .add-item-form-setor input, .add-item-form-setor select { flex-grow: 1; padding: 8px; border: 1px solid #ccc; border-radius: 4px; }
+
+        /* Botões de ação pequenos */
+        .btn-remover { background-color: #d90f23; }
+        .btn-edit-alt { background-color: #7f8c8d; }
+        .item-actions-admin { display: flex; gap: 5px; }
+
+        /* Tombamento */
+        .tombamento-container-wrapper { margin-top: 5px; padding-left: 20px; background: #f9f9f9; border-left: 3px solid #ccc; }
+        .tombamento-list li { display: flex; justify-content: space-between; padding: 5px 0; border-bottom: 1px dotted #eee; }
+
+        /* MODAL */
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); display: none; align-items: center; justify-content: center; z-index: 2000; }
+        .modal-content { background: #fff; padding: 25px; border-radius: 12px; width: 90%; max-width: 450px; position: relative; text-align: left; }
+        .modal-content label { display: block; margin-top: 10px; font-weight: bold; }
+        .modal-content input, .modal-content select { width: 100%; padding: 10px; margin-top: 5px; box-sizing: border-box; }
+        .modal-buttons { display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px; }
+        .close-btn { position: absolute; top: 10px; right: 15px; background: none; border: none; font-size: 20px; cursor: pointer; color: #d90f23; }
+
+        /* RESPONSIVIDADE */
         @media (max-width: 768px) {
-            .sidebar {
-                width: 100%;
-                height: auto;
-                position: relative; 
-                top: 0; 
-                margin-top: 0; /* Remove margem extra */
-                padding-top: 0;
-                border-right: none;
-                border-bottom: 1px solid #ddd;
-            }
-            
-            .sidebar-header {
-                 display: none; 
-            }
-
-            .sidebar a {
-                padding: 12px;
-                text-align: center;
-                display: inline-block;
-                width: 50%;
-                box-sizing: border-box;
-                border-right: 1px solid #eee; /* Divisor entre botões no mobile */
-                border-left: none; /* Remove a borda lateral do active no mobile */
-                border-bottom: 3px solid transparent; /* Usa borda inferior no mobile */
-                float: left; 
-            }
-
-            .sidebar a.active {
-                border-left: none;
-                border-bottom: 3px solid #d90f23; /* Destaque embaixo no mobile */
-                background-color: #fff;
-            }
-             
-            .content {
-                margin-left: 0;
-                width: 100%;
-                padding-top: 15px;
-            }
-            
-            .summary-box {
-                 width: 100%;
-                 box-sizing: border-box;
-            }
-            
-            body {
-                flex-direction: column; 
-            }
+            .sidebar { width: 100%; height: auto; position: relative; top: 0; border-right: none; border-bottom: 1px solid #ddd; }
+            .sidebar a { display: inline-block; width: 50%; box-sizing: border-box; text-align: center; float: left; border-bottom: 3px solid transparent; }
+            .sidebar a.active { border-left: none; border-bottom: 3px solid #d90f23; }
+            .content { margin-left: 0; width: 100%; padding-top: 15px; }
+            .sidebar-header, .menu-label { display: none; }
         }
     </style>
 </head>
 <body>
 
     <header class="main-header">
-        <img src="cbmrr.png" alt="Ícone CBM-RR" class="header-icon" 
-             onerror="this.onerror=null; this.src='https://placehold.co/40x40/ffffff/800020/fff?text=CBM'">
-        
-        <div class="header-title-desktop">
-            <span class="text-white">CORPO DE BOMBEIROS MILITAR </span><span class="text-red">RORAIMA</span>
-        </div>
-        
-        <div class="header-title-mobile">
-            <span class="text-white">CBM</span><span class="text-red">RR</span>
-        </div>
+        <img src="cbmrr.png" alt="Ícone CBM-RR" class="header-icon" onerror="this.onerror=null; this.src='https://placehold.co/40x40/ffffff/800020/fff?text=CBM'">
+        <div class="header-title-desktop"><span class="text-white">CORPO DE BOMBEIROS MILITAR </span><span class="text-red">RORAIMA</span></div>
+        <div class="header-title-mobile"><span class="text-white">CBM</span><span class="text-red">RR</span></div>
     </header>
 
     <div class="sidebar">
@@ -315,59 +270,116 @@
             <img src="logo_sigma.png" alt="Logo SIGMA" onerror="this.onerror=null; this.src='https://placehold.co/50x50/ffffff/800020/fff?text=S'">
             <h2>SIGMA Admin</h2>
         </div>
-        <nav>
-            <a href="javascript:void(0)" class="active">Dashboard</a>
-            <a href="javascript:void(0)">Gerenciar</a>
-        </nav>
+        
+        <div class="menu-label">Principal</div>
+        <a onclick="switchView('dashboard')" id="link-dashboard" class="active">
+            <i class="fas fa-chart-line"></i> Dashboard C/A
+        </a>
+
+        <div class="menu-label">Gerenciamento</div>
+        <a onclick="switchView('permanencia')" id="link-permanencia">
+            <i class="fas fa-clipboard-list"></i> Permanência
+        </a>
     </div>
 
     <div class="content">
-        <h1>Dashboard - Não Conformidades (C/A)</h1>
-
-        <div class="summary-box">
-            <h3>Total de Itens C/A Registrados</h3>
-            <div id="total-ca-count" class="summary-value">...</div>
+        
+        <div id="view-dashboard" class="view-section active-view">
+            <h1>Dashboard - Não Conformidades (C/A)</h1>
+            <div class="summary-box">
+                <h3>Total de Itens C/A Registrados</h3>
+                <div id="total-ca-count" class="summary-value">...</div>
+            </div>
+            <div id="loading-message-dashboard">Conectando ao Firebase...</div>
+            <div class="ca-table-container" style="display: none;">
+                <h2>Detalhes das Alterações por Conferência</h2>
+                <table class="ca-table">
+                    <thead>
+                        <tr>
+                            <th>Material/Tombamento</th>
+                            <th>Alteração</th>
+                            <th>Local</th>
+                            <th>Conferente</th>
+                            <th>Data</th>
+                        </tr>
+                    </thead>
+                    <tbody id="ca-list-body"></tbody>
+                </table>
+            </div>
         </div>
 
-        <div id="loading-message">
-            Conectando ao Firebase e carregando dados...
+        <div id="view-permanencia" class="view-section">
+            <div class="admin-container">
+                <img src="logo_sigma.png" alt="Logo SIGMA" class="logo-admin" onerror="this.onerror=null; this.src='https://placehold.co/50x50/d90f23/ffffff?text=S'">
+                <h1 class="page-title">Permanência Bravo 🏢</h1>
+                
+                <p id="loading-message-admin">Carregando Lista Mestra...</p>
+
+                <div id="main-admin-content" style="display: none;">
+                    <div class="global-actions">
+                        <button class="btn-sync" onclick="salvarDados()">Salvar e Sincronizar</button>
+                        <button class="btn-admin-config" onclick="fazerBackupLocal()">Backup (JSON)</button>
+                        <input type="file" id="import-json" style="display: none;" onchange="importarBackupLocal(event)">
+                        <button class="btn-admin-config" onclick="document.getElementById('import-json').click()">Importar</button>
+                    </div>
+
+                    <div class="add-setor-form">
+                        <input type="text" id="input-setor-nome" placeholder="Nome do Novo Setor (Ex: BRAVO 5)">
+                        <button class="btn-add" onclick="adicionarSetor(document.getElementById('input-setor-nome').value)">+ Setor</button>
+                    </div>
+                    
+                    <ul id="lista-setores-container" class="lista-setores">
+                        </ul>
+                </div>
+            </div>
         </div>
 
-        <div class="ca-table-container" style="display: none;">
-            <h2>Detalhes das Alterações por Conferência</h2>
-            <table class="ca-table">
-                <thead>
-                    <tr>
-                        <th>Material/Tombamento</th>
-                        <th>Descrição da Alteração</th>
-                        <th>Local</th>
-                        <th>Conferente</th>
-                        <th>Data</th>
-                    </tr>
-                </thead>
-                <tbody id="ca-list-body">
-                </tbody>
-            </table>
-        </div>
     </div>
 
     <div class="footer-central">
         <strong>GOVERNO DE RORAIMA</strong>
         <strong>CORPO DE BOMBEIROS MILITAR DE RORAIMA</strong>
         <em>“Amazônia: patrimônio dos brasileiros”</em><br>
-        
-        <span class="footer-autor">
-            Elaborado por: 3º SGT QPCBM JHONATH
-        </span>
+        <span class="footer-autor">Elaborado por: 3º SGT QPCBM JHONATH</span>
+    </div>
+
+    <div id="modal-edicao" class="modal-overlay">
+        <div class="modal-content">
+            <button class="close-btn" onclick="fecharModal()"><i class="fas fa-times"></i></button>
+            <h2>Editar Item</h2>
+            <input type="hidden" id="edit-setor-id">
+            <input type="hidden" id="edit-item-original-id">
+
+            <label for="edit-item-nome">Nome:</label>
+            <input type="text" id="edit-item-nome">
+            
+            <label for="edit-item-setor">Mover para Setor:</label>
+            <select id="edit-item-setor"></select>
+            
+            <label for="edit-item-qtd">Quantidade:</label>
+            <input type="number" id="edit-item-qtd" min="1">
+            
+            <label for="edit-item-tipo">Tipo:</label>
+            <select id="edit-item-tipo" disabled style="background-color: #eee;">
+                 <option value="single">Item Único</option>
+                 <option value="multi">Item com Tombamento</option>
+            </select>
+
+            <div class="modal-buttons">
+                <button class="btn-action btn-remover" onclick="fecharModal()">Cancelar</button>
+                <button class="btn-action btn-sync" onclick="salvarEdicaoItem()">Salvar</button>
+            </div>
+        </div>
     </div>
 
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
 
     <script>
-        // *******************************************************************
-        // CONFIGURAÇÃO FIREBASE
-        // *******************************************************************
+        // ===========================================================
+        // 1. CONFIGURAÇÃO FIREBASE UNIFICADA
+        // ===========================================================
         const firebaseConfig = {
             apiKey: "AIzaSyCB0PH0UgghgsvH0BgPkG4AkKON6xSQ9mc",
             authDomain: "sigma-cbmrr.firebaseapp.com",
@@ -377,15 +389,51 @@
             appId: "1:378026276038:web:620dd6ff57501b1a8313c7"
         };
 
-        firebase.initializeApp(firebaseConfig);
+        if (!firebase.apps.length) {
+            firebase.initializeApp(firebaseConfig);
+        }
         const db = firebase.firestore();
-        
-        const COLECAO_RESULTADOS = 'resultados_conferencias'; 
 
-        // *******************************************************************
-        // FUNÇÃO DE CARREGAMENTO DE DADOS C/A
-        // *******************************************************************
+        // Constantes das Coleções
+        const COLECAO_RESULTADOS = 'resultados_conferencias'; // Para o Dashboard
+        const COLECAO_LISTA_MESTRA = 'lista_mestra';          // Para o Gerenciador
+        const DOCUMENTO_LISTA_MESTRA_ID = 'lista_completa';
+
+        // Variáveis Globais
+        let dadosConferencia = []; // Lista Mestra em memória
+
+        // ===========================================================
+        // 2. SISTEMA DE ROTEAMENTO (ABAS/VIEWS)
+        // ===========================================================
+        function switchView(viewName) {
+            // Esconde todas as views
+            document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active-view'));
+            // Remove ativo dos links
+            document.querySelectorAll('.sidebar a').forEach(el => el.classList.remove('active'));
+
+            // Mostra a view desejada
+            if (viewName === 'dashboard') {
+                document.getElementById('view-dashboard').classList.add('active-view');
+                document.getElementById('link-dashboard').classList.add('active');
+                loadCaaData(); // Recarrega dados do dashboard
+            } else if (viewName === 'permanencia') {
+                document.getElementById('view-permanencia').classList.add('active-view');
+                document.getElementById('link-permanencia').classList.add('active');
+                carregarDadosGerenciador(); // Inicia o gerenciador
+            }
+        }
+
+        // ===========================================================
+        // 3. LÓGICA DO DASHBOARD (VIEW 1)
+        // ===========================================================
         async function loadCaaData() {
+            const loading = document.getElementById('loading-message-dashboard');
+            const tableContainer = document.querySelector('.ca-table-container');
+            const tableBody = document.getElementById('ca-list-body');
+            const totalCount = document.getElementById('total-ca-count');
+
+            loading.style.display = 'block';
+            
             try {
                 const resultsSnapshot = await db.collection(COLECAO_RESULTADOS).get();
                 let allCaaItems = [];
@@ -400,64 +448,355 @@
 
                     if (Array.isArray(data.itensCaa)) {
                         data.itensCaa.forEach(item => {
-                            allCaaItems.push({
-                                ...item,
-                                ...metadata 
-                            });
+                            allCaaItems.push({ ...item, ...metadata });
                         });
                     }
                 });
 
-                renderCaaTable(allCaaItems);
+                tableBody.innerHTML = '';
+                if (allCaaItems.length === 0) {
+                    loading.textContent = "✅ Nenhuma alteração pendente.";
+                    totalCount.textContent = '0';
+                    tableContainer.style.display = 'none';
+                } else {
+                    loading.style.display = 'none';
+                    tableContainer.style.display = 'block';
+                    totalCount.textContent = allCaaItems.length;
 
+                    allCaaItems.forEach(item => {
+                        const row = tableBody.insertRow();
+                        row.insertCell().textContent = item.nomeCompleto;
+                        row.insertCell().textContent = item.obs || '-';
+                        row.insertCell().textContent = item.local;
+                        row.insertCell().textContent = item.conferente;
+                        row.insertCell().textContent = item.timestamp;
+                    });
+                }
             } catch (error) {
-                console.error("Erro ao carregar dados do Firebase:", error);
-                document.getElementById('loading-message').textContent = "❌ Erro ao carregar dados: " + error.message;
+                console.error(error);
+                loading.textContent = "Erro ao carregar dados.";
             }
         }
 
-        // *******************************************************************
-        // FUNÇÃO DE RENDERIZAÇÃO
-        // *******************************************************************
-        function renderCaaTable(items) {
-            const tableBody = document.getElementById('ca-list-body');
-            const totalCount = document.getElementById('total-ca-count');
-            const loading = document.getElementById('loading-message');
-            const tableContainer = document.querySelector('.ca-table-container');
+        // ===========================================================
+        // 4. LÓGICA DO GERENCIADOR (VIEW 2 - ADMIN.HTML)
+        // ===========================================================
+        
+        async function carregarDadosGerenciador() {
+            // Evita recarregar se já tiver dados (Opcional, aqui forçamos refresh para garantir sincronicidade)
+            const loadingMsg = document.getElementById('loading-message-admin');
+            const contentDiv = document.getElementById('main-admin-content');
+            
+            loadingMsg.style.display = 'block';
+            contentDiv.style.display = 'none';
 
-            tableBody.innerHTML = ''; 
+            try {
+                const doc = await db.collection(COLECAO_LISTA_MESTRA).doc(DOCUMENTO_LISTA_MESTRA_ID).get();
+                if (doc.exists && Array.isArray(doc.data().list)) {
+                    dadosConferencia = doc.data().list;
+                } else {
+                    console.warn("Lista vazia ou inexistente, iniciando array vazio.");
+                    dadosConferencia = []; 
+                }
+                loadingMsg.style.display = 'none';
+                contentDiv.style.display = 'block';
+                renderizarLista();
+            } catch (error) {
+                console.error("Erro ao carregar lista mestra:", error);
+                loadingMsg.textContent = "Erro ao carregar dados (Verifique Console).";
+            }
+        }
 
-            if (items.length === 0) {
-                loading.textContent = "✅ Não há itens C/A (Com Alteração) registrados.";
-                totalCount.textContent = '0';
-            } else {
-                loading.style.display = 'none';
-                tableContainer.style.display = 'block';
-                totalCount.textContent = items.length;
-
-                items.forEach(item => {
-                    const row = tableBody.insertRow();
-                    
-                    const itemCell = row.insertCell();
-                    itemCell.textContent = item.nomeCompleto;
-
-                    const obsCell = row.insertCell();
-                    obsCell.textContent = item.obs || '-';
-
-                    const localCell = row.insertCell();
-                    localCell.textContent = item.local;
-
-                    const conferenteCell = row.insertCell();
-                    conferenteCell.textContent = item.conferente;
-
-                    const dateCell = row.insertCell();
-                    dateCell.textContent = item.timestamp;
+        async function salvarDados(showAlert = true) {
+            try {
+                await db.collection(COLECAO_LISTA_MESTRA).doc(DOCUMENTO_LISTA_MESTRA_ID).set({
+                    list: dadosConferencia,
+                    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
                 });
+                if (showAlert) alert("Sincronização Completa!");
+            } catch (error) {
+                alert("Erro ao salvar no Firebase.");
+                console.error(error);
             }
         }
 
-        // INICIALIZAÇÃO
-        document.addEventListener('DOMContentLoaded', loadCaaData);
+        // --- FUNÇÕES CRUD DO GERENCIADOR ---
+        function gerarNovoId() { return Date.now().toString().slice(-6) + Math.floor(Math.random() * 100).toString().padStart(2, '0'); }
+
+        function adicionarSetor(nome) {
+            nome = nome.trim().toUpperCase();
+            if (!nome) return alert("Nome obrigatório");
+            dadosConferencia.push({ id: gerarNovoId(), nome: nome, itens: [] });
+            document.getElementById('input-setor-nome').value = '';
+            salvarDados(false); renderizarLista();
+        }
+
+        function removerSetor(setorId) {
+            if (!confirm("Remover este setor e itens?")) return;
+            dadosConferencia = dadosConferencia.filter(s => s.id !== setorId);
+            salvarDados(false); renderizarLista();
+        }
+
+        function promptRenomearSetor(setorId, nomeAtual) {
+            const novoNome = prompt("Novo nome:", nomeAtual);
+            if (novoNome && novoNome.trim()) {
+                const setor = dadosConferencia.find(s => s.id === setorId);
+                if (setor) { setor.nome = novoNome.toUpperCase(); salvarDados(false); renderizarLista(); }
+            }
+        }
+
+        function adicionarItemPorSetor(setorId) {
+            const nomeInput = document.getElementById(`input-item-nome-${setorId}`);
+            const qtdInput = document.getElementById(`input-item-qtd-${setorId}`);
+            const tipoSelect = document.getElementById(`select-item-tipo-${setorId}`);
+            
+            const nome = nomeInput.value.trim().toUpperCase();
+            const qtd = parseInt(qtdInput.value);
+            const tipo = tipoSelect.value;
+
+            if (!nome || qtd < 1) return alert("Preencha corretamente");
+
+            const setor = dadosConferencia.find(s => s.id === setorId);
+            if (setor) {
+                const novoItem = { id: setorId + '-' + gerarNovoId(), nome: nome, quantidadeEsperada: qtd, tipo: tipo, tombamentos: [] };
+                if (tipo === 'multi') {
+                    for(let i=0; i<qtd; i++) novoItem.tombamentos.push({tomb: `NOVO-${i+1}`, status:"pending", obs:""});
+                }
+                setor.itens.push(novoItem);
+                salvarDados(false); renderizarLista();
+                nomeInput.value = ''; qtdInput.value = '1';
+            }
+        }
+
+        function removerItem(setorId, itemId) {
+            if(!confirm("Remover item?")) return;
+            const setor = dadosConferencia.find(s => s.id === setorId);
+            if(setor) {
+                setor.itens = setor.itens.filter(i => i.id !== itemId);
+                salvarDados(false); renderizarLista();
+            }
+        }
+
+        function adicionarTombamento(itemId, input) {
+            const val = input.value.trim().toUpperCase();
+            if(!val) return;
+            const setor = dadosConferencia.find(s => s.itens.some(i => i.id === itemId));
+            const item = setor.itens.find(i => i.id === itemId);
+            if(item.tombamentos.some(t=>t.tomb===val)) return alert("Já existe");
+            
+            item.tombamentos.push({tomb: val, status:"pending", obs:""});
+            item.quantidadeEsperada = item.tombamentos.length;
+            salvarDados(false); renderizarLista();
+        }
+
+        function removerTombamento(itemId, val) {
+            if(!confirm("Remover tombamento?")) return;
+            const setor = dadosConferencia.find(s => s.itens.some(i => i.id === itemId));
+            const item = setor.itens.find(i => i.id === itemId);
+            item.tombamentos = item.tombamentos.filter(t => t.tomb !== val);
+            item.quantidadeEsperada = item.tombamentos.length;
+            salvarDados(false); renderizarLista();
+        }
+
+        function editarTombamento(itemId, antigo, input) {
+            const novo = input.value.trim().toUpperCase();
+            if(!novo || novo === antigo) return;
+            const setor = dadosConferencia.find(s => s.itens.some(i => i.id === itemId));
+            const item = setor.itens.find(i => i.id === itemId);
+            const t = item.tombamentos.find(x => x.tomb === antigo);
+            if(t) { t.tomb = novo; salvarDados(false); }
+        }
+
+        // --- RENDERIZAÇÃO ---
+        function toggleSetorContent(header) {
+            const content = header.nextElementSibling;
+            content.classList.toggle('collapsed');
+        }
+
+        function renderizarLista() {
+            const container = document.getElementById('lista-setores-container');
+            container.innerHTML = '';
+
+            dadosConferencia.forEach(setor => {
+                const li = document.createElement('li');
+                li.className = 'setor-item';
+                li.setAttribute('data-id', setor.id);
+
+                // HTML INTERNO DO SETOR
+                let itensHtml = '';
+                setor.itens.forEach(item => {
+                    let tombHtml = '';
+                    if(item.tipo === 'multi' && item.tombamentos) {
+                        const listItems = item.tombamentos.map(t => `
+                            <li>
+                                <span><input type="text" value="${t.tomb}" onblur="editarTombamento('${item.id}', '${t.tomb}', this)"></span>
+                                <button class="btn-action btn-remover" style="padding:2px 5px; font-size:0.7em;" onclick="removerTombamento('${item.id}', '${t.tomb}')">X</button>
+                            </li>
+                        `).join('');
+                        tombHtml = `
+                            <div class="tombamento-container-wrapper">
+                                <ul class="tombamento-list">${listItems}</ul>
+                                <div style="display:flex; gap:5px; margin-top:5px;">
+                                    <input type="text" id="add-tomb-${item.id}" placeholder="Novo Tomb.">
+                                    <button class="btn-add" onclick="adicionarTombamento('${item.id}', document.getElementById('add-tomb-${item.id}'))">+</button>
+                                </div>
+                            </div>`;
+                    }
+
+                    itensHtml += `
+                        <li class="item-conferencia-admin" data-id="${item.id}" data-setor-id="${setor.id}">
+                            <div style="width:100%">
+                                <div style="display:flex; justify-content:space-between;">
+                                    <div>
+                                        <strong>${item.nome}</strong>
+                                        <br><small>Qtd: ${item.quantidadeEsperada}</small>
+                                    </div>
+                                    <div class="item-actions-admin">
+                                        <button class="btn-action btn-edit-alt" onclick="abrirModalEdicao('${setor.id}', '${item.id}')"><i class="fas fa-edit"></i></button>
+                                        <button class="btn-action btn-remover" onclick="removerItem('${setor.id}', '${item.id}')"><i class="fas fa-trash"></i></button>
+                                    </div>
+                                </div>
+                                ${tombHtml}
+                            </div>
+                        </li>`;
+                });
+
+                li.innerHTML = `
+                    <div class="setor-header-admin" onclick="toggleSetorContent(this)">
+                        <span>${setor.nome}</span>
+                        <div class="item-actions-admin">
+                            <button class="btn-action btn-edit-alt" onclick="event.stopPropagation(); promptRenomearSetor('${setor.id}', '${setor.nome}')">Renomear</button>
+                            <button class="btn-action btn-remover" onclick="event.stopPropagation(); removerSetor('${setor.id}')">X</button>
+                        </div>
+                    </div>
+                    <div class="setor-content-admin">
+                        <div class="add-item-form-setor">
+                            <input type="text" id="input-item-nome-${setor.id}" placeholder="Item">
+                            <input type="number" id="input-item-qtd-${setor.id}" value="1" style="width:50px">
+                            <select id="select-item-tipo-${setor.id}">
+                                <option value="single">Único</option>
+                                <option value="multi">Tombamento</option>
+                            </select>
+                            <button class="btn-add" onclick="adicionarItemPorSetor('${setor.id}')">+</button>
+                        </div>
+                        <ul class="lista-setores item-list-admin" data-setor-id="${setor.id}">${itensHtml}</ul>
+                    </div>
+                `;
+                container.appendChild(li);
+            });
+
+            aplicarDragAndDrop();
+        }
+
+        // --- DRAG AND DROP ---
+        function aplicarDragAndDrop() {
+            // Setores
+            new Sortable(document.getElementById('lista-setores-container'), {
+                animation: 150, handle: '.setor-header-admin',
+                onEnd: function(evt) {
+                    // Lógica simplificada de reordenação de array
+                    const item = dadosConferencia.splice(evt.oldIndex, 1)[0];
+                    dadosConferencia.splice(evt.newIndex, 0, item);
+                    salvarDados(false);
+                }
+            });
+            // Itens
+            document.querySelectorAll('.item-list-admin').forEach(list => {
+                new Sortable(list, {
+                    group: 'itens', animation: 150,
+                    onEnd: function(evt) {
+                        const fromSetor = dadosConferencia.find(s=>s.id === evt.from.dataset.setorId);
+                        const toSetor = dadosConferencia.find(s=>s.id === evt.to.dataset.setorId);
+                        const item = fromSetor.itens.splice(evt.oldIndex, 1)[0];
+                        
+                        // Se mudou de setor, gera novo ID para evitar conflito
+                        if(fromSetor !== toSetor) {
+                            item.id = toSetor.id + '-' + gerarNovoId();
+                        }
+                        toSetor.itens.splice(evt.newIndex, 0, item);
+                        salvarDados(false);
+                        renderizarLista(); // Re-renderiza para atualizar IDs visuais se necessário
+                    }
+                });
+            });
+        }
+
+        // --- MODAL ---
+        function abrirModalEdicao(setorId, itemId) {
+            const setor = dadosConferencia.find(s => s.id === setorId);
+            const item = setor.itens.find(i => i.id === itemId);
+            
+            document.getElementById('edit-setor-id').value = setorId;
+            document.getElementById('edit-item-original-id').value = itemId;
+            document.getElementById('edit-item-nome').value = item.nome;
+            document.getElementById('edit-item-qtd').value = item.quantidadeEsperada;
+            document.getElementById('edit-item-qtd').disabled = (item.tipo === 'multi');
+            document.getElementById('edit-item-tipo').value = item.tipo;
+
+            const selectSetor = document.getElementById('edit-item-setor');
+            selectSetor.innerHTML = '';
+            dadosConferencia.forEach(s => {
+                const opt = document.createElement('option');
+                opt.value = s.id;
+                opt.text = s.nome;
+                if(s.id === setorId) opt.selected = true;
+                selectSetor.appendChild(opt);
+            });
+
+            document.getElementById('modal-edicao').style.display = 'flex';
+        }
+        function fecharModal() { document.getElementById('modal-edicao').style.display = 'none'; }
+        
+        function salvarEdicaoItem() {
+            const oldSetorId = document.getElementById('edit-setor-id').value;
+            const itemId = document.getElementById('edit-item-original-id').value;
+            const novoNome = document.getElementById('edit-item-nome').value.trim().toUpperCase();
+            const novoSetorId = document.getElementById('edit-item-setor').value;
+            const novaQtd = parseInt(document.getElementById('edit-item-qtd').value);
+
+            const oldSetor = dadosConferencia.find(s => s.id === oldSetorId);
+            const newSetor = dadosConferencia.find(s => s.id === novoSetorId);
+            const item = oldSetor.itens.find(i => i.id === itemId);
+
+            item.nome = novoNome;
+            if(item.tipo === 'single') item.quantidadeEsperada = novaQtd;
+
+            if(oldSetorId !== novoSetorId) {
+                oldSetor.itens = oldSetor.itens.filter(i => i.id !== itemId);
+                item.id = novoSetorId + '-' + gerarNovoId();
+                newSetor.itens.push(item);
+            }
+            salvarDados(false); renderizarLista(); fecharModal();
+        }
+
+        // --- BACKUP JSON ---
+        function fazerBackupLocal() {
+            const blob = new Blob([JSON.stringify(dadosConferencia,null,2)], {type:"application/json"});
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a'); a.href=url; a.download='backup_sigma.json';
+            a.click();
+        }
+        function importarBackupLocal(evt) {
+            const file = evt.target.files[0];
+            if(!file) return;
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                if(confirm("Substituir todos os dados?")) {
+                    try {
+                        dadosConferencia = JSON.parse(e.target.result);
+                        salvarDados(); renderizarLista();
+                    } catch(err) { alert("JSON Inválido"); }
+                }
+            };
+            reader.readAsText(file);
+        }
+
+        // Inicialização
+        document.addEventListener('DOMContentLoaded', () => {
+            loadCaaData(); // Carrega Dashboard inicialmente
+        });
+
     </script>
 </body>
 </html>
+```
