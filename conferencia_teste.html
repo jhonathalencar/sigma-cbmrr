@@ -137,6 +137,12 @@
         }
          
         /* --- ESTILOS PARA SETORES (COLLAPSIBLE) --- */
+        
+        /* NOVO: Regra de compensação para cabeçalhos fixos */
+        .setor {
+            scroll-margin-top: 60px; /* Compensa 50px do header + 10px de margem */
+        }
+
         .setor-header {
             background-color: #800020; 
             color: white;
@@ -1220,15 +1226,11 @@
                // Expande o setor
                toggleSetor(nextSetorEl.querySelector('.setor-header')); 
                
-               // === CORREÇÃO DE ROLAGEM COM POSIÇÃO ABSOLUTA ===
-               const fixedHeaderOffset = 60; // 50px do header + margem
-               
-               // Rola a janela instantaneamente para a posição do topo do novo setor
-               window.scrollTo({
-                   top: nextSetorEl.offsetTop - fixedHeaderOffset,
-                   behavior: 'auto' // Rola instantaneamente (sem animação) para fixar o elemento
-               });
-               // === FIM DA CORREÇÃO DE ROLAGEM COM POSIÇÃO ABSOLUTA ===
+               // === CORREÇÃO FINAL: Usa scroll-margin-top do CSS para compensar o header ===
+               // Rola instantaneamente (behavior: 'auto') para o topo.
+               // O CSS .setor { scroll-margin-top: 60px; } fará a compensação automaticamente.
+               nextSetorEl.scrollIntoView({ behavior: 'auto', block: 'start' });
+               // === FIM DA CORREÇÃO FINAL ===
             }
         } else {
              // Se for o último setor, rola para o botão finalizar.
