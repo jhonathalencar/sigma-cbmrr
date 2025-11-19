@@ -248,10 +248,6 @@
             width: 18px; 
             height: 18px; 
             line-height: 18px;
-            border-radius: 4px;
-            color: white;
-            min-width: 18px;
-            text-align: center;
             background-color: transparent;
             border: 1px dashed #aaa;
         }
@@ -547,7 +543,7 @@
 
 <script>
     // *******************************************************************
-    // 1. CONFIGURAÇÃO FIREBASE
+    // 1. CONFIGURAÇÃO FIREBASE (Apenas configuração, inicialização será no initApp)
     // *******************************************************************
     const firebaseConfig = {
         apiKey: "AIzaSyCB0PH0UgghgsvH0BgPkG4AkKON6xSQ9mc",
@@ -563,35 +559,41 @@
     const COLECAO_NOME = 'lista_mestra'; 
     const DOCUMENTO_ID = 'lista_completa'; 
     let dadosConferencia = [];
-
     
-    // *******************************************************************
-    // 2. FUNÇÃO DE INICIALIZAÇÃO E CARREGAMENTO
-    // *******************************************************************
-
-    async function carregarDadosRemotos() {
-        // Tenta inicializar o Firebase se ainda não foi feito (para o caso de falha inicial)
-        if (!db && typeof firebase !== 'undefined' && typeof firebase.firestore !== 'undefined') {
-            try {
+    // Inicialização da aplicação (para resolver problemas de SyntaxError/Escopo)
+    async function initApp() {
+        try {
+            // Inicialização do Firebase (Síncrono/Assíncrono no primeiro uso)
+            if (typeof firebase !== 'undefined' && typeof firebase.firestore !== 'undefined') {
                 firebase.initializeApp(firebaseConfig);
                 db = firebase.firestore();
-            } catch (e) {
-                console.error("ERRO: Falha na inicialização do Firebase.", e);
+            } else {
+                throw new Error("Bibliotecas do Firebase não carregadas (verifique a conexão CDN).");
             }
-        }
 
-        if (!db) {
+            // Injeta a info do militar no cabeçalho antes de carregar os dados
+            updateHeaderInfo();
+            
+            // Inicia o processo de carregamento remoto (agora assíncrono e seguro)
+            await carregarDadosRemotos();
+
+        } catch (e) {
+            console.error("ERRO CRÍTICO na inicialização/carregamento:", e);
              const mainContainer = document.getElementById('main-content').parentNode;
              document.getElementById('loading-message').style.display = 'none';
              mainContainer.innerHTML += `
                 <div class="error-message">
-                    <h1>❌ Erro Crítico: Inicialização</h1>
-                    <p>O Firebase não pôde ser iniciado. Verifique a chave 'firebaseConfig' e a conexão.</p>
+                    <h1>❌ Falha de Inicialização</h1>
+                    <p>Verifique a chave 'firebaseConfig' e se os arquivos CDN foram carregados.</p>
+                    <small>Detalhe: ${e.message}</small>
                 </div>
             `;
-            return;
         }
+    }
 
+
+    async function carregarDadosRemotos() {
+        // Esta função agora está encapsulada por initApp (o erro 'await' deve sumir)
         try {
             console.log("Buscando lista de conferência no Firebase...");
             const doc = await db.collection(COLECAO_NOME).doc(DOCUMENTO_ID).get();
@@ -610,6 +612,7 @@
         } catch (error) {
             console.error("Falha na sincronização ou carregamento dos dados.", error);
             
+            // Exibe o erro detalhado no corpo do HTML (Versão de diagnóstico)
             const mainContainer = document.getElementById('main-content').parentNode;
             const loadingMessageEl = document.getElementById('loading-message');
             
@@ -1267,7 +1270,6 @@
     async function finalizarConferencia() {
         console.log("finalizarConferencia() chamada.");
         
-        // --- 1. VERIFICAÇÃO DE HABILITAÇÃO ---
         const btnFinalizar = document.getElementById('btn-finalizar');
         if (btnFinalizar.disabled) {
             alert("A conferência deve ser concluída (100% dos itens conferidos) para gerar o PDF.");
@@ -1280,19 +1282,18 @@
             const militarInfoText = document.getElementById('militar-info').innerText;
             
             const conferenteValor = militarInfoText.split('\n')[0]?.replace('Conferente:', '').trim() || militarCompleto;
-            const dataHora = new Date(); // Objeto Date para salvamento no Firebase
+            const dataHora = new Date(); 
             const dataHoraString = militarInfoText.split('\n')[1]?.replace('Data/Hora:', '').trim() || dataHora.toLocaleString('pt-BR');
             const local = document.getElementById('local-posto-info').innerText;
             
             
-            let itensCaa = []; // Array para armazenar apenas os itens C/A para o Firebase
-            let tableData = []; // Array para o PDF
+            let itensCaa = []; 
+            let tableData = []; 
             let itemsCount = 0;
             let cA_count = 0;
 
             // --- 3. COLETA E FORMATAÇÃO DOS RESULTADOS (Para Tabela e Firebase) ---
             dadosConferencia.forEach(setor => {
-                // Adicionar cabeçalho do setor para o PDF
                 tableData.push([
                     { content: setor.nome.toUpperCase(), colSpan: 4, styles: { fillColor: [128, 0, 32], textColor: 255, fontStyle: 'bold' } }
                 ]);
@@ -1301,7 +1302,6 @@
                     let itemsToProcess = [];
 
                     if (item.tipo === 'multi' && item.tombamentos) {
-                        // Item com Múltiplos Tombamentos
                         item.tombamentos.forEach(tomb => {
                             const uniqueId = `${item.id}-${tomb.tomb}`;
                             const statusData = window.itemStatus[uniqueId];
@@ -1312,13 +1312,12 @@
                                     nomeCompleto: `${item.nome} (Tomb: ${tomb.tomb})`,
                                     status: statusData.status,
                                     obs: statusData.obs,
-                                    quantidade: 1 // CORREÇÃO: 1 UNIDADE POR TOMBAMENTO
+                                    quantidade: 1 
                                 };
                                 itemsToProcess.push(data);
                             }
                         });
                     } else { 
-                        // Item Único ou Simples
                         const statusData = window.itemStatus[item.id];
                         if (statusData && statusData.status !== 'pending') {
                             const data = {
@@ -1333,15 +1332,13 @@
                         }
                     }
                     
-                    // Processa os itens coletados (para PDF e Firebase)
                     itemsToProcess.forEach(data => {
                         itemsCount++;
                         if (data.status === 'C/A') {
                             cA_count++;
-                            itensCaa.push(data); // ADICIONA AO ARRAY DE C/A PARA O FIREBASE
+                            itensCaa.push(data); 
                         }
                         
-                        // Adiciona ao corpo da tabela do PDF
                         const statusCell = data.status === 'S/A' ? 'S/A' : 'C/A';
                         const statusColor = data.status === 'S/A' ? GREEN_COLOR : RED_COLOR;
                         
@@ -1362,7 +1359,7 @@
                 timestamp: firebase.firestore.Timestamp.fromDate(dataHora),
                 totalItensConferidos: itemsCount,
                 totalCaa: cA_count,
-                itensCaa: itensCaa, // Salva o array de não conformidades
+                itensCaa: itensCaa, 
             }).then(() => {
                 console.log("Resultados da conferência salvos no Firebase com sucesso!");
             }).catch((e) => {
@@ -1529,11 +1526,8 @@
     // 5. INICIALIZAÇÃO DA PÁGINA (CHAMA A GERAÇÃO DINÂMICA)
     // *******************************************************************
     window.onload = function() {
-        // Injeta a info do militar no cabeçalho antes de carregar os dados
-        updateHeaderInfo();
-        
-        // Inicia o processo de carregamento remoto
-        carregarDadosRemotos();
+        // Inicializa o app e começa o carregamento
+        initApp();
     };
 </script>
 </body>
