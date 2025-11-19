@@ -23,22 +23,6 @@
             box-sizing: border-box;
         }
 
-        /* --- ELEMENTO PARA ROUBO DE FOCO --- */
-        #focus-stealer {
-            /* Posição fixa logo abaixo do header */
-            position: fixed;
-            top: 50px; /* Logo abaixo do header (50px) */
-            left: 0;
-            width: 1px;
-            height: 1px;
-            overflow: hidden;
-            opacity: 0;
-            z-index: 99; 
-            /* Permite que receba foco via JS/Tab */
-            /* CRÍTICO: Usar tabindex=0 para que possa receber foco */
-            tabindex: 0; 
-        }
-
         .main-header {
             position: fixed;
             top: 0;
@@ -146,7 +130,6 @@
             font-size: 0.8em; 
             color: #333; 
             text-align: left; /* MANTIDO: Alinhamento à esquerda */
-            margin-top: -10px;
             padding-bottom: 5px;
             border-bottom: 1px solid #eee;
         }
@@ -170,7 +153,8 @@
             justify-content: space-between;
             align-items: center;
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-            transition: background-color 0.3s;
+            /* CRÍTICO: Removendo a transição de altura para evitar salto no scroll */
+            transition: background-color 0.3s; 
         }
 
         .setor-info {
@@ -196,7 +180,7 @@
             padding: 10px 0;
             max-height: 0; 
             overflow: hidden;
-            /* CRÍTICO: REMOVENDO A TRANSIÇÃO DE ALTURA PARA EVITAR SALTO NO SCROLL */
+            /* CRÍTICO: Apenas transição de padding */
             transition: padding 0.4s ease-out; 
             background-color: #fff;
             border-left: 1px solid #e0e0e0;
@@ -204,7 +188,7 @@
         }
 
         .setor-content.expanded {
-            max-height: 5000px; /* CRÍTICO: Aumentado para garantir que a lista inteira caiba */
+            max-height: 5000px; 
             padding-bottom: 20px;
             border-bottom: 1px solid #e0e0e0;
             border-radius: 0 0 6px 6px;
@@ -520,9 +504,6 @@
         <span class="text-white">CBM</span><span class="text-red">RR</span>
     </div>
 </header>
-
-<div id="focus-stealer"></div>
-
 <div class="container">
      
     <img id="logo-sigma" src="logo_sigma.png" alt="Logo do Sistema SIGMA" class="logo" 
@@ -691,8 +672,8 @@
                                 <div class="tombamento-controls">
                                     <span>Tomb.: ${tomb.tomb}</span>
                                     <div class="tombamento-options">
-                                        <button class="action-button sa-ok ${status === 'S/A' ? 'active' : ''}" onclick="setTombamentoStatus(this, 'ok', event)" tabindex="-1">S/A</button>
-                                        <button class="action-button ca-alert ${status === 'C/A' ? 'active' : ''}" onclick="setTombamentoStatus(this, 'alert', event)" tabindex="-1">C/A</button>
+                                        <button class="action-button sa-ok ${status === 'S/A' ? 'active' : ''}" onclick="setTombamentoStatus(this, 'ok', event)">S/A</button>
+                                        <button class="action-button ca-alert ${status === 'C/A' ? 'active' : ''}" onclick="setTombamentoStatus(this, 'alert', event)">C/A</button>
                                     </div>
                                 </div>
                                 <p class="tombamento-descricao-salva" data-text-id="${item.id}-${tomb.tomb}" style="${status === 'C/A' && obs ? 'display: block;' : 'display: none;'}">
@@ -737,8 +718,8 @@
                                 <span class="item-quantidade">QTD: ${item.quantidadeEsperada}</span>
                             </div>
                             <div class="item-options">
-                                <button class="action-button sa-ok ${status === 'S/A' ? 'active' : ''}" onclick="setItemStatus(this, 'ok', event)" tabindex="-1">S/A</button>
-                                <button class="action-button ca-alert ${status === 'C/A' ? 'active' : ''}" onclick="setItemStatus(this, 'alert', event)" tabindex="-1">C/A</button>
+                                <button class="action-button sa-ok ${status === 'S/A' ? 'active' : ''}" onclick="setItemStatus(this, 'ok', event)">S/A</button>
+                                <button class="action-button ca-alert ${status === 'C/A' ? 'active' : ''}" onclick="setItemStatus(this, 'alert', event)">C/A</button>
                             </div>
                             <p class="descricao-salva" data-text-id="${item.id}" style="${status === 'C/A' && obs ? 'display: block;' : 'display: none;'}">
                                 <span class="obs-titulo">Alteração encontrada:</span> 
@@ -886,7 +867,7 @@
     }
 
     function setItemStatus(button, status, event) {
-        // CORREÇÃO 1: IMPEDE O ARRASTO DE TELA E O FOCO DO BOTÃO
+        // CRÍTICO: IMPEDE O ARRASTO DE TELA E O FOCO DO BOTÃO
         if (event) {
             event.preventDefault(); 
         }
@@ -938,7 +919,7 @@
     }
     
     function setTombamentoStatus(button, status, event) {
-        // CORREÇÃO 1: IMPEDE O ARRASTO DE TELA E O FOCO DO BOTÃO
+        // CRÍTICO: IMPEDE O ARRASTO DE TELA E O FOCO DO BOTÃO
         if (event) {
             event.preventDefault(); 
         }
@@ -1211,7 +1192,7 @@
                 const itemData = window.itemStatus[currentId];
                 
                 if (!itemData || itemData.status === 'PENDING' || itemData.status === 'PENDING_CA') {
-                    // *** ROLAGEM REMOVIDA ***
+                    // *** ROLAGEM REMOVIDA PARA ESTABILIDADE ***
                     
                     if (itemData && itemData.status === 'PENDING_CA') {
                          currentItem.querySelector('textarea').focus();
