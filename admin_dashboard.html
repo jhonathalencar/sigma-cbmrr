@@ -13,27 +13,26 @@
         /* BASE & RESET */
         body {
             font-family: Arial, sans-serif;
-            background-color: #f4f4f9;
+            background-color: #f4f4f9; /* Fundo geral levemente cinza */
             color: #333;
             margin: 0;
             display: flex;
             min-height: 100vh;
-            /* Ajustes para acomodar Header e Footer fixos */
             padding-top: 50px; 
             padding-bottom: 60px; 
             box-sizing: border-box;
         }
 
-        /* CABEÇALHO COM TARJA VINHO */
+        /* CABEÇALHO COM TARJA VINHO (MANTIDO ESCURO) */
         .main-header {
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
-            height: 50px; /* Altura da tarja */
-            background-color: #800020; /* Cor Vinho */
+            height: 50px; 
+            background-color: #800020; /* Cor Vinho Principal */
             box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
-            z-index: 100; /* Fica acima do sidebar */
+            z-index: 100; 
             display: flex;
             align-items: center;
             padding: 0 15px;
@@ -76,7 +75,7 @@
             color: #555;
             font-size: 0.65em;
             line-height: 1.3;
-            z-index: 100; /* Acima de tudo */
+            z-index: 100; 
             box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.05); 
         }
         
@@ -98,28 +97,28 @@
            2. ESTILOS DO DASHBOARD (ADAPTADOS)
            ========================================= */
 
-        /* --- MENU LATERAL (Sidebar) --- */
+        /* --- MENU LATERAL (Sidebar) - AGORA CLARO --- */
         .sidebar {
             width: 250px;
-            background-color: #800020; /* Vinho */
-            color: white;
+            background-color: #ffffff; /* Fundo Branco */
+            color: #333; /* Texto Escuro */
             padding-top: 20px;
-            box-shadow: 2px 0 5px rgba(0, 0, 0, 0.2);
+            box-shadow: 2px 0 5px rgba(0, 0, 0, 0.05); /* Sombra mais suave */
+            border-right: 1px solid #e0e0e0; /* Linha separadora sutil */
             position: fixed;
-            /* O Sidebar agora começa ABAIXO do Header (top: 50px) */
             top: 50px; 
             left: 0;
-            height: calc(100% - 50px); /* Ocupa o resto da altura */
+            height: calc(100% - 50px); 
             display: flex;
             flex-direction: column;
-            z-index: 10; /* Abaixo do Header e Footer */
-            overflow-y: auto; /* Caso o menu seja muito longo */
+            z-index: 10; 
+            overflow-y: auto; 
         }
         
         .sidebar-header {
             text-align: center;
             padding: 10px 0 20px 0;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+            border-bottom: 1px solid #eee; /* Divisor claro */
             margin-bottom: 10px;
         }
 
@@ -132,34 +131,41 @@
         .sidebar-header h2 {
             font-size: 1.1em;
             margin: 0;
+            color: #800020; /* Título Vinho para combinar com Header */
         }
 
+        /* Links do Menu */
         .sidebar a {
             padding: 15px 20px;
             text-decoration: none;
             font-size: 1em;
-            color: white;
+            color: #555; /* Cinza escuro */
             display: block;
-            transition: background-color 0.3s;
+            transition: all 0.3s ease;
+            border-left: 4px solid transparent; /* Prepara para o efeito active */
         }
 
+        /* Hover (Mouse em cima) */
         .sidebar a:hover {
-            background-color: #a01d36;
+            background-color: #fff5f5; /* Fundo avermelhado bem claro */
+            color: #800020; /* Texto Vinho */
         }
 
+        /* Item Ativo (Selecionado) */
         .sidebar a.active {
-            background-color: #d90f23;
+            background-color: #ffecec; /* Fundo destaque claro */
+            color: #800020; /* Texto Vinho */
             font-weight: bold;
+            border-left: 4px solid #d90f23; /* Tarja vermelha na esquerda */
         }
 
         /* --- CONTEÚDO PRINCIPAL --- */
         .content {
-            margin-left: 250px; /* Espaço do menu */
+            margin-left: 250px; 
             flex-grow: 1;
             padding: 20px;
             box-sizing: border-box;
             width: calc(100% - 250px);
-            /* Padding extra no final para não bater no rodapé */
             padding-bottom: 80px; 
         }
 
@@ -185,12 +191,13 @@
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
             margin-bottom: 20px;
             display: inline-block;
+            border-left: 4px solid #1b8a3e; /* Detalhe verde */
         }
 
         .summary-box h3 {
             margin-top: 0;
             font-size: 1.1em;
-            color: #800020;
+            color: #333;
         }
 
         .summary-value {
@@ -221,7 +228,7 @@
         }
 
         .ca-table th {
-            background-color: #f4f4f9;
+            background-color: #f8f8f8;
             color: #800020;
             font-weight: bold;
             text-transform: uppercase;
@@ -241,10 +248,12 @@
             .sidebar {
                 width: 100%;
                 height: auto;
-                position: relative; /* Sidebar deixa de ser fixo no topo no mobile */
-                top: 0; /* Reset do top */
-                margin-top: 10px; /* Espaço visual */
+                position: relative; 
+                top: 0; 
+                margin-top: 0; /* Remove margem extra */
                 padding-top: 0;
+                border-right: none;
+                border-bottom: 1px solid #ddd;
             }
             
             .sidebar-header {
@@ -252,19 +261,27 @@
             }
 
             .sidebar a {
-                padding: 10px;
+                padding: 12px;
                 text-align: center;
                 display: inline-block;
                 width: 50%;
                 box-sizing: border-box;
-                border-right: 1px solid rgba(255, 255, 255, 0.1);
-                float: left; /* Força alinhamento lado a lado */
+                border-right: 1px solid #eee; /* Divisor entre botões no mobile */
+                border-left: none; /* Remove a borda lateral do active no mobile */
+                border-bottom: 3px solid transparent; /* Usa borda inferior no mobile */
+                float: left; 
+            }
+
+            .sidebar a.active {
+                border-left: none;
+                border-bottom: 3px solid #d90f23; /* Destaque embaixo no mobile */
+                background-color: #fff;
             }
              
             .content {
                 margin-left: 0;
                 width: 100%;
-                padding-top: 10px;
+                padding-top: 15px;
             }
             
             .summary-box {
@@ -272,7 +289,6 @@
                  box-sizing: border-box;
             }
             
-            /* Ajuste para o cabeçalho não cobrir o topo no mobile se houver scroll */
             body {
                 flex-direction: column; 
             }
