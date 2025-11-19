@@ -138,9 +138,8 @@
          
         /* --- ESTILOS PARA SETORES (COLLAPSIBLE) --- */
         
-        /* CORREÇÃO CRÍTICA: Regra de compensação para cabeçalhos fixos */
         .setor {
-            scroll-margin-top: 60px; /* Compensa 50px do header + 10px de margem */
+            /* REMOVIDO: scroll-margin-top: 60px; (Compensação agora feita no JS) */
         }
 
         .setor-header {
@@ -253,7 +252,6 @@
             color: white;
             min-width: 18px;
             text-align: center;
-            margin-right: 10px;
             background-color: transparent;
             border: 1px dashed #aaa;
         }
@@ -1230,13 +1228,25 @@
                    toggleSetor(nextSetorEl.querySelector('.setor-header')); 
                }
 
-               // === CORREÇÃO: ROLAGEM REMOVIDA ===
-               // Não há mais rolagem forçada. O navegador mantém a posição atual,
-               // e o novo setor é expandido no local do antigo.
+               // === SOLUÇÃO DEFINITIVA DE ROLAGEM: Usa cálculo absoluto com requestAnimationFrame ===
                
+               window.requestAnimationFrame(() => {
+                   
+                   // Força o navegador a recalcular o layout e altura atual do elemento.
+                   nextSetorEl.offsetHeight; 
+
+                   const fixedHeaderOffset = 60; // 50px do header + 10px de margem
+                   const setorTopPosition = nextSetorEl.offsetTop;
+
+                   window.scrollTo({
+                       top: setorTopPosition - fixedHeaderOffset,
+                       behavior: 'smooth'
+                   });
+               });
+               // === FIM DA SOLUÇÃO DEFINITIVA ===
             }
         } else {
-             // Mantemos a rolagem para o botão Finalizar apenas se for o último setor.
+             // Se for o último setor, rola para o botão finalizar.
              document.getElementById('btn-finalizar').scrollIntoView({ behavior: 'smooth', block: 'start' });
         }
     }
