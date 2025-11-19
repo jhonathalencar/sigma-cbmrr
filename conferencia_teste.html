@@ -653,7 +653,7 @@
                                         <button class="action-button ca-alert ${status === 'C/A' ? 'active' : ''}" onclick="setTombamentoStatus(this, 'alert')">C/A</button>
                                     </div>
                                 </div>
-                                <p class="tombamento-descricao-salva" style="${status === 'C/A' && obs ? 'display: block;' : 'display: none;'}">
+                                <p class="tombamento-descricao-salva" data-text-id="${item.id}-${tomb.tomb}" style="${status === 'C/A' && obs ? 'display: block;' : 'display: none;'}">
                                     <span class="obs-titulo">Alteração encontrada:</span>
                                     <span class="obs-texto">${obs}</span>
                                 </p>
@@ -1228,11 +1228,10 @@
                    toggleSetor(nextSetorEl.querySelector('.setor-header')); 
                }
 
-               // ROLAGEM REMOVIDA: Deixamos o navegador no local para evitar saltos.
-               
+               // *** NENHUMA ROLAGEM AQUI ***
             }
         } else {
-             // Mantemos a rolagem para o botão Finalizar apenas se for o último setor.
+             // Mantemos a rolagem para o botão Finalizar APENAS para o último setor.
              document.getElementById('btn-finalizar').scrollIntoView({ behavior: 'smooth', block: 'start' });
         }
     }
