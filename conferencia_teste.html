@@ -1299,7 +1299,8 @@
                             itemsToProcess.push({
                                 nome: `${item.nome} (Tomb: ${tomb.tomb})`,
                                 status: statusData.status,
-                                obs: statusData.obs
+                                obs: statusData.obs,
+                                quantidade: item.quantidadeEsperada
                             });
                         }
                     });
@@ -1309,7 +1310,8 @@
                         itemsToProcess.push({
                             nome: item.nome,
                             status: statusData.status,
-                            obs: statusData.obs
+                            obs: statusData.obs,
+                            quantidade: item.quantidadeEsperada
                         });
                     }
                 }
@@ -1323,7 +1325,7 @@
                     
                     tableData.push([
                         data.nome,
-                        `QTD: ${item.quantidadeEsperada}`, // Mantém a quantidade do item pai
+                        `QTD: ${data.quantidade}`, 
                         { content: statusCell, styles: { fillColor: statusColor, textColor: 255 } },
                         data.obs || '-'
                     ]);
@@ -1332,53 +1334,103 @@
         });
 
 
-        // --- 2. CABEÇALHO DO PDF (com base nas especificações) ---
+        // --- 2. CABEÇALHO DO PDF (com base nas especificações e ajustes) ---
+        
+        const PAGE_WIDTH = doc.internal.pageSize.width;
+        const HEADER_Y = 10;
+        const LOGO_SIZE = 15;
+        const CENTER_X = PAGE_WIDTH / 2;
         
         doc.setFontSize(10);
-        doc.setTextColor(51); // Cor cinza/preto
+        doc.setTextColor(51); 
 
-        // Placeholder para roraima.png (usando o ícone cbmrr.png como fallback visual)
-        const logo = document.querySelector('.header-icon');
-        if (logo) {
-            try {
-                // Tenta converter a imagem para base64 se for um ambiente que permita
-                const canvas = document.createElement('canvas');
-                canvas.width = logo.naturalWidth;
-                canvas.height = logo.naturalHeight;
-                const ctx = canvas.getContext('2d');
-                ctx.drawImage(logo, 0, 0);
-                const logoData = canvas.toDataURL('image/png');
-                doc.addImage(logoData, 'PNG', PDF_MARGIN_X, currentY, 15, 15);
-            } catch (e) {
-                // Se falhar (cors/ambiente), usa placeholder
-                doc.rect(PDF_MARGIN_X, currentY, 15, 15);
-                doc.text('LOGO', PDF_MARGIN_X + 4, currentY + 7);
+        // Tenta buscar as imagens para o PDF (roraima.png e logo_sigma.png)
+        // Como o roraima.png não está disponível, usaremos o cbmrr.png (fallback) e logo_sigma.png (existente no HTML).
+        const cbmrrLogo = document.querySelector('.header-icon');
+        const sigmaLogo = document.querySelector('.logo');
+        
+        const logoDraw = (logoEl, x) => {
+            if (logoEl) {
+                try {
+                    const canvas = document.createElement('canvas');
+                    canvas.width = logoEl.naturalWidth;
+                    canvas.height = logoEl.naturalHeight;
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(logoEl, 0, 0, logoEl.naturalWidth, logoEl.naturalHeight);
+                    const logoData = canvas.toDataURL('image/png');
+                    doc.addImage(logoData, 'PNG', x, HEADER_Y, LOGO_SIZE, LOGO_SIZE);
+                } catch (e) {
+                    doc.rect(x, HEADER_Y, LOGO_SIZE, LOGO_SIZE);
+                    doc.text('LOGO', x + 4, HEADER_Y + 7);
+                }
             }
-        }
+        };
+
+        // Logo 1 (CBM-RR / roraima.png) - Esquerda
+        logoDraw(cbmrrLogo, PDF_MARGIN_X);
+        // Logo 2 (SIGMA) - Direita
+        logoDraw(sigmaLogo, PAGE_WIDTH - PDF_MARGIN_X - LOGO_SIZE);
+
+
+        // Textos Centralizados
+        let textY = HEADER_Y + 5;
         
-        // Textos do Cabeçalho
+        // Linha 1: GOVERNO DE RORAIMA (Negrito, Centralizado)
         doc.setFont('helvetica', 'bold');
-        doc.text('GOVERNO DE RORAIMA', PDF_MARGIN_X + 20, currentY + 5);
+        doc.setTextColor(51);
+        doc.text('GOVERNO DE RORAIMA', CENTER_X, textY, { align: 'center' });
+        textY += 5;
 
+        // Linha 2: CORPO DE BOMBEIROS MILITAR DE RORAIMA (Negrito, Vermelho, Centralizado)
         doc.setTextColor(RED_COLOR);
-        doc.text('CORPO DE BOMBEIROS MILITAR DE RORAIMA', PDF_MARGIN_X + 20, currentY + 10);
+        doc.text('CORPO DE BOMBEIROS MILITAR DE RORAIMA', CENTER_X, textY, { align: 'center' });
+        textY += 5;
         
+        // Linha 3: "Amazônia: patrimônio dos brasileiros" (Itálico, Centralizado)
         doc.setFont('helvetica', 'italic');
-        doc.setTextColor(51); // Cor cinza/preto
-        doc.text('"Amazônia: patrimônio dos brasileiros"', PDF_MARGIN_X + 20, currentY + 15);
+        doc.setTextColor(51); 
+        doc.text('"Amazônia: patrimônio dos brasileiros"', CENTER_X, textY, { align: 'center' });
+        
+        currentY = HEADER_Y + LOGO_SIZE + 5; // Reinicia Y abaixo da área do cabeçalho
+        currentY += 15; // NOVO: Espaço maior entre o cabeçalho e as informações
 
-        currentY += 20;
-        
-        // --- 3. DADOS DA CONFERÊNCIA ---
-        doc.setFontSize(11);
+        // --- 3. DADOS DA CONFERÊNCIA (Alinhado à Esquerda com Labels em Negrito) ---
+        doc.setFontSize(10);
         doc.setFont('helvetica', 'normal');
-        doc.text(`Conferência Concluída em: ${local}`, PDF_MARGIN_X, currentY);
-        currentY += 5;
-        doc.text(`Conferente: ${militarCompleto}`, PDF_MARGIN_X, currentY);
-        currentY += 5;
-        doc.text(`Data/Hora: ${dataHora}`, PDF_MARGIN_X, currentY);
-        currentY += 10;
         
+        // Função utilitária para imprimir com negrito na label
+        const printInfo = (label, value) => {
+            doc.setFont('helvetica', 'bold');
+            doc.text(label, PDF_MARGIN_X, currentY);
+            doc.setFont('helvetica', 'normal');
+            
+            const labelWidth = doc.getStringUnitWidth(label) * doc.internal.getFontSize();
+            const textOffset = PDF_MARGIN_X + (labelWidth * 0.35); // Ajuste de espaçamento
+
+            doc.text(value, PDF_MARGIN_X + 40, currentY); // Ajuste para alinhar o valor
+            currentY += 5;
+        };
+        
+        // Informações
+        doc.setFont('helvetica', 'bold'); // Configura negrito para as labels
+        doc.text('Conferência Concluída em:', PDF_MARGIN_X, currentY);
+        doc.setFont('helvetica', 'normal'); // Retorna normal para o valor
+        doc.text(local, PDF_MARGIN_X + 45, currentY);
+        currentY += 5;
+        
+        doc.setFont('helvetica', 'bold');
+        doc.text('Conferente:', PDF_MARGIN_X, currentY);
+        doc.setFont('helvetica', 'normal');
+        doc.text(militarCompleto, PDF_MARGIN_X + 45, currentY);
+        currentY += 5;
+        
+        doc.setFont('helvetica', 'bold');
+        doc.text('Data/Hora:', PDF_MARGIN_X, currentY);
+        doc.setFont('helvetica', 'normal');
+        doc.text(dataHora, PDF_MARGIN_X + 45, currentY);
+        currentY += 10;
+
+
         // Status Geral
         doc.setFontSize(10);
         doc.setFont('helvetica', 'bold');
