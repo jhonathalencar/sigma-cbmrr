@@ -1220,20 +1220,18 @@
                // Expande o setor
                toggleSetor(nextSetorEl.querySelector('.setor-header')); 
                
-               // === CORREÇÃO ROBUSTA DE ROLAGEM COM DELAY ===
-               // 1. Rola o elemento para o topo da viewport
-               nextSetorEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+               // === CORREÇÃO DE ROLAGEM COM POSIÇÃO ABSOLUTA ===
+               const fixedHeaderOffset = 60; // 50px do header + margem
                
-               // 2. Aplica a compensação de rolagem APÓS um pequeno atraso (50ms)
-               //    para garantir que a rolagem inicial tenha terminado.
-               setTimeout(() => {
-                   const fixedHeaderOffset = 60; // 50px do header + 10px de margem
-                   window.scrollBy(0, -fixedHeaderOffset);
-               }, 50); 
-               // === FIM DA CORREÇÃO ROBUSTA DE ROLAGEM COM DELAY ===
+               // Rola a janela instantaneamente para a posição do topo do novo setor
+               window.scrollTo({
+                   top: nextSetorEl.offsetTop - fixedHeaderOffset,
+                   behavior: 'auto' // Rola instantaneamente (sem animação) para fixar o elemento
+               });
+               // === FIM DA CORREÇÃO DE ROLAGEM COM POSIÇÃO ABSOLUTA ===
             }
         } else {
-             // Se for o último setor
+             // Se for o último setor, rola para o botão finalizar.
              document.getElementById('btn-finalizar').scrollIntoView({ behavior: 'smooth', block: 'start' });
         }
     }
