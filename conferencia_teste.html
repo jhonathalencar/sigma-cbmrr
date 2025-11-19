@@ -543,7 +543,7 @@
 
 <script>
     // *******************************************************************
-    // 1. CONFIGURAÇÃO FIREBASE (Apenas configuração, inicialização será no initApp)
+    // 1. CONFIGURAÇÃO FIREBASE
     // *******************************************************************
     const firebaseConfig = {
         apiKey: "AIzaSyCB0PH0UgghgsvH0BgPkG4AkKON6xSQ9mc",
@@ -560,40 +560,36 @@
     const DOCUMENTO_ID = 'lista_completa'; 
     let dadosConferencia = [];
     
-    // Inicialização da aplicação (para resolver problemas de SyntaxError/Escopo)
-    async function initApp() {
-        try {
-            // Inicialização do Firebase (Síncrono/Assíncrono no primeiro uso)
-            if (typeof firebase !== 'undefined' && typeof firebase.firestore !== 'undefined') {
-                firebase.initializeApp(firebaseConfig);
+    // *******************************************************************
+    // 2. FUNÇÃO DE INICIALIZAÇÃO E CARREGAMENTO
+    // *******************************************************************
+
+    async function carregarDadosRemotos() {
+        // Inicialização do Firebase movida para o início desta função ASYNC
+        if (!db) {
+            try {
+                // Certifica-se que inicializamos apenas uma vez
+                if (!firebase.apps.length) {
+                    firebase.initializeApp(firebaseConfig);
+                }
                 db = firebase.firestore();
-            } else {
-                throw new Error("Bibliotecas do Firebase não carregadas (verifique a conexão CDN).");
+            } catch (e) {
+                console.error("ERRO: Falha na inicialização do Firestore.", e);
             }
+        }
 
-            // Injeta a info do militar no cabeçalho antes de carregar os dados
-            updateHeaderInfo();
-            
-            // Inicia o processo de carregamento remoto (agora assíncrono e seguro)
-            await carregarDadosRemotos();
-
-        } catch (e) {
-            console.error("ERRO CRÍTICO na inicialização/carregamento:", e);
+        if (!db) {
              const mainContainer = document.getElementById('main-content').parentNode;
              document.getElementById('loading-message').style.display = 'none';
              mainContainer.innerHTML += `
                 <div class="error-message">
-                    <h1>❌ Falha de Inicialização</h1>
-                    <p>Verifique a chave 'firebaseConfig' e se os arquivos CDN foram carregados.</p>
-                    <small>Detalhe: ${e.message}</small>
+                    <h1>❌ Erro Crítico: Inicialização</h1>
+                    <p>O Firebase não pôde ser iniciado. Verifique a chave 'firebaseConfig' e a conexão.</p>
                 </div>
             `;
+            return;
         }
-    }
 
-
-    async function carregarDadosRemotos() {
-        // Esta função agora está encapsulada por initApp (o erro 'await' deve sumir)
         try {
             console.log("Buscando lista de conferência no Firebase...");
             const doc = await db.collection(COLECAO_NOME).doc(DOCUMENTO_ID).get();
@@ -612,7 +608,6 @@
         } catch (error) {
             console.error("Falha na sincronização ou carregamento dos dados.", error);
             
-            // Exibe o erro detalhado no corpo do HTML (Versão de diagnóstico)
             const mainContainer = document.getElementById('main-content').parentNode;
             const loadingMessageEl = document.getElementById('loading-message');
             
@@ -1270,6 +1265,7 @@
     async function finalizarConferencia() {
         console.log("finalizarConferencia() chamada.");
         
+        // --- 1. VERIFICAÇÃO DE HABILITAÇÃO ---
         const btnFinalizar = document.getElementById('btn-finalizar');
         if (btnFinalizar.disabled) {
             alert("A conferência deve ser concluída (100% dos itens conferidos) para gerar o PDF.");
@@ -1376,6 +1372,7 @@
             const MAROON_COLOR = '#800020';
             const GREEN_COLOR = '#1B8A3E';
             
+            // CRÍTICO: Instanciação do jsPDF
             const { jsPDF } = window.jspdf;
             const doc = new jsPDF('p', 'mm', 'a4');
             let currentY = 10;
@@ -1517,7 +1514,7 @@
             doc.save(`Conferencia_${local.replace(/[^a-zA-Z0-9]/g, '')}_${userInfo.nomeGuerra}_${dataHora.toISOString().split('T')[0]}.pdf`);
         } catch (e) {
             console.error("Erro fatal ao executar finalizarConferencia:", e);
-            alert("Erro! Não foi possível finalizar. Por favor, verifique o Console (F12) para detalhes.");
+            alert(`Erro! Não foi possível finalizar: ${e.message}. Por favor, verifique o Console (F12) para detalhes.`);
         }
     }
 
