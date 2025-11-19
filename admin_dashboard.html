@@ -11,7 +11,7 @@
 
     <style>
         /* =========================================
-           1. ESTILOS GERAIS DO LAYOUT (DASHBOARD)
+           1. ESTILOS GERAIS DO LAYOUT
            ========================================= */
         body {
             font-family: Arial, sans-serif;
@@ -23,7 +23,7 @@
             padding-top: 50px; 
             padding-bottom: 60px; 
             box-sizing: border-box;
-            overflow-x: hidden; /* Evita rolagem lateral indesejada */
+            overflow-x: hidden;
         }
 
         /* CABEÇALHO */
@@ -72,9 +72,7 @@
         .footer-central strong { font-weight: bold; }
         .footer-autor { margin-top: 10px; color: #888; font-size: 0.9em; }
 
-        /* =========================================
-           2. MENU LATERAL (SIDEBAR)
-           ========================================= */
+        /* MENU LATERAL */
         .sidebar {
             width: 250px;
             background-color: #ffffff;
@@ -113,19 +111,9 @@
         }
         .sidebar a:hover { background-color: #fff5f5; color: #800020; }
         .sidebar a.active { background-color: #ffecec; color: #800020; font-weight: bold; border-left: 4px solid #d90f23; }
+        .menu-label { padding: 15px 20px 5px; font-size: 0.85em; color: #999; text-transform: uppercase; font-weight: bold; }
 
-        /* Submenu Label */
-        .menu-label {
-            padding: 15px 20px 5px;
-            font-size: 0.85em;
-            color: #999;
-            text-transform: uppercase;
-            font-weight: bold;
-        }
-
-        /* =========================================
-           3. ÁREA DE CONTEÚDO PRINCIPAL
-           ========================================= */
+        /* ÁREA DE CONTEÚDO */
         .content {
             margin-left: 250px; 
             flex-grow: 1;
@@ -134,99 +122,117 @@
             width: calc(100% - 250px);
             padding-bottom: 80px; 
         }
-
-        /* Ocultar/Mostrar Views */
         .view-section { display: none; }
         .view-section.active-view { display: block; }
 
         /* =========================================
            4. ESTILOS ESPECÍFICOS DO DASHBOARD (C/A)
            ========================================= */
-        .summary-box {
+        
+        /* Grid de Cards */
+        .cards-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        /* Card de Setor (Clicável) */
+        .sector-card {
             background-color: white;
             padding: 20px;
             border-radius: 8px;
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-            margin-bottom: 20px;
-            display: inline-block;
-            border-left: 4px solid #1b8a3e;
+            border-left: 5px solid #d90f23; /* Tarja vermelha */
+            width: 100%;
+            max-width: 250px;
+            cursor: pointer; /* Mãozinha */
+            transition: transform 0.2s, box-shadow 0.2s;
         }
-        .summary-value { font-size: 2.5em; font-weight: bold; color: #d90f23; }
+
+        .sector-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+            background-color: #fff5f5;
+        }
+
+        .sector-card.active-card {
+            background-color: #ffecec;
+            border: 1px solid #d90f23;
+            border-left: 5px solid #d90f23;
+        }
+
+        .sector-card h3 {
+            margin-top: 0;
+            font-size: 1em;
+            color: #555;
+            margin-bottom: 10px;
+            min-height: 40px; /* Altura mínima para alinhar títulos */
+        }
+
+        .sector-card .count-value {
+            font-size: 2.5em;
+            font-weight: bold;
+            color: #d90f23;
+            display: block;
+            text-align: right;
+        }
         
+        .sector-card .label-pendencias {
+            font-size: 0.8em;
+            color: #999;
+            display: block;
+            text-align: right;
+        }
+        
+        /* Tabela */
         .ca-table-container {
             overflow-x: auto;
             background-color: white;
-            padding: 15px;
+            padding: 20px;
             border-radius: 8px;
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            margin-top: 10px;
+            border-top: 3px solid #d90f23;
+            animation: fadeIn 0.5s;
         }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
         .ca-table { width: 100%; border-collapse: collapse; font-size: 0.9em; }
         .ca-table th, .ca-table td { padding: 12px 15px; text-align: left; border-bottom: 1px solid #ddd; }
         .ca-table th { background-color: #f8f8f8; color: #800020; font-weight: bold; text-transform: uppercase; }
 
         /* =========================================
-           5. ESTILOS ESPECÍFICOS DO GERENCIADOR (ADMIN.HTML)
+           5. ESTILOS DO GERENCIADOR (ADMIN)
            ========================================= */
-        /* Ajuste do container interno do admin para não conflitar */
         .admin-container {
-            background-color: #fff;
-            padding: 20px;
-            border-radius: 10px;
+            background-color: #fff; padding: 20px; border-radius: 10px;
             box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-            width: 100%;
-            max-width: 900px; /* Um pouco mais largo para o dashboard */
-            margin: 0 auto 20px auto;
-            box-sizing: border-box;
-            text-align: center;
+            width: 100%; max-width: 900px; margin: 0 auto 20px auto;
+            box-sizing: border-box; text-align: center;
         }
-        
         .logo-admin { display: block; margin: 0 auto 15px auto; max-width: 80px; height: auto; }
         h1.page-title { color: #d90f23; margin-bottom: 15px; font-size: 1.8em; border-bottom: 2px solid #e0e0e0; padding-bottom: 10px; text-align: center; }
-
-        /* Botões e Inputs do Admin */
         .global-actions { display: flex; gap: 10px; margin-bottom: 20px; justify-content: flex-start; flex-wrap: wrap; }
         .global-actions button, .btn-action { padding: 8px 15px; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; color: white; }
-        .btn-sync { background-color: #1b8a3e; }
-        .btn-admin-config { background-color: #6c757d; }
+        .btn-sync { background-color: #1b8a3e; } .btn-admin-config { background-color: #6c757d; }
         .btn-add { background-color: #800020; color: white; border: none; padding: 8px 15px; border-radius: 4px; cursor: pointer; }
-        
-        /* Lista de Setores */
         .lista-setores { padding: 0; list-style: none; text-align: left; }
         .setor-item { margin-bottom: 15px; border: 1px solid #800020; border-radius: 6px; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); background: #fff; }
-        
-        .setor-header-admin {
-            background-color: #800020;
-            color: white;
-            padding: 10px 15px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            font-weight: bold;
-            cursor: grab;
-        }
-        
+        .setor-header-admin { background-color: #800020; color: white; padding: 10px 15px; display: flex; justify-content: space-between; align-items: center; font-weight: bold; cursor: grab; }
         .setor-content-admin { transition: max-height 0.4s ease-out; overflow: hidden; max-height: 2000px; padding: 10px; }
         .setor-content-admin.collapsed { max-height: 0; padding: 0 !important; }
-
-        .item-conferencia-admin {
-            display: flex; justify-content: space-between; align-items: flex-start;
-            padding: 10px 0; border-bottom: 1px solid #eee; cursor: move;
-        }
-        
-        /* Formulários internos */
+        .item-conferencia-admin { display: flex; justify-content: space-between; align-items: flex-start; padding: 10px 0; border-bottom: 1px solid #eee; cursor: move; }
         .add-setor-form, .add-item-form-setor { display: flex; gap: 5px; margin-bottom: 10px; }
         .add-setor-form input, .add-item-form-setor input, .add-item-form-setor select { flex-grow: 1; padding: 8px; border: 1px solid #ccc; border-radius: 4px; }
-
-        /* Botões de ação pequenos */
-        .btn-remover { background-color: #d90f23; }
-        .btn-edit-alt { background-color: #7f8c8d; }
+        .btn-remover { background-color: #d90f23; } .btn-edit-alt { background-color: #7f8c8d; }
         .item-actions-admin { display: flex; gap: 5px; }
-
-        /* Tombamento */
         .tombamento-container-wrapper { margin-top: 5px; padding-left: 20px; background: #f9f9f9; border-left: 3px solid #ccc; }
         .tombamento-list li { display: flex; justify-content: space-between; padding: 5px 0; border-bottom: 1px dotted #eee; }
-
-        /* MODAL */
         .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); display: none; align-items: center; justify-content: center; z-index: 2000; }
         .modal-content { background: #fff; padding: 25px; border-radius: 12px; width: 90%; max-width: 450px; position: relative; text-align: left; }
         .modal-content label { display: block; margin-top: 10px; font-weight: bold; }
@@ -234,7 +240,6 @@
         .modal-buttons { display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px; }
         .close-btn { position: absolute; top: 10px; right: 15px; background: none; border: none; font-size: 20px; cursor: pointer; color: #d90f23; }
 
-        /* RESPONSIVIDADE */
         @media (max-width: 768px) {
             .sidebar { width: 100%; height: auto; position: relative; top: 0; border-right: none; border-bottom: 1px solid #ddd; }
             .sidebar a { display: inline-block; width: 50%; box-sizing: border-box; text-align: center; float: left; border-bottom: 3px solid transparent; }
@@ -273,19 +278,23 @@
         
         <div id="view-dashboard" class="view-section active-view">
             <h1>Dashboard - Não Conformidades (C/A)</h1>
-            <div class="summary-box">
-                <h3>Total de Itens C/A Registrados</h3>
-                <div id="total-ca-count" class="summary-value">...</div>
-            </div>
-            <div id="loading-message-dashboard">Conectando ao Firebase...</div>
-            <div class="ca-table-container" style="display: none;">
-                <h2>Detalhes das Alterações por Conferência</h2>
+            
+            <div id="loading-message-dashboard">Carregando alterações...</div>
+
+            <div id="cards-container" class="cards-grid">
+                </div>
+
+            <div id="ca-table-wrapper" class="ca-table-container" style="display: none;">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
+                    <h2 id="table-title" style="margin:0; color:#800020;">Detalhes das Alterações</h2>
+                    <button onclick="fecharTabela()" class="btn-action btn-edit-alt" style="padding:5px 10px;">Fechar</button>
+                </div>
+                
                 <table class="ca-table">
                     <thead>
                         <tr>
                             <th>Material/Tombamento</th>
                             <th>Alteração</th>
-                            <th>Local</th>
                             <th>Conferente</th>
                             <th>Data</th>
                         </tr>
@@ -315,8 +324,7 @@
                         <button class="btn-add" onclick="adicionarSetor(document.getElementById('input-setor-nome').value)">+ Setor</button>
                     </div>
                     
-                    <ul id="lista-setores-container" class="lista-setores">
-                        </ul>
+                    <ul id="lista-setores-container" class="lista-setores"></ul>
                 </div>
             </div>
         </div>
@@ -336,22 +344,17 @@
             <h2>Editar Item</h2>
             <input type="hidden" id="edit-setor-id">
             <input type="hidden" id="edit-item-original-id">
-
             <label for="edit-item-nome">Nome:</label>
             <input type="text" id="edit-item-nome">
-            
             <label for="edit-item-setor">Mover para Setor:</label>
             <select id="edit-item-setor"></select>
-            
             <label for="edit-item-qtd">Quantidade:</label>
             <input type="number" id="edit-item-qtd" min="1">
-            
             <label for="edit-item-tipo">Tipo:</label>
             <select id="edit-item-tipo" disabled style="background-color: #eee;">
                  <option value="single">Item Único</option>
                  <option value="multi">Item com Tombamento</option>
             </select>
-
             <div class="modal-buttons">
                 <button class="btn-action btn-remover" onclick="fecharModal()">Cancelar</button>
                 <button class="btn-action btn-sync" onclick="salvarEdicaoItem()">Salvar</button>
@@ -365,7 +368,7 @@
 
     <script>
         // ===========================================================
-        // 1. CONFIGURAÇÃO FIREBASE UNIFICADA
+        // 1. CONFIGURAÇÃO FIREBASE
         // ===========================================================
         const firebaseConfig = {
             apiKey: "AIzaSyCB0PH0UgghgsvH0BgPkG4AkKON6xSQ9mc",
@@ -376,121 +379,164 @@
             appId: "1:378026276038:web:620dd6ff57501b1a8313c7"
         };
 
-        if (!firebase.apps.length) {
-            firebase.initializeApp(firebaseConfig);
-        }
+        if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
         const db = firebase.firestore();
 
-        // Constantes das Coleções
-        const COLECAO_RESULTADOS = 'resultados_conferencias'; // Para o Dashboard
-        const COLECAO_LISTA_MESTRA = 'lista_mestra';          // Para o Gerenciador
+        const COLECAO_RESULTADOS = 'resultados_conferencias';
+        const COLECAO_LISTA_MESTRA = 'lista_mestra';
         const DOCUMENTO_LISTA_MESTRA_ID = 'lista_completa';
 
-        // Variáveis Globais
-        let dadosConferencia = []; // Lista Mestra em memória
+        let dadosConferencia = []; // Lista Mestra
+        let allCaaDataGlobal = []; // Cache das alterações carregadas
 
         // ===========================================================
-        // 2. SISTEMA DE ROTEAMENTO (ABAS/VIEWS)
+        // 2. ROTEAMENTO
         // ===========================================================
         function switchView(viewName) {
-            // Esconde todas as views
             document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active-view'));
-            // Remove ativo dos links
             document.querySelectorAll('.sidebar a').forEach(el => el.classList.remove('active'));
 
-            // Mostra a view desejada
             if (viewName === 'dashboard') {
                 document.getElementById('view-dashboard').classList.add('active-view');
                 document.getElementById('link-dashboard').classList.add('active');
-                loadCaaData(); // Recarrega dados do dashboard
+                loadCaaData();
             } else if (viewName === 'permanencia') {
                 document.getElementById('view-permanencia').classList.add('active-view');
                 document.getElementById('link-permanencia').classList.add('active');
-                carregarDadosGerenciador(); // Inicia o gerenciador
+                carregarDadosGerenciador();
             }
         }
 
         // ===========================================================
-        // 3. LÓGICA DO DASHBOARD (VIEW 1)
+        // 3. DASHBOARD LOGIC (AGORA COM CARDS POR SETOR)
         // ===========================================================
         async function loadCaaData() {
             const loading = document.getElementById('loading-message-dashboard');
-            const tableContainer = document.querySelector('.ca-table-container');
-            const tableBody = document.getElementById('ca-list-body');
-            const totalCount = document.getElementById('total-ca-count');
-
-            loading.style.display = 'block';
+            const cardsContainer = document.getElementById('cards-container');
+            const tableWrapper = document.getElementById('ca-table-wrapper');
             
-            try {
-                const resultsSnapshot = await db.collection(COLECAO_RESULTADOS).get();
-                let allCaaItems = [];
+            loading.style.display = 'block';
+            cardsContainer.innerHTML = '';
+            tableWrapper.style.display = 'none'; // Esconde tabela ao recarregar
 
-                resultsSnapshot.forEach(doc => {
+            try {
+                const snapshot = await db.collection(COLECAO_RESULTADOS).get();
+                allCaaDataGlobal = [];
+
+                snapshot.forEach(doc => {
                     const data = doc.data();
                     const metadata = {
                         local: data.local || 'N/D',
                         conferente: data.conferente || 'N/D',
                         timestamp: data.timestamp ? new Date(data.timestamp.toDate()).toLocaleString('pt-BR') : 'N/D',
                     };
-
                     if (Array.isArray(data.itensCaa)) {
                         data.itensCaa.forEach(item => {
-                            allCaaItems.push({ ...item, ...metadata });
+                            allCaaDataGlobal.push({ ...item, ...metadata });
                         });
                     }
                 });
 
-                tableBody.innerHTML = '';
-                if (allCaaItems.length === 0) {
-                    loading.textContent = "✅ Nenhuma alteração pendente.";
-                    totalCount.textContent = '0';
-                    tableContainer.style.display = 'none';
-                } else {
-                    loading.style.display = 'none';
-                    tableContainer.style.display = 'block';
-                    totalCount.textContent = allCaaItems.length;
+                loading.style.display = 'none';
 
-                    allCaaItems.forEach(item => {
-                        const row = tableBody.insertRow();
-                        row.insertCell().textContent = item.nomeCompleto;
-                        row.insertCell().textContent = item.obs || '-';
-                        row.insertCell().textContent = item.local;
-                        row.insertCell().textContent = item.conferente;
-                        row.insertCell().textContent = item.timestamp;
-                    });
+                if (allCaaDataGlobal.length === 0) {
+                    cardsContainer.innerHTML = '<p style="padding:20px; color:green; width:100%;">✅ Nenhuma alteração pendente em nenhum setor.</p>';
+                } else {
+                    renderSectorCards(allCaaDataGlobal);
                 }
+
             } catch (error) {
                 console.error(error);
-                loading.textContent = "Erro ao carregar dados.";
+                loading.textContent = "Erro ao carregar dados do Firebase.";
             }
         }
 
+        // FUNÇÃO NOVA: Agrupa dados e cria cards
+        function renderSectorCards(allItems) {
+            const cardsContainer = document.getElementById('cards-container');
+            const groupData = {};
+
+            // Agrupar por Local (Setor)
+            allItems.forEach(item => {
+                const local = item.local;
+                if (!groupData[local]) groupData[local] = [];
+                groupData[local].push(item);
+            });
+
+            // Criar HTML dos Cards
+            for (const local in groupData) {
+                const count = groupData[local].length;
+                
+                const card = document.createElement('div');
+                card.className = 'sector-card';
+                card.innerHTML = `
+                    <h3>${local}</h3>
+                    <span class="count-value">${count}</span>
+                    <span class="label-pendencias">itens c/ alteração</span>
+                `;
+                
+                // EVENTO DE CLIQUE: Abre a tabela filtrada
+                card.onclick = function() {
+                    // Remove classe 'active-card' de todos e adiciona neste
+                    document.querySelectorAll('.sector-card').forEach(c => c.classList.remove('active-card'));
+                    card.classList.add('active-card');
+                    
+                    mostrarTabelaPorSetor(local, groupData[local]);
+                };
+
+                cardsContainer.appendChild(card);
+            }
+        }
+
+        // FUNÇÃO NOVA: Mostra tabela filtrada
+        function mostrarTabelaPorSetor(nomeSetor, itensDoSetor) {
+            const tableWrapper = document.getElementById('ca-table-wrapper');
+            const tableBody = document.getElementById('ca-list-body');
+            const title = document.getElementById('table-title');
+
+            title.textContent = `Detalhes: ${nomeSetor}`;
+            tableBody.innerHTML = '';
+
+            itensDoSetor.forEach(item => {
+                const row = tableBody.insertRow();
+                row.insertCell().textContent = item.nomeCompleto;
+                row.insertCell().textContent = item.obs || '-';
+                // Local removido pois já está no título
+                row.insertCell().textContent = item.conferente;
+                row.insertCell().textContent = item.timestamp;
+            });
+
+            tableWrapper.style.display = 'block';
+            // Rola a tela suavemente até a tabela
+            tableWrapper.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+
+        function fecharTabela() {
+            document.getElementById('ca-table-wrapper').style.display = 'none';
+            document.querySelectorAll('.sector-card').forEach(c => c.classList.remove('active-card'));
+        }
+
         // ===========================================================
-        // 4. LÓGICA DO GERENCIADOR (VIEW 2 - ADMIN.HTML)
+        // 4. GERENCIADOR LOGIC (ADMIN)
         // ===========================================================
-        
         async function carregarDadosGerenciador() {
-            // Evita recarregar se já tiver dados (Opcional, aqui forçamos refresh para garantir sincronicidade)
             const loadingMsg = document.getElementById('loading-message-admin');
             const contentDiv = document.getElementById('main-admin-content');
-            
             loadingMsg.style.display = 'block';
             contentDiv.style.display = 'none';
-
             try {
                 const doc = await db.collection(COLECAO_LISTA_MESTRA).doc(DOCUMENTO_LISTA_MESTRA_ID).get();
                 if (doc.exists && Array.isArray(doc.data().list)) {
                     dadosConferencia = doc.data().list;
                 } else {
-                    console.warn("Lista vazia ou inexistente, iniciando array vazio.");
                     dadosConferencia = []; 
                 }
                 loadingMsg.style.display = 'none';
                 contentDiv.style.display = 'block';
                 renderizarLista();
             } catch (error) {
-                console.error("Erro ao carregar lista mestra:", error);
-                loadingMsg.textContent = "Erro ao carregar dados (Verifique Console).";
+                console.error(error);
+                loadingMsg.textContent = "Erro ao carregar dados.";
             }
         }
 
@@ -501,288 +547,96 @@
                     updatedAt: firebase.firestore.FieldValue.serverTimestamp()
                 });
                 if (showAlert) alert("Sincronização Completa!");
-            } catch (error) {
-                alert("Erro ao salvar no Firebase.");
-                console.error(error);
-            }
+            } catch (error) { alert("Erro ao salvar."); }
         }
 
-        // --- FUNÇÕES CRUD DO GERENCIADOR ---
         function gerarNovoId() { return Date.now().toString().slice(-6) + Math.floor(Math.random() * 100).toString().padStart(2, '0'); }
-
         function adicionarSetor(nome) {
-            nome = nome.trim().toUpperCase();
-            if (!nome) return alert("Nome obrigatório");
+            nome = nome.trim().toUpperCase(); if (!nome) return;
             dadosConferencia.push({ id: gerarNovoId(), nome: nome, itens: [] });
             document.getElementById('input-setor-nome').value = '';
             salvarDados(false); renderizarLista();
         }
-
-        function removerSetor(setorId) {
-            if (!confirm("Remover este setor e itens?")) return;
-            dadosConferencia = dadosConferencia.filter(s => s.id !== setorId);
+        function removerSetor(id) { if(confirm("Remover?")) { dadosConferencia=dadosConferencia.filter(s=>s.id!==id); salvarDados(false); renderizarLista(); } }
+        function promptRenomearSetor(id, atual) { const n = prompt("Novo nome:", atual); if(n){ const s=dadosConferencia.find(x=>x.id===id); if(s){s.nome=n.toUpperCase(); salvarDados(false); renderizarLista();} } }
+        function adicionarItemPorSetor(sId) {
+            const nome = document.getElementById(`input-item-nome-${sId}`).value.trim().toUpperCase();
+            const qtd = parseInt(document.getElementById(`input-item-qtd-${sId}`).value);
+            const tipo = document.getElementById(`select-item-tipo-${sId}`).value;
+            if(!nome || qtd<1) return;
+            const s = dadosConferencia.find(x=>x.id===sId);
+            const novo = { id: sId+'-'+gerarNovoId(), nome: nome, quantidadeEsperada: qtd, tipo: tipo, tombamentos: [] };
+            if(tipo==='multi') for(let i=0;i<qtd;i++) novo.tombamentos.push({tomb:`NOVO-${i+1}`, status:"pending", obs:""});
+            s.itens.push(novo); salvarDados(false); renderizarLista();
+            document.getElementById(`input-item-nome-${sId}`).value='';
+        }
+        function removerItem(sId, iId) { if(confirm("Remover?")){ const s=dadosConferencia.find(x=>x.id===sId); s.itens=s.itens.filter(i=>i.id!==iId); salvarDados(false); renderizarLista(); } }
+        function adicionarTombamento(iId, input) {
+            const val = input.value.trim().toUpperCase(); if(!val) return;
+            const s = dadosConferencia.find(x=>x.itens.some(i=>i.id===iId)); const i=s.itens.find(x=>x.id===iId);
+            if(i.tombamentos.some(t=>t.tomb===val)) return alert("Duplicado");
+            i.tombamentos.push({tomb:val, status:"pending", obs:""}); i.quantidadeEsperada=i.tombamentos.length;
             salvarDados(false); renderizarLista();
         }
-
-        function promptRenomearSetor(setorId, nomeAtual) {
-            const novoNome = prompt("Novo nome:", nomeAtual);
-            if (novoNome && novoNome.trim()) {
-                const setor = dadosConferencia.find(s => s.id === setorId);
-                if (setor) { setor.nome = novoNome.toUpperCase(); salvarDados(false); renderizarLista(); }
-            }
-        }
-
-        function adicionarItemPorSetor(setorId) {
-            const nomeInput = document.getElementById(`input-item-nome-${setorId}`);
-            const qtdInput = document.getElementById(`input-item-qtd-${setorId}`);
-            const tipoSelect = document.getElementById(`select-item-tipo-${setorId}`);
-            
-            const nome = nomeInput.value.trim().toUpperCase();
-            const qtd = parseInt(qtdInput.value);
-            const tipo = tipoSelect.value;
-
-            if (!nome || qtd < 1) return alert("Preencha corretamente");
-
-            const setor = dadosConferencia.find(s => s.id === setorId);
-            if (setor) {
-                const novoItem = { id: setorId + '-' + gerarNovoId(), nome: nome, quantidadeEsperada: qtd, tipo: tipo, tombamentos: [] };
-                if (tipo === 'multi') {
-                    for(let i=0; i<qtd; i++) novoItem.tombamentos.push({tomb: `NOVO-${i+1}`, status:"pending", obs:""});
-                }
-                setor.itens.push(novoItem);
-                salvarDados(false); renderizarLista();
-                nomeInput.value = ''; qtdInput.value = '1';
-            }
-        }
-
-        function removerItem(setorId, itemId) {
-            if(!confirm("Remover item?")) return;
-            const setor = dadosConferencia.find(s => s.id === setorId);
-            if(setor) {
-                setor.itens = setor.itens.filter(i => i.id !== itemId);
-                salvarDados(false); renderizarLista();
-            }
-        }
-
-        function adicionarTombamento(itemId, input) {
-            const val = input.value.trim().toUpperCase();
-            if(!val) return;
-            const setor = dadosConferencia.find(s => s.itens.some(i => i.id === itemId));
-            const item = setor.itens.find(i => i.id === itemId);
-            if(item.tombamentos.some(t=>t.tomb===val)) return alert("Já existe");
-            
-            item.tombamentos.push({tomb: val, status:"pending", obs:""});
-            item.quantidadeEsperada = item.tombamentos.length;
+        function removerTombamento(iId, val) {
+            if(!confirm("Remover?")) return;
+            const s=dadosConferencia.find(x=>x.itens.some(i=>i.id===iId)); const i=s.itens.find(x=>x.id===iId);
+            i.tombamentos=i.tombamentos.filter(t=>t.tomb!==val); i.quantidadeEsperada=i.tombamentos.length;
             salvarDados(false); renderizarLista();
         }
-
-        function removerTombamento(itemId, val) {
-            if(!confirm("Remover tombamento?")) return;
-            const setor = dadosConferencia.find(s => s.itens.some(i => i.id === itemId));
-            const item = setor.itens.find(i => i.id === itemId);
-            item.tombamentos = item.tombamentos.filter(t => t.tomb !== val);
-            item.quantidadeEsperada = item.tombamentos.length;
-            salvarDados(false); renderizarLista();
+        function editarTombamento(iId, oldVal, input) {
+            const newVal = input.value.trim().toUpperCase(); if(!newVal || newVal===oldVal) return;
+            const s=dadosConferencia.find(x=>x.itens.some(i=>i.id===iId)); const i=s.itens.find(x=>x.id===iId);
+            const t=i.tombamentos.find(x=>x.tomb===oldVal); if(t){t.tomb=newVal; salvarDados(false);}
         }
-
-        function editarTombamento(itemId, antigo, input) {
-            const novo = input.value.trim().toUpperCase();
-            if(!novo || novo === antigo) return;
-            const setor = dadosConferencia.find(s => s.itens.some(i => i.id === itemId));
-            const item = setor.itens.find(i => i.id === itemId);
-            const t = item.tombamentos.find(x => x.tomb === antigo);
-            if(t) { t.tomb = novo; salvarDados(false); }
-        }
-
-        // --- RENDERIZAÇÃO ---
-        function toggleSetorContent(header) {
-            const content = header.nextElementSibling;
-            content.classList.toggle('collapsed');
-        }
+        function toggleSetorContent(el) { el.nextElementSibling.classList.toggle('collapsed'); }
 
         function renderizarLista() {
-            const container = document.getElementById('lista-setores-container');
-            container.innerHTML = '';
-
-            dadosConferencia.forEach(setor => {
-                const li = document.createElement('li');
-                li.className = 'setor-item';
-                li.setAttribute('data-id', setor.id);
-
-                // HTML INTERNO DO SETOR
+            const container = document.getElementById('lista-setores-container'); container.innerHTML = '';
+            dadosConferencia.forEach(s => {
                 let itensHtml = '';
-                setor.itens.forEach(item => {
+                s.itens.forEach(i => {
                     let tombHtml = '';
-                    if(item.tipo === 'multi' && item.tombamentos) {
-                        const listItems = item.tombamentos.map(t => `
-                            <li>
-                                <span><input type="text" value="${t.tomb}" onblur="editarTombamento('${item.id}', '${t.tomb}', this)"></span>
-                                <button class="btn-action btn-remover" style="padding:2px 5px; font-size:0.7em;" onclick="removerTombamento('${item.id}', '${t.tomb}')">X</button>
-                            </li>
-                        `).join('');
-                        tombHtml = `
-                            <div class="tombamento-container-wrapper">
-                                <ul class="tombamento-list">${listItems}</ul>
-                                <div style="display:flex; gap:5px; margin-top:5px;">
-                                    <input type="text" id="add-tomb-${item.id}" placeholder="Novo Tomb.">
-                                    <button class="btn-add" onclick="adicionarTombamento('${item.id}', document.getElementById('add-tomb-${item.id}'))">+</button>
-                                </div>
-                            </div>`;
+                    if(i.tipo==='multi' && i.tombamentos){
+                        const lis = i.tombamentos.map(t=>`<li><span><input type="text" value="${t.tomb}" onblur="editarTombamento('${i.id}','${t.tomb}',this)"></span><button class="btn-action btn-remover" style="padding:2px 5px;" onclick="removerTombamento('${i.id}','${t.tomb}')">X</button></li>`).join('');
+                        tombHtml=`<div class="tombamento-container-wrapper"><ul class="tombamento-list">${lis}</ul><div style="display:flex;gap:5px;margin-top:5px;"><input type="text" id="add-tomb-${i.id}"><button class="btn-add" onclick="adicionarTombamento('${i.id}',document.getElementById('add-tomb-${i.id}'))">+</button></div></div>`;
                     }
-
-                    itensHtml += `
-                        <li class="item-conferencia-admin" data-id="${item.id}" data-setor-id="${setor.id}">
-                            <div style="width:100%">
-                                <div style="display:flex; justify-content:space-between;">
-                                    <div>
-                                        <strong>${item.nome}</strong>
-                                        <br><small>Qtd: ${item.quantidadeEsperada}</small>
-                                    </div>
-                                    <div class="item-actions-admin">
-                                        <button class="btn-action btn-edit-alt" onclick="abrirModalEdicao('${setor.id}', '${item.id}')"><i class="fas fa-edit"></i></button>
-                                        <button class="btn-action btn-remover" onclick="removerItem('${setor.id}', '${item.id}')"><i class="fas fa-trash"></i></button>
-                                    </div>
-                                </div>
-                                ${tombHtml}
-                            </div>
-                        </li>`;
+                    itensHtml += `<li class="item-conferencia-admin" data-id="${i.id}" data-setor-id="${s.id}"><div style="width:100%"><div style="display:flex;justify-content:space-between;"><div><strong>${i.nome}</strong><br><small>Qtd: ${i.quantidadeEsperada}</small></div><div class="item-actions-admin"><button class="btn-action btn-edit-alt" onclick="abrirModalEdicao('${s.id}','${i.id}')"><i class="fas fa-edit"></i></button><button class="btn-action btn-remover" onclick="removerItem('${s.id}','${i.id}')"><i class="fas fa-trash"></i></button></div></div>${tombHtml}</div></li>`;
                 });
-
-                li.innerHTML = `
-                    <div class="setor-header-admin" onclick="toggleSetorContent(this)">
-                        <span>${setor.nome}</span>
-                        <div class="item-actions-admin">
-                            <button class="btn-action btn-edit-alt" onclick="event.stopPropagation(); promptRenomearSetor('${setor.id}', '${setor.nome}')">Renomear</button>
-                            <button class="btn-action btn-remover" onclick="event.stopPropagation(); removerSetor('${setor.id}')">X</button>
-                        </div>
-                    </div>
-                    <div class="setor-content-admin">
-                        <div class="add-item-form-setor">
-                            <input type="text" id="input-item-nome-${setor.id}" placeholder="Item">
-                            <input type="number" id="input-item-qtd-${setor.id}" value="1" style="width:50px">
-                            <select id="select-item-tipo-${setor.id}">
-                                <option value="single">Único</option>
-                                <option value="multi">Tombamento</option>
-                            </select>
-                            <button class="btn-add" onclick="adicionarItemPorSetor('${setor.id}')">+</button>
-                        </div>
-                        <ul class="lista-setores item-list-admin" data-setor-id="${setor.id}">${itensHtml}</ul>
-                    </div>
-                `;
+                const li = document.createElement('li'); li.className='setor-item'; li.setAttribute('data-id',s.id);
+                li.innerHTML=`<div class="setor-header-admin" onclick="toggleSetorContent(this)"><span>${s.nome}</span><div class="item-actions-admin"><button class="btn-action btn-edit-alt" onclick="event.stopPropagation();promptRenomearSetor('${s.id}','${s.nome}')">Renomear</button><button class="btn-action btn-remover" onclick="event.stopPropagation();removerSetor('${s.id}')">X</button></div></div><div class="setor-content-admin"><div class="add-item-form-setor"><input type="text" id="input-item-nome-${s.id}" placeholder="Item"><input type="number" id="input-item-qtd-${s.id}" value="1" style="width:50px"><select id="select-item-tipo-${s.id}"><option value="single">Único</option><option value="multi">Tombamento</option></select><button class="btn-add" onclick="adicionarItemPorSetor('${s.id}')">+</button></div><ul class="lista-setores item-list-admin" data-setor-id="${s.id}">${itensHtml}</ul></div>`;
                 container.appendChild(li);
             });
-
             aplicarDragAndDrop();
         }
 
-        // --- DRAG AND DROP ---
         function aplicarDragAndDrop() {
-            // Setores
-            new Sortable(document.getElementById('lista-setores-container'), {
-                animation: 150, handle: '.setor-header-admin',
-                onEnd: function(evt) {
-                    // Lógica simplificada de reordenação de array
-                    const item = dadosConferencia.splice(evt.oldIndex, 1)[0];
-                    dadosConferencia.splice(evt.newIndex, 0, item);
-                    salvarDados(false);
-                }
-            });
-            // Itens
-            document.querySelectorAll('.item-list-admin').forEach(list => {
-                new Sortable(list, {
-                    group: 'itens', animation: 150,
-                    onEnd: function(evt) {
-                        const fromSetor = dadosConferencia.find(s=>s.id === evt.from.dataset.setorId);
-                        const toSetor = dadosConferencia.find(s=>s.id === evt.to.dataset.setorId);
-                        const item = fromSetor.itens.splice(evt.oldIndex, 1)[0];
-                        
-                        // Se mudou de setor, gera novo ID para evitar conflito
-                        if(fromSetor !== toSetor) {
-                            item.id = toSetor.id + '-' + gerarNovoId();
-                        }
-                        toSetor.itens.splice(evt.newIndex, 0, item);
-                        salvarDados(false);
-                        renderizarLista(); // Re-renderiza para atualizar IDs visuais se necessário
-                    }
-                });
-            });
+            new Sortable(document.getElementById('lista-setores-container'), { animation:150, handle:'.setor-header-admin', onEnd: function(evt){ const item=dadosConferencia.splice(evt.oldIndex,1)[0]; dadosConferencia.splice(evt.newIndex,0,item); salvarDados(false); } });
+            document.querySelectorAll('.item-list-admin').forEach(l=>{ new Sortable(l, { group:'itens', animation:150, onEnd: function(evt){ const fs=dadosConferencia.find(s=>s.id===evt.from.dataset.setorId); const ts=dadosConferencia.find(s=>s.id===evt.to.dataset.setorId); const i=fs.itens.splice(evt.oldIndex,1)[0]; if(fs!==ts) i.id=ts.id+'-'+gerarNovoId(); ts.itens.splice(evt.newIndex,0,i); salvarDados(false); renderizarLista(); } }); });
         }
 
-        // --- MODAL ---
-        function abrirModalEdicao(setorId, itemId) {
-            const setor = dadosConferencia.find(s => s.id === setorId);
-            const item = setor.itens.find(i => i.id === itemId);
-            
-            document.getElementById('edit-setor-id').value = setorId;
-            document.getElementById('edit-item-original-id').value = itemId;
-            document.getElementById('edit-item-nome').value = item.nome;
-            document.getElementById('edit-item-qtd').value = item.quantidadeEsperada;
-            document.getElementById('edit-item-qtd').disabled = (item.tipo === 'multi');
-            document.getElementById('edit-item-tipo').value = item.tipo;
-
-            const selectSetor = document.getElementById('edit-item-setor');
-            selectSetor.innerHTML = '';
-            dadosConferencia.forEach(s => {
-                const opt = document.createElement('option');
-                opt.value = s.id;
-                opt.text = s.nome;
-                if(s.id === setorId) opt.selected = true;
-                selectSetor.appendChild(opt);
-            });
-
-            document.getElementById('modal-edicao').style.display = 'flex';
+        function abrirModalEdicao(sId, iId) {
+            const s=dadosConferencia.find(x=>x.id===sId); const i=s.itens.find(x=>x.id===iId);
+            document.getElementById('edit-setor-id').value=sId; document.getElementById('edit-item-original-id').value=iId;
+            document.getElementById('edit-item-nome').value=i.nome; document.getElementById('edit-item-qtd').value=i.quantidadeEsperada;
+            document.getElementById('edit-item-qtd').disabled=(i.tipo==='multi'); document.getElementById('edit-item-tipo').value=i.tipo;
+            const sel=document.getElementById('edit-item-setor'); sel.innerHTML=''; dadosConferencia.forEach(ds=>{const o=document.createElement('option'); o.value=ds.id; o.text=ds.nome; if(ds.id===sId)o.selected=true; sel.appendChild(o);});
+            document.getElementById('modal-edicao').style.display='flex';
         }
-        function fecharModal() { document.getElementById('modal-edicao').style.display = 'none'; }
-        
-        function salvarEdicaoItem() {
-            const oldSetorId = document.getElementById('edit-setor-id').value;
-            const itemId = document.getElementById('edit-item-original-id').value;
-            const novoNome = document.getElementById('edit-item-nome').value.trim().toUpperCase();
-            const novoSetorId = document.getElementById('edit-item-setor').value;
-            const novaQtd = parseInt(document.getElementById('edit-item-qtd').value);
-
-            const oldSetor = dadosConferencia.find(s => s.id === oldSetorId);
-            const newSetor = dadosConferencia.find(s => s.id === novoSetorId);
-            const item = oldSetor.itens.find(i => i.id === itemId);
-
-            item.nome = novoNome;
-            if(item.tipo === 'single') item.quantidadeEsperada = novaQtd;
-
-            if(oldSetorId !== novoSetorId) {
-                oldSetor.itens = oldSetor.itens.filter(i => i.id !== itemId);
-                item.id = novoSetorId + '-' + gerarNovoId();
-                newSetor.itens.push(item);
-            }
+        function fecharModal(){document.getElementById('modal-edicao').style.display='none';}
+        function salvarEdicaoItem(){
+            const oldSId=document.getElementById('edit-setor-id').value; const iId=document.getElementById('edit-item-original-id').value;
+            const nome=document.getElementById('edit-item-nome').value.trim().toUpperCase(); const newSId=document.getElementById('edit-item-setor').value; const qtd=parseInt(document.getElementById('edit-item-qtd').value);
+            const oldS=dadosConferencia.find(x=>x.id===oldSId); const newS=dadosConferencia.find(x=>x.id===newSId); const i=oldS.itens.find(x=>x.id===iId);
+            i.nome=nome; if(i.tipo==='single')i.quantidadeEsperada=qtd;
+            if(oldSId!==newSId){ oldS.itens=oldS.itens.filter(x=>x.id!==iId); i.id=newSId+'-'+gerarNovoId(); newS.itens.push(i); }
             salvarDados(false); renderizarLista(); fecharModal();
         }
 
-        // --- BACKUP JSON ---
-        function fazerBackupLocal() {
-            const blob = new Blob([JSON.stringify(dadosConferencia,null,2)], {type:"application/json"});
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a'); a.href=url; a.download='backup_sigma.json';
-            a.click();
-        }
-        function importarBackupLocal(evt) {
-            const file = evt.target.files[0];
-            if(!file) return;
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                if(confirm("Substituir todos os dados?")) {
-                    try {
-                        dadosConferencia = JSON.parse(e.target.result);
-                        salvarDados(); renderizarLista();
-                    } catch(err) { alert("JSON Inválido"); }
-                }
-            };
-            reader.readAsText(file);
-        }
+        function fazerBackupLocal() { const blob=new Blob([JSON.stringify(dadosConferencia,null,2)],{type:"application/json"}); const url=URL.createObjectURL(blob); const a=document.createElement('a'); a.href=url; a.download='backup.json'; a.click(); }
+        function importarBackupLocal(e) { const f=e.target.files[0]; if(!f)return; const r=new FileReader(); r.onload=function(ev){if(confirm("Substituir?")){try{dadosConferencia=JSON.parse(ev.target.result); salvarDados(); renderizarLista();}catch(err){alert("Erro JSON");}}}; r.readAsText(f); }
 
-        // Inicialização
-        document.addEventListener('DOMContentLoaded', () => {
-            loadCaaData(); // Carrega Dashboard inicialmente
-        });
-
+        document.addEventListener('DOMContentLoaded', () => { loadCaaData(); });
     </script>
 </body>
 </html>
