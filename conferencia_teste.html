@@ -510,7 +510,7 @@
 </header>
 <div class="container">
      
-    <img src="logo_sigma.png" alt="Logo do Sistema SIGMA" class="logo" 
+    <img id="logo-sigma" src="logo_sigma.png" alt="Logo do Sistema SIGMA" class="logo" 
              onerror="this.onerror=null; this.src='https://placehold.co/80x80/d90f23/ffffff?text=SIGMA'">
      
     <h1>Conferência de Materiais</h1>
@@ -1254,9 +1254,10 @@
 
 
     // *******************************************************************
-    // 6. FUNÇÃO DE GERAÇÃO DO PDF (NOVA)
+    // 6. FUNÇÃO DE GERAÇÃO DO PDF (AGORA GLOBAL)
     // *******************************************************************
     function finalizarConferencia() {
+        // Verifica se o botão está desabilitado (conferência não concluída)
         if (document.getElementById('btn-finalizar').disabled) {
             alert("A conferência deve ser concluída (100% dos itens conferidos) para gerar o PDF.");
             return;
@@ -1264,11 +1265,17 @@
 
         // --- 1. PREPARAÇÃO DE DADOS ---
         const militarCompleto = `${userInfo.postoGraduacao} ${userInfo.quadro} ${userInfo.nomeGuerra}`;
-        const dataInfo = document.getElementById('militar-info').innerText.split('\n');
-        const dataHora = dataInfo[1] ? dataInfo[1].replace('Data/Hora:', '').trim() : new Date().toLocaleString('pt-BR');
+        // Obtém o texto da tela (Local e Data/Hora)
+        const militarInfoText = document.getElementById('militar-info').innerText;
+        
+        // Ajustamos para extrair o nome e a data/hora da string multi-linha
+        const conferenteValor = militarInfoText.split('\n')[0]?.replace('Conferente:', '').trim() || militarCompleto;
+        const dataHora = militarInfoText.split('\n')[1]?.replace('Data/Hora:', '').trim() || new Date().toLocaleString('pt-BR');
         const local = document.getElementById('local-posto-info').innerText;
         
+        
         const PDF_MARGIN_X = 14;
+        const PAGE_WIDTH = 210; // A4 width in mm
         const RED_COLOR = '#D90F23';
         const MAROON_COLOR = '#800020';
         const GREEN_COLOR = '#1B8A3E';
@@ -1300,7 +1307,7 @@
                                 nome: `${item.nome} (Tomb: ${tomb.tomb})`,
                                 status: statusData.status,
                                 obs: statusData.obs,
-                                quantidade: item.quantidadeEsperada
+                                quantidade: 1 // CORREÇÃO APLICADA AQUI
                             });
                         }
                     });
@@ -1336,7 +1343,6 @@
 
         // --- 2. CABEÇALHO DO PDF (com base nas especificações e ajustes) ---
         
-        const PAGE_WIDTH = doc.internal.pageSize.width;
         const HEADER_Y = 10;
         const LOGO_SIZE = 15;
         const CENTER_X = PAGE_WIDTH / 2;
@@ -1344,19 +1350,16 @@
         doc.setFontSize(10);
         doc.setTextColor(51); 
 
-        // Tenta buscar as imagens para o PDF (roraima.png e logo_sigma.png)
-        // Como o roraima.png não está disponível, usaremos o cbmrr.png (fallback) e logo_sigma.png (existente no HTML).
-        const cbmrrLogo = document.querySelector('.header-icon');
-        const sigmaLogo = document.querySelector('.logo');
-        
-        const logoDraw = (logoEl, x) => {
+        // Função para desenhar logo
+        const logoDraw = (logoId, x) => {
+            const logoEl = document.getElementById(logoId) || document.querySelector(`img[src*="${logoId}"]`);
             if (logoEl) {
                 try {
                     const canvas = document.createElement('canvas');
-                    canvas.width = logoEl.naturalWidth;
-                    canvas.height = logoEl.naturalHeight;
+                    canvas.width = logoEl.naturalWidth > 0 ? logoEl.naturalWidth : 40;
+                    canvas.height = logoEl.naturalHeight > 0 ? logoEl.naturalHeight : 40;
                     const ctx = canvas.getContext('2d');
-                    ctx.drawImage(logoEl, 0, 0, logoEl.naturalWidth, logoEl.naturalHeight);
+                    ctx.drawImage(logoEl, 0, 0, canvas.width, canvas.height);
                     const logoData = canvas.toDataURL('image/png');
                     doc.addImage(logoData, 'PNG', x, HEADER_Y, LOGO_SIZE, LOGO_SIZE);
                 } catch (e) {
@@ -1367,9 +1370,10 @@
         };
 
         // Logo 1 (CBM-RR / roraima.png) - Esquerda
-        logoDraw(cbmrrLogo, PDF_MARGIN_X);
+        logoDraw('cbmrr.png', PDF_MARGIN_X); 
+        
         // Logo 2 (SIGMA) - Direita
-        logoDraw(sigmaLogo, PAGE_WIDTH - PDF_MARGIN_X - LOGO_SIZE);
+        logoDraw('logo_sigma.png', PAGE_WIDTH - PDF_MARGIN_X - LOGO_SIZE); 
 
 
         // Textos Centralizados
@@ -1398,36 +1402,28 @@
         doc.setFontSize(10);
         doc.setFont('helvetica', 'normal');
         
-        // Função utilitária para imprimir com negrito na label
-        const printInfo = (label, value) => {
-            doc.setFont('helvetica', 'bold');
-            doc.text(label, PDF_MARGIN_X, currentY);
-            doc.setFont('helvetica', 'normal');
-            
-            const labelWidth = doc.getStringUnitWidth(label) * doc.internal.getFontSize();
-            const textOffset = PDF_MARGIN_X + (labelWidth * 0.35); // Ajuste de espaçamento
-
-            doc.text(value, PDF_MARGIN_X + 40, currentY); // Ajuste para alinhar o valor
-            currentY += 5;
-        };
+        // Espaçamento horizontal fixo para os valores
+        const VALUE_OFFSET = PDF_MARGIN_X + 45; 
         
-        // Informações
-        doc.setFont('helvetica', 'bold'); // Configura negrito para as labels
-        doc.text('Local: ', PDF_MARGIN_X, currentY);
-        doc.setFont('helvetica', 'normal'); // Retorna normal para o valor
-        doc.text(local, PDF_MARGIN_X + 45, currentY);
+        // Local (Correção de texto aplicada: "Local:")
+        doc.setFont('helvetica', 'bold'); 
+        doc.text('Local:', PDF_MARGIN_X, currentY); 
+        doc.setFont('helvetica', 'normal'); 
+        doc.text(local, VALUE_OFFSET, currentY);
         currentY += 5;
         
+        // Conferente
         doc.setFont('helvetica', 'bold');
         doc.text('Conferente:', PDF_MARGIN_X, currentY);
         doc.setFont('helvetica', 'normal');
-        doc.text(militarCompleto, PDF_MARGIN_X + 45, currentY);
+        doc.text(conferenteValor, VALUE_OFFSET, currentY);
         currentY += 5;
         
+        // Data/Hora
         doc.setFont('helvetica', 'bold');
         doc.text('Data/Hora:', PDF_MARGIN_X, currentY);
         doc.setFont('helvetica', 'normal');
-        doc.text(dataHora, PDF_MARGIN_X + 45, currentY);
+        doc.text(dataHora, VALUE_OFFSET, currentY);
         currentY += 10;
 
 
@@ -1464,7 +1460,7 @@
             },
             didDrawPage: function(data) {
                 // --- 5. RODAPÉ DO PDF ---
-                doc.setFontSize(9);
+                doc.setFontSize(8);
                 doc.setTextColor(150);
                 const footerText = 'SIGMA - Sistema Integrado de Gestão de Materiais.';
                 const pageCount = doc.internal.getNumberOfPages();
@@ -1492,12 +1488,8 @@
         // Inicia o processo de carregamento remoto
         carregarDadosRemotos();
         
-        // Vincula a função ao botão (já está no HTML, mas garantimos)
-        document.getElementById('btn-finalizar').addEventListener('click', finalizarConferencia);
+        // Já existe um onclick no botão FINALIZAR no HTML
     };
 </script>
 </body>
 </html>
-
-
-
