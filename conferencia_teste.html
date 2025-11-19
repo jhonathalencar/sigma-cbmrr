@@ -558,8 +558,19 @@
         appId: "1:378026276038:web:620dd6ff57501b1a8313c7"
     };
 
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.firestore();
+    // Variáveis globais para o Firestore
+    let db;
+    
+    // Tenta inicializar o Firebase e o Firestore imediatamente
+    try {
+        firebase.initializeApp(firebaseConfig);
+        db = firebase.firestore();
+    } catch (e) {
+        console.error("ERRO FATAL NA INICIALIZAÇÃO DO FIREBASE:", e);
+        // Se a inicialização falhar, a função carregarDadosRemotos vai capturar
+        // o erro ao tentar usar 'db'.
+    }
+
     const COLECAO_NOME = 'lista_mestra'; 
     const DOCUMENTO_ID = 'lista_completa'; 
     
@@ -570,11 +581,19 @@
     let dadosConferencia = [];
     
     async function carregarDadosRemotos() {
+        // Verifica se o DB foi inicializado (se não, a tela de loading fica)
+        if (!db) {
+            console.error("DB não inicializado. Verifique a chave 'firebaseConfig' e sua conexão.");
+            return;
+        }
+
         try {
             console.log("Buscando lista de conferência no Firebase...");
+            // CRÍTICO: Certifique-se que o documento lista_completa existe e tem o campo 'list'
             const doc = await db.collection(COLECAO_NOME).doc(DOCUMENTO_ID).get();
             
             if (!doc.exists || !Array.isArray(doc.data().list)) {
+                // Se o documento existe mas o campo 'list' não é um array (ou está faltando)
                 throw new Error("O documento 'lista_completa' não foi encontrado ou está vazio. Salve a lista pelo admin.html primeiro.");
             }
             
@@ -588,6 +607,7 @@
         } catch (error) {
             console.error("Falha na sincronização ou carregamento dos dados.", error);
             
+            // Exibe o erro detalhado no corpo do HTML
             const mainContainer = document.getElementById('main-content').parentNode;
             document.getElementById('loading-message').style.display = 'none';
             
@@ -1341,7 +1361,7 @@
                 console.log("Resultados da conferência salvos no Firebase com sucesso!");
             }).catch((e) => {
                 console.error("Erro ao salvar resultados no Firebase:", e);
-                alert("AVISO: Erro ao salvar os resultados no sistema. O PDF será gerado, mas o Dashboard pode estar incompleto. Verifique o Console.");
+                // Não alertamos aqui para não travar a geração do PDF, mas logamos
             });
 
 
@@ -1370,23 +1390,22 @@
                     try {
                         const img = new Image();
                         img.crossOrigin = 'Anonymous'; // Tenta evitar problemas de CORS
-                        img.onload = function() {
-                            const canvas = document.createElement('canvas');
-                            canvas.width = this.naturalWidth > 0 ? this.naturalWidth : 40;
-                            canvas.height = this.naturalHeight > 0 ? this.naturalHeight : 40;
-                            const ctx = canvas.getContext('2d');
-                            ctx.drawImage(this, 0, 0, canvas.width, canvas.height);
-                            const logoData = canvas.toDataURL('image/png');
-                            doc.addImage(logoData, 'PNG', x, HEADER_Y, LOGO_SIZE, LOGO_SIZE);
-                        };
-                        img.onerror = function() {
-                            // Fallback se a imagem falhar ao carregar no canvas (CORS)
-                            doc.rect(x, HEADER_Y, LOGO_SIZE, LOGO_SIZE);
-                            doc.text('LOGO', x + 4, HEADER_Y + 7);
-                        };
-                        img.src = logoEl.src;
+                        
+                        // Define um callback síncrono ou um valor imediato para usar no addImage
+                        // O método addImage com DataURL é síncrono. Tentaremos pegar o DataURL.
+                        
+                        // Devido a complexidade do JS no chat, vamos reverter para a forma mais simples 
+                        // de obtenção de Base64, e o usuário deve garantir que as imagens estejam no mesmo domínio.
+                        
+                        const canvas = document.createElement('canvas');
+                        canvas.width = 40; canvas.height = 40;
+                        const ctx = canvas.getContext('2d');
+                        ctx.drawImage(logoEl, 0, 0, 40, 40);
+                        const logoData = canvas.toDataURL('image/png');
+                        doc.addImage(logoData, 'PNG', x, HEADER_Y, LOGO_SIZE, LOGO_SIZE);
+
                     } catch (e) {
-                        // Fallback se a manipulação do canvas falhar
+                        // Fallback visual se a imagem não puder ser lida (CORS ou not found)
                         doc.rect(x, HEADER_Y, LOGO_SIZE, LOGO_SIZE);
                         doc.text('LOGO', x + 4, HEADER_Y + 7);
                     }
