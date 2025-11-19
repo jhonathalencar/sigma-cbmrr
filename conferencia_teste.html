@@ -153,8 +153,7 @@
             justify-content: space-between;
             align-items: center;
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-            /* CRÍTICO: Removendo a transição de altura para evitar salto no scroll */
-            transition: background-color 0.3s; 
+            transition: background-color 0.3s;
         }
 
         .setor-info {
@@ -180,7 +179,7 @@
             padding: 10px 0;
             max-height: 0; 
             overflow: hidden;
-            /* CRÍTICO: Apenas transição de padding */
+            /* CRÍTICO: REMOVENDO A TRANSIÇÃO DE ALTURA PARA EVITAR SALTO NO SCROLL */
             transition: padding 0.4s ease-out; 
             background-color: #fff;
             border-left: 1px solid #e0e0e0;
@@ -1192,7 +1191,7 @@
                 const itemData = window.itemStatus[currentId];
                 
                 if (!itemData || itemData.status === 'PENDING' || itemData.status === 'PENDING_CA') {
-                    // *** ROLAGEM REMOVIDA PARA ESTABILIDADE ***
+                    // *** ROLAGEM REMOVIDA ***
                     
                     if (itemData && itemData.status === 'PENDING_CA') {
                          currentItem.querySelector('textarea').focus();
