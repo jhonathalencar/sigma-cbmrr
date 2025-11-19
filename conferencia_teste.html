@@ -1181,7 +1181,7 @@
                 const itemData = window.itemStatus[currentId];
                 
                 if (!itemData || itemData.status === 'PENDING' || itemData.status === 'PENDING_CA') {
-                    // CORREÇÃO 1: Rolagem removida. A tela não deve ser forçada a rolar aqui.
+                    // CORREÇÃO 1: Rolagem REMOVIDA. Apenas foco se for C/A.
                     
                     if (itemData && itemData.status === 'PENDING_CA') {
                          currentItem.querySelector('textarea').focus();
@@ -1199,7 +1199,7 @@
                 });
 
                 if (pendingTombamento) {
-                    // CORREÇÃO 1: Rolagem removida. A tela não deve ser forçada a rolar aqui.
+                    // CORREÇÃO 1: Rolagem REMOVIDA. Apenas foco se for C/A.
                     
                     if (window.itemStatus[`${currentId}-${pendingTombamento.dataset.tomb}`]?.status === 'PENDING_CA') {
                         pendingTombamento.querySelector('textarea').focus();
@@ -1255,7 +1255,7 @@
 
         // --- 1. DECLARAÇÃO DE CONSTANTES E PREPARAÇÃO DE DADOS ---
         try {
-            // CORREÇÃO 3: Variáveis de cor movidas para o topo do bloco try
+            // CORREÇÃO 3: Variáveis de cor movidas para o topo do bloco try (resolvendo ReferenceError)
             const RED_COLOR = '#D90F23';
             const MAROON_COLOR = '#800020';
             const GREEN_COLOR = '#1B8A3E';
@@ -1379,6 +1379,7 @@
                         canvas.height = 40 * SCALE_FACTOR;
                         const ctx = canvas.getContext('2d');
                         
+                        // Desenha a imagem no canvas com resolução aumentada
                         ctx.drawImage(logoEl, 0, 0, canvas.width, canvas.height);
                         // A compressão do PNG Base64 ocorre aqui
                         const logoData = canvas.toDataURL('image/png');
@@ -1398,7 +1399,7 @@
                     doc.text('LOGO', x + 4, HEADER_Y + 7);
                 }
             };
-
+            
             const HEADER_Y = 10; 
 
             // Logo 1 (CBM-RR / roraima.png) - Esquerda
