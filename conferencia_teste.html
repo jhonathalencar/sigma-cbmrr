@@ -640,6 +640,7 @@
                 if (item.tipo === 'multi' && item.tombamentos && item.tombamentos.length > 0) {
                     // Item com MÚLTIPLOS TOMBAMENTOS
                     item.tombamentos.forEach(tomb => {
+                        // Certifica que o tombamento tem status, senão assume pending
                         const status = tomb.status || 'pending'; 
                         const obs = tomb.obs || '';
 
@@ -652,7 +653,7 @@
                                         <button class="action-button ca-alert ${status === 'C/A' ? 'active' : ''}" onclick="setTombamentoStatus(this, 'alert')">C/A</button>
                                     </div>
                                 </div>
-                                <p class="tombamento-descricao-salva" data-text-id="${item.id}-${tomb.tomb}" style="${status === 'C/A' && obs ? 'display: block;' : 'display: none;'}">
+                                <p class="tombamento-descricao-salva" style="${status === 'C/A' && obs ? 'display: block;' : 'display: none;'}">
                                     <span class="obs-titulo">Alteração encontrada:</span>
                                     <span class="obs-texto">${obs}</span>
                                 </p>
@@ -664,9 +665,11 @@
                             </div>
                         `;
                         totalItensNoSetor++;
+                        // Inicializa o status no objeto JS (usado para rastrear o progresso)
                         window.itemStatus[`${item.id}-${tomb.tomb}`] = { status: status, obs: obs };
                     });
                      
+                    // Define o status do item pai baseado nos tombamentos
                     const itemStatusData = determinarItemPaiStatus(item);
 
 
@@ -1220,133 +1223,56 @@
             if (nextSetorEl) {
                const nextContent = nextSetorEl.querySelector('.setor-content');
                
-               // Expande o setor (apenas abre, sem rolar)
+               // Expande o setor
                if (!nextContent.classList.contains('expanded')) {
                    toggleSetor(nextSetorEl.querySelector('.setor-header')); 
                }
 
-               // *** NENHUMA ROLAGEM EXPLÍCITA AQUI ***
+               // === SOLUÇÃO DEFINITIVA DE ROLAGEM ===
                
+               window.requestAnimationFrame(() => {
+                   
+                   // Força o navegador a recalcular o layout e altura atual do elemento.
+                   nextSetorEl.offsetHeight; 
+
+                   const fixedHeaderOffset = 60; // 50px do header + 10px de margem
+                   const setorTopPosition = nextSetorEl.offsetTop;
+
+                   // Rola para a posição absoluta do topo do setor menos o deslocamento do cabeçalho fixo
+                   window.scrollTo({
+                       top: setorTopPosition - fixedHeaderOffset,
+                       behavior: 'smooth'
+                   });
+               });
+               // === FIM DA SOLUÇÃO DEFINITIVA ===
             }
         } else {
-             // Mantemos a rolagem para o botão Finalizar apenas se for o último setor.
+             // Se for o último setor, rola para o botão finalizar.
              document.getElementById('btn-finalizar').scrollIntoView({ behavior: 'smooth', block: 'start' });
         }
     }
 
 
     // *******************************************************************
-    // 6. FUNÇÃO DE GERAÇÃO DO PDF (AGORA GLOBAL E SALVA NO FIREBASE)
+    // 6. FUNÇÃO DE GERAÇÃO DO PDF (AGORA GLOBAL)
     // *******************************************************************
     function finalizarConferencia() {
-        console.log("finalizarConferencia() chamada.");
-        
-        // --- 1. VERIFICAÇÃO DE HABILITAÇÃO ---
-        const btnFinalizar = document.getElementById('btn-finalizar');
-        if (btnFinalizar.disabled) {
+        // Verifica se o botão está desabilitado (conferência não concluída)
+        if (document.getElementById('btn-finalizar').disabled) {
             alert("A conferência deve ser concluída (100% dos itens conferidos) para gerar o PDF.");
             return;
         }
 
-        // --- 2. PREPARAÇÃO DE DADOS ---
-        try {
-            const militarCompleto = `${userInfo.postoGraduacao} ${userInfo.quadro} ${userInfo.nomeGuerra}`;
-            const militarInfoText = document.getElementById('militar-info').innerText;
-            
-            const conferenteValor = militarInfoText.split('\n')[0]?.replace('Conferente:', '').trim() || militarCompleto;
-            const dataHora = new Date(); // Objeto Date para salvamento no Firebase
-            const dataHoraString = militarInfoText.split('\n')[1]?.replace('Data/Hora:', '').trim() || dataHora.toLocaleString('pt-BR');
-            const local = document.getElementById('local-posto-info').innerText;
-            
-            
-            let itensCaa = []; // Array para armazenar apenas os itens C/A para o Firebase
-            let tableData = []; // Array para o PDF
-            let itemsCount = 0;
-            let cA_count = 0;
-
-            // --- 3. COLETA E FORMATAÇÃO DOS RESULTADOS (Para Tabela e Firebase) ---
-            dadosConferencia.forEach(setor => {
-                // Adicionar cabeçalho do setor para o PDF
-                tableData.push([
-                    { content: setor.nome.toUpperCase(), colSpan: 4, styles: { fillColor: [128, 0, 32], textColor: 255, fontStyle: 'bold' } }
-                ]);
-
-                setor.itens.forEach(item => {
-                    let itemsToProcess = [];
-
-                    if (item.tipo === 'multi' && item.tombamentos) {
-                        // Item com Múltiplos Tombamentos
-                        item.tombamentos.forEach(tomb => {
-                            const uniqueId = `${item.id}-${tomb.tomb}`;
-                            const statusData = window.itemStatus[uniqueId];
-                            if (statusData && statusData.status !== 'pending') {
-                                const data = {
-                                    nome: item.nome,
-                                    tomb: tomb.tomb,
-                                    nomeCompleto: `${item.nome} (Tomb: ${tomb.tomb})`,
-                                    status: statusData.status,
-                                    obs: statusData.obs,
-                                    quantidade: 1 // CORREÇÃO: 1 UNIDADE POR TOMBAMENTO
-                                };
-                                itemsToProcess.push(data);
-                            }
-                        });
-                    } else { 
-                        // Item Único ou Simples
-                        const statusData = window.itemStatus[item.id];
-                        if (statusData && statusData.status !== 'pending') {
-                            const data = {
-                                nome: item.nome,
-                                tomb: null,
-                                nomeCompleto: item.nome,
-                                status: statusData.status,
-                                obs: statusData.obs,
-                                quantidade: item.quantidadeEsperada
-                            };
-                            itemsToProcess.push(data);
-                        }
-                    }
-                    
-                    // Processa os itens coletados (para PDF e Firebase)
-                    itemsToProcess.forEach(data => {
-                        itemsCount++;
-                        if (data.status === 'C/A') {
-                            cA_count++;
-                            itensCaa.push(data); // ADICIONA AO ARRAY DE C/A PARA O FIREBASE
-                        }
-                        
-                        // Adiciona ao corpo da tabela do PDF
-                        const statusCell = data.status === 'S/A' ? 'S/A' : 'C/A';
-                        const statusColor = data.status === 'S/A' ? GREEN_COLOR : RED_COLOR;
-                        
-                        tableData.push([
-                            data.nomeCompleto,
-                            `QTD: ${data.quantidade}`, 
-                            { content: statusCell, styles: { fillColor: statusColor, textColor: 255 } },
-                            data.obs || '-'
-                        ]);
-                    });
-                });
-            });
-        });
+        // --- 1. PREPARAÇÃO DE DADOS ---
+        const militarCompleto = `${userInfo.postoGraduacao} ${userInfo.quadro} ${userInfo.nomeGuerra}`;
+        // Obtém o texto da tela (Local e Data/Hora)
+        const militarInfoText = document.getElementById('militar-info').innerText;
         
-        // --- 4. SALVAR RESULTADOS NO FIREBASE ---
-        await db.collection('resultados_conferencias').add({
-            local: local,
-            conferente: conferenteValor,
-            timestamp: firebase.firestore.Timestamp.fromDate(dataHora),
-            totalItensConferidos: itemsCount,
-            totalCaa: cA_count,
-            itensCaa: itensCaa, // Salva o array de não conformidades
-        }).then(() => {
-            console.log("Resultados da conferência salvos no Firebase com sucesso!");
-        }).catch((e) => {
-            console.error("Erro ao salvar resultados no Firebase:", e);
-            alert("AVISO: Erro ao salvar os resultados no sistema. O PDF será gerado, mas o Dashboard pode estar incompleto. Verifique o Console.");
-        });
-
-
-        // --- 5. GERAÇÃO DO PDF ---
+        // Ajustamos para extrair o nome e a data/hora da string multi-linha
+        const conferenteValor = militarInfoText.split('\n')[0]?.replace('Conferente:', '').trim() || militarCompleto;
+        const dataHora = militarInfoText.split('\n')[1]?.replace('Data/Hora:', '').trim() || new Date().toLocaleString('pt-BR');
+        const local = document.getElementById('local-posto-info').innerText;
+        
         
         const PDF_MARGIN_X = 14;
         const PAGE_WIDTH = 210; // A4 width in mm
@@ -1358,44 +1284,88 @@
         const doc = new jsPDF('p', 'mm', 'a4');
         let currentY = 10;
         
+        // Coleta e formata os dados para a tabela
+        let tableData = [];
+        let itemsCount = 0;
+        let cA_count = 0;
+
+        dadosConferencia.forEach(setor => {
+            // Adicionar cabeçalho do setor
+            tableData.push([
+                { content: setor.nome.toUpperCase(), colSpan: 4, styles: { fillColor: [128, 0, 32], textColor: 255, fontStyle: 'bold' } }
+            ]);
+
+            setor.itens.forEach(item => {
+                let itemsToProcess = [];
+
+                if (item.tipo === 'multi' && item.tombamentos) {
+                    item.tombamentos.forEach(tomb => {
+                        const uniqueId = `${item.id}-${tomb.tomb}`;
+                        const statusData = window.itemStatus[uniqueId];
+                        if (statusData && statusData.status !== 'pending') {
+                            itemsToProcess.push({
+                                nome: `${item.nome} (Tomb: ${tomb.tomb})`,
+                                status: statusData.status,
+                                obs: statusData.obs,
+                                quantidade: 1 // CORREÇÃO APLICADA AQUI
+                            });
+                        }
+                    });
+                } else { // Item single
+                    const statusData = window.itemStatus[item.id];
+                    if (statusData && statusData.status !== 'pending') {
+                        itemsToProcess.push({
+                            nome: item.nome,
+                            status: statusData.status,
+                            obs: statusData.obs,
+                            quantidade: item.quantidadeEsperada
+                        });
+                    }
+                }
+                
+                itemsToProcess.forEach(data => {
+                    itemsCount++;
+                    if (data.status === 'C/A') cA_count++;
+                    
+                    const statusCell = data.status === 'S/A' ? 'S/A' : 'C/A';
+                    const statusColor = data.status === 'S/A' ? GREEN_COLOR : RED_COLOR;
+                    
+                    tableData.push([
+                        data.nome,
+                        `QTD: ${data.quantidade}`, 
+                        { content: statusCell, styles: { fillColor: statusColor, textColor: 255 } },
+                        data.obs || '-'
+                    ]);
+                });
+            });
+        });
+
+
+        // --- 2. CABEÇALHO DO PDF (com base nas especificações e ajustes) ---
+        
+        const HEADER_Y = 10;
         const LOGO_SIZE = 15;
         const CENTER_X = PAGE_WIDTH / 2;
         
         doc.setFontSize(10);
         doc.setTextColor(51); 
 
-        // Função robusta para desenhar logo (com tratamento de erro)
+        // Função para desenhar logo
         const logoDraw = (logoId, x) => {
             const logoEl = document.getElementById(logoId) || document.querySelector(`img[src*="${logoId}"]`);
-            if (logoEl && logoEl.src) {
+            if (logoEl) {
                 try {
-                    // Tenta criar o canvas para obter o base64 da imagem
-                    const img = new Image();
-                    img.crossOrigin = 'Anonymous'; // Tenta evitar problemas de CORS
-                    img.onload = function() {
-                        const canvas = document.createElement('canvas');
-                        canvas.width = this.naturalWidth > 0 ? this.naturalWidth : 40;
-                        canvas.height = this.naturalHeight > 0 ? this.naturalHeight : 40;
-                        const ctx = canvas.getContext('2d');
-                        ctx.drawImage(this, 0, 0, canvas.width, canvas.height);
-                        const logoData = canvas.toDataURL('image/png');
-                        doc.addImage(logoData, 'PNG', x, HEADER_Y, LOGO_SIZE, LOGO_SIZE);
-                    };
-                    img.onerror = function() {
-                        // Fallback se a imagem falhar ao carregar no canvas (CORS)
-                        doc.rect(x, HEADER_Y, LOGO_SIZE, LOGO_SIZE);
-                        doc.text('LOGO', x + 4, HEADER_Y + 7);
-                    };
-                    img.src = logoEl.src;
+                    const canvas = document.createElement('canvas');
+                    canvas.width = logoEl.naturalWidth > 0 ? logoEl.naturalWidth : 40;
+                    canvas.height = logoEl.naturalHeight > 0 ? logoEl.naturalHeight : 40;
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(logoEl, 0, 0, canvas.width, canvas.height);
+                    const logoData = canvas.toDataURL('image/png');
+                    doc.addImage(logoData, 'PNG', x, HEADER_Y, LOGO_SIZE, LOGO_SIZE);
                 } catch (e) {
-                    // Fallback se a manipulação do canvas falhar
                     doc.rect(x, HEADER_Y, LOGO_SIZE, LOGO_SIZE);
                     doc.text('LOGO', x + 4, HEADER_Y + 7);
                 }
-            } else {
-                // Fallback se a imagem não for encontrada no DOM
-                doc.rect(x, HEADER_Y, LOGO_SIZE, LOGO_SIZE);
-                doc.text('LOGO', x + 4, HEADER_Y + 7);
             }
         };
 
@@ -1425,16 +1395,17 @@
         doc.setTextColor(51); 
         doc.text('"Amazônia: patrimônio dos brasileiros"', CENTER_X, textY, { align: 'center' });
         
-        currentY = HEADER_Y + LOGO_SIZE + 5; 
-        currentY += 15; // Espaço maior
+        currentY = HEADER_Y + LOGO_SIZE + 5; // Reinicia Y abaixo da área do cabeçalho
+        currentY += 15; // NOVO: Espaço maior entre o cabeçalho e as informações
 
         // --- 3. DADOS DA CONFERÊNCIA (Alinhado à Esquerda com Labels em Negrito) ---
         doc.setFontSize(10);
         doc.setFont('helvetica', 'normal');
         
+        // Espaçamento horizontal fixo para os valores
         const VALUE_OFFSET = PDF_MARGIN_X + 45; 
         
-        // Local
+        // Local (Correção de texto aplicada: "Local:")
         doc.setFont('helvetica', 'bold'); 
         doc.text('Local:', PDF_MARGIN_X, currentY); 
         doc.setFont('helvetica', 'normal'); 
@@ -1452,7 +1423,7 @@
         doc.setFont('helvetica', 'bold');
         doc.text('Data/Hora:', PDF_MARGIN_X, currentY);
         doc.setFont('helvetica', 'normal');
-        doc.text(dataHoraString, VALUE_OFFSET, currentY);
+        doc.text(dataHora, VALUE_OFFSET, currentY);
         currentY += 10;
 
 
@@ -1503,7 +1474,7 @@
         });
 
         // --- 6. SALVAR O PDF ---
-        doc.save(`Conferencia_${local.replace(/[^a-zA-Z0-9]/g, '')}_${userInfo.nomeGuerra}_${dataHora.toISOString().split('T')[0]}.pdf`);
+        doc.save(`Conferencia_${local.replace(/[^a-zA-Z0-9]/g, '')}_${userInfo.nomeGuerra}_${dataHora.replace(/[^a-zA-Z0-9]/g, '')}.pdf`);
     }
 
 
@@ -1516,6 +1487,8 @@
         
         // Inicia o processo de carregamento remoto
         carregarDadosRemotos();
+        
+        // Já existe um onclick no botão FINALIZAR no HTML
     };
 </script>
 </body>
