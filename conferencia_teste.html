@@ -131,7 +131,6 @@
             color: #333; 
             text-align: left; /* MANTIDO: Alinhamento à esquerda */
             margin-top: -10px;
-            margin-bottom: 15px;
             padding-bottom: 5px;
             border-bottom: 1px solid #eee;
         }
@@ -672,8 +671,8 @@
                                 <div class="tombamento-controls">
                                     <span>Tomb.: ${tomb.tomb}</span>
                                     <div class="tombamento-options">
-                                        <button class="action-button sa-ok ${status === 'S/A' ? 'active' : ''}" onclick="setItemStatus(this, 'ok')">S/A</button>
-                                        <button class="action-button ca-alert ${status === 'C/A' ? 'active' : ''}" onclick="setItemStatus(this, 'alert')">C/A</button>
+                                        <button class="action-button sa-ok ${status === 'S/A' ? 'active' : ''}" onclick="setTombamentoStatus(this, 'ok', event)">S/A</button>
+                                        <button class="action-button ca-alert ${status === 'C/A' ? 'active' : ''}" onclick="setTombamentoStatus(this, 'alert', event)">C/A</button>
                                     </div>
                                 </div>
                                 <p class="tombamento-descricao-salva" data-text-id="${item.id}-${tomb.tomb}" style="${status === 'C/A' && obs ? 'display: block;' : 'display: none;'}">
@@ -867,12 +866,10 @@
     }
 
     function setItemStatus(button, status, event) {
-        // CORREÇÃO: IMPEDE O ARRASTO DE TELA
+        // CORREÇÃO 2: IMPEDE O ARRASTO DE TELA
         if (event) {
             event.preventDefault(); 
         }
-        // Perde o foco no botão para evitar rolagem implícita (opcional, mas recomendado)
-        button.blur();
         
         const item = button.closest('.item-conferencia');
         const setor = button.closest('.setor');
@@ -921,11 +918,10 @@
     }
     
     function setTombamentoStatus(button, status, event) {
-        // CORREÇÃO: IMPEDE O ARRASTO DE TELA
+        // CORREÇÃO 2: IMPEDE O ARRASTO DE TELA
         if (event) {
             event.preventDefault(); 
         }
-        button.blur();
         
         const tombamentoEl = button.closest('.tombamento-container');
         const item = button.closest('.item-conferencia');
@@ -1195,7 +1191,7 @@
                 const itemData = window.itemStatus[currentId];
                 
                 if (!itemData || itemData.status === 'PENDING' || itemData.status === 'PENDING_CA') {
-                    // *** ROLAGEM REMOVIDA PARA ESTABILIDADE ***
+                    // *** ROLAGEM REMOVIDA ***
                     
                     if (itemData && itemData.status === 'PENDING_CA') {
                          currentItem.querySelector('textarea').focus();
@@ -1213,7 +1209,7 @@
                 });
 
                 if (pendingTombamento) {
-                    // *** ROLAGEM REMOVIDA PARA ESTABILIDADE ***
+                    // *** ROLAGEM REMOVIDA ***
                     
                     if (window.itemStatus[`${currentId}-${pendingTombamento.dataset.tomb}`]?.status === 'PENDING_CA') {
                         pendingTombamento.querySelector('textarea').focus();
@@ -1246,7 +1242,7 @@
                    toggleSetor(nextSetorEl.querySelector('.setor-header')); 
                }
 
-               // *** NENHUMA ROLAGEM EXPLÍCITA AQUI ***
+               // *** ROLAGEM EXPLÍCITA REMOVIDA PARA ESTABILIDADE ***
                
             }
         } else {
@@ -1413,7 +1409,8 @@
                     doc.text('LOGO', x + 4, HEADER_Y + 7);
                 }
             };
-            
+
+            // CRÍTICO: HEADER_Y (já definido no escopo de try)
             const HEADER_Y = 10; 
 
             // Logo 1 (CBM-RR / roraima.png) - Esquerda
