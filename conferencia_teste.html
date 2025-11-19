@@ -565,10 +565,9 @@
     // *******************************************************************
 
     async function carregarDadosRemotos() {
-        // Inicialização do Firebase movida para o início desta função ASYNC
+        // Inicialização do Firebase movida para dentro desta função ASYNC
         if (!db) {
             try {
-                // Certifica-se que inicializamos apenas uma vez
                 if (!firebase.apps.length) {
                     firebase.initializeApp(firebaseConfig);
                 }
@@ -813,22 +812,18 @@
     }
 
     function updateHeaderInfo() {
-        // Injeta os dados do militar no cabeçalho
         const militarCompleto = `${userInfo.postoGraduacao} ${userInfo.quadro} ${userInfo.nomeGuerra}`;
         
-        // 1. OBTÉM DATA E HORA
         const now = new Date();
         const dataConferencia = now.toLocaleDateString('pt-BR'); 
         const horaConferencia = now.toLocaleTimeString('pt-BR');
         
-        // 2. CRIA A NOVA STRING COM QUEBRA DE LINHA <br>
         const militarInfoElement = document.getElementById('militar-info');
         militarInfoElement.innerHTML = `
             <strong>Conferente:</strong> ${militarCompleto}<br>
             <strong>Data/Hora:</strong> ${dataConferencia}, ${horaConferencia}
         `;
         
-        // Injeta o texto padrão "PERMANÊNCIA - BRAVO 5"
        const localPostoElement = document.getElementById('local-posto-info');
        localPostoElement.innerHTML = `<span style="color: blue; font-weight: bold;">PERMANÊNCIA - BRAVO 5</span>`;
     }
@@ -837,7 +832,6 @@
     // 4. LÓGICA DE CONFERÊNCIA (Funções de controle)
     // *******************************************************************
     
-    // Função utilitária para ler parâmetros da URL
     function getUrlParameter(name) {
         name = name.replace(/[\[]/, '\\[').replace(/[\]]/, '\\]');
         const regex = new RegExp('[\\?&]' + name + '=([^&#]*)');
@@ -845,17 +839,14 @@
         return results === null ? '' : decodeURIComponent(results[1].replace(/\+/g, ' '));
     }
     
-    // Dados do militar (preenchidos via URL ou padrão)
     const userInfo = {
         postoGraduacao: getUrlParameter('posto_grad') || "3º SGT",
         quadro: getUrlParameter('quadro_mil') || "QPCBM", 
         nomeGuerra: getUrlParameter('nome_guerra') || "JHONATH", 
     };
 
-    // Variável para armazenar o status de todos os itens e tombamentos.
     window.itemStatus = {}; 
     
-    // Função para expandir/recolher o setor
     function toggleSetor(headerElement) {
         const content = headerElement.nextElementSibling;
         const arrow = headerElement.querySelector('.arrow');
@@ -864,7 +855,6 @@
             content.classList.remove('expanded');
             arrow.textContent = '►';
         } else {
-            // Fecha todos os outros setores antes de expandir o atual
             document.querySelectorAll('.setor-content.expanded').forEach(openContent => {
                 openContent.classList.remove('expanded');
                 openContent.previousElementSibling.querySelector('.arrow').textContent = '►';
@@ -1182,6 +1172,10 @@
         // Percorre a lista a partir do item atual (ou do item pai)
         for (let i = currentIndex; i < allItems.length; i++) { 
             const currentItem = allItems[i];
+            
+            // CORREÇÃO: Ponto de falha era aqui. Garante que currentItem existe.
+            if (!currentItem) continue;
+
             const currentId = currentItem.dataset.id;
             
             // --- 1. Lógica para Itens Únicos ---
@@ -1249,7 +1243,7 @@
                    toggleSetor(nextSetorEl.querySelector('.setor-header')); 
                }
 
-               // *** NENHUMA ROLAGEM EXPLÍCITA AQUI ***
+               // *** ROLAGEM AINDA REMOVIDA PARA EVITAR SALTO ***
                
             }
         } else {
@@ -1308,7 +1302,7 @@
                                     nomeCompleto: `${item.nome} (Tomb: ${tomb.tomb})`,
                                     status: statusData.status,
                                     obs: statusData.obs,
-                                    quantidade: 1 
+                                    quantidade: 1 // CORREÇÃO: 1 UNIDADE POR TOMBAMENTO
                                 };
                                 itemsToProcess.push(data);
                             }
@@ -1372,7 +1366,6 @@
             const MAROON_COLOR = '#800020';
             const GREEN_COLOR = '#1B8A3E';
             
-            // CRÍTICO: Instanciação do jsPDF
             const { jsPDF } = window.jspdf;
             const doc = new jsPDF('p', 'mm', 'a4');
             let currentY = 10;
@@ -1524,7 +1517,7 @@
     // *******************************************************************
     window.onload = function() {
         // Inicializa o app e começa o carregamento
-        initApp();
+        carregarDadosRemotos();
     };
 </script>
 </body>
