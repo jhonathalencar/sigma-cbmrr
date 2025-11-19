@@ -510,7 +510,7 @@
 </header>
 <div class="container">
      
-    <img src="logo_sigma.png" alt="Logo do Sistema SIGMA" class="logo" 
+    <img id="logo-sigma" src="logo_sigma.png" alt="Logo do Sistema SIGMA" class="logo" 
              onerror="this.onerror=null; this.src='https://placehold.co/80x80/d90f23/ffffff?text=SIGMA'">
      
     <h1>Conferência de Materiais</h1>
@@ -1257,6 +1257,7 @@
     // 6. FUNÇÃO DE GERAÇÃO DO PDF (NOVA)
     // *******************************************************************
     function finalizarConferencia() {
+        // Verifica se o botão está desabilitado (conferência não concluída)
         if (document.getElementById('btn-finalizar').disabled) {
             alert("A conferência deve ser concluída (100% dos itens conferidos) para gerar o PDF.");
             return;
@@ -1264,9 +1265,13 @@
 
         // --- 1. PREPARAÇÃO DE DADOS ---
         const militarCompleto = `${userInfo.postoGraduacao} ${userInfo.quadro} ${userInfo.nomeGuerra}`;
-        const dataInfo = document.getElementById('militar-info').innerText.split('\n');
-        const dataHora = dataInfo[1] ? dataInfo[1].replace('Data/Hora:', '').trim() : new Date().toLocaleString('pt-BR');
+        // Obtém o texto da tela (Local e Data/Hora)
         const local = document.getElementById('local-posto-info').innerText;
+        const militarInfoText = document.getElementById('militar-info').innerText;
+        
+        const conferenteValor = militarInfoText.split('\n')[0]?.replace('Conferente:', '').trim() || militarCompleto;
+        const dataHora = militarInfoText.split('\n')[1]?.replace('Data/Hora:', '').trim() || new Date().toLocaleString('pt-BR');
+        
         
         const PDF_MARGIN_X = 14;
         const PAGE_WIDTH = doc.internal.pageSize.width;
@@ -1346,19 +1351,20 @@
 
         // Função para desenhar logo
         const logoDraw = (logoId, x) => {
+            // Buscamos pelo ID do logo SIGMA ou pela classe/src do logo CBM
             const logoEl = document.getElementById(logoId) || document.querySelector(`img[src*="${logoId}"]`);
             if (logoEl) {
                 try {
-                    // Tenta criar o canvas para obter o base64 da imagem (requer que a imagem esteja na mesma origem)
+                    // Tenta criar o canvas para obter o base64 da imagem
                     const canvas = document.createElement('canvas');
-                    canvas.width = 40; // Usando tamanho fixo para renderização do canvas
-                    canvas.height = 40;
+                    canvas.width = logoEl.naturalWidth > 0 ? logoEl.naturalWidth : 40;
+                    canvas.height = logoEl.naturalHeight > 0 ? logoEl.naturalHeight : 40;
                     const ctx = canvas.getContext('2d');
-                    ctx.drawImage(logoEl, 0, 0, 40, 40);
+                    ctx.drawImage(logoEl, 0, 0, canvas.width, canvas.height);
                     const logoData = canvas.toDataURL('image/png');
                     doc.addImage(logoData, 'PNG', x, HEADER_Y, LOGO_SIZE, LOGO_SIZE);
                 } catch (e) {
-                    // Fallback visual se a imagem não puder ser lida (erro CORS, etc.)
+                    // Fallback visual se a imagem não puder ser lida
                     doc.rect(x, HEADER_Y, LOGO_SIZE, LOGO_SIZE);
                     doc.text('LOGO', x + 4, HEADER_Y + 7);
                 }
@@ -1366,12 +1372,11 @@
         };
 
         // Logo 1 (CBM-RR / roraima.png) - Esquerda
-        // Usamos 'cbmrr.png' como identificador, que está no elemento .header-icon
         logoDraw('cbmrr.png', PDF_MARGIN_X); 
         
         // Logo 2 (SIGMA) - Direita
-        // Usamos 'logo_sigma.png' como identificador, que está no elemento .logo
-        logoDraw('logo_sigma.png', PAGE_WIDTH - PDF_MARGIN_X - LOGO_SIZE);
+        // Adicionei o ID "logo-sigma" no HTML para facilitar a busca, mas mantive o nome do arquivo.
+        logoDraw('logo_sigma.png', PAGE_WIDTH - PDF_MARGIN_X - LOGO_SIZE); 
 
 
         // Textos Centralizados
@@ -1405,7 +1410,7 @@
         
         // Local
         doc.setFont('helvetica', 'bold'); // Configura negrito para a label
-        doc.text('Local:', PDF_MARGIN_X, currentY); // <-- TEXTO ALTERADO AQUI
+        doc.text('Local:', PDF_MARGIN_X, currentY); // <-- TEXTO CORRIGIDO AQUI
         doc.setFont('helvetica', 'normal'); // Retorna normal para o valor
         doc.text(local, VALUE_OFFSET, currentY);
         currentY += 5;
@@ -1414,7 +1419,7 @@
         doc.setFont('helvetica', 'bold');
         doc.text('Conferente:', PDF_MARGIN_X, currentY);
         doc.setFont('helvetica', 'normal');
-        doc.text(militarCompleto, VALUE_OFFSET, currentY);
+        doc.text(conferenteValor, VALUE_OFFSET, currentY);
         currentY += 5;
         
         // Data/Hora
@@ -1486,8 +1491,8 @@
         // Inicia o processo de carregamento remoto
         carregarDadosRemotos();
         
-        // Vincula a função ao botão (já está no HTML, mas garantimos)
-        document.getElementById('btn-finalizar').addEventListener('click', finalizarConferencia);
+        // Não é mais necessário vincular, pois o onclick está no HTML
+        // document.getElementById('btn-finalizar').addEventListener('click', finalizarConferencia);
     };
 </script>
 </body>
