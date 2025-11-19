@@ -547,7 +547,7 @@
 
 <script>
     // *******************************************************************
-    // 1. CONFIGURAÇÃO FIREBASE (Retornando ao formato síncrono e padrão)
+    // 1. CONFIGURAÇÃO FIREBASE
     // *******************************************************************
     const firebaseConfig = {
         apiKey: "AIzaSyCB0PH0UgghgsvH0BgPkG4AkKON6xSQ9mc",
@@ -558,32 +558,35 @@
         appId: "1:378026276038:web:620dd6ff57501b1a8313c7"
     };
 
-    // Inicialização direta (síncrona) que você confirmou funcionar
+    // Variáveis globais de controle
     let db;
-    try {
-        firebase.initializeApp(firebaseConfig);
-        db = firebase.firestore();
-    } catch (e) {
-        console.error("ERRO: Falha na inicialização síncrona do Firebase.", e);
-    }
-    
     const COLECAO_NOME = 'lista_mestra'; 
     const DOCUMENTO_ID = 'lista_completa'; 
-    
-    // *******************************************************************
-    // 2. ESTRUTURA DE DADOS E CARREGAMENTO REMOTO
-    // *******************************************************************
-    
     let dadosConferencia = [];
+
     
+    // *******************************************************************
+    // 2. FUNÇÃO DE INICIALIZAÇÃO E CARREGAMENTO
+    // *******************************************************************
+
     async function carregarDadosRemotos() {
+        // Tenta inicializar o Firebase se ainda não foi feito (para o caso de falha inicial)
+        if (!db && typeof firebase !== 'undefined' && typeof firebase.firestore !== 'undefined') {
+            try {
+                firebase.initializeApp(firebaseConfig);
+                db = firebase.firestore();
+            } catch (e) {
+                console.error("ERRO: Falha na inicialização do Firebase.", e);
+            }
+        }
+
         if (!db) {
              const mainContainer = document.getElementById('main-content').parentNode;
              document.getElementById('loading-message').style.display = 'none';
              mainContainer.innerHTML += `
                 <div class="error-message">
                     <h1>❌ Erro Crítico: Inicialização</h1>
-                    <p>O Firebase não pôde ser inicializado. Verifique a chave 'firebaseConfig'.</p>
+                    <p>O Firebase não pôde ser iniciado. Verifique a chave 'firebaseConfig' e a conexão.</p>
                 </div>
             `;
             return;
@@ -607,7 +610,6 @@
         } catch (error) {
             console.error("Falha na sincronização ou carregamento dos dados.", error);
             
-            // Exibe o erro detalhado no corpo do HTML (Versão de diagnóstico)
             const mainContainer = document.getElementById('main-content').parentNode;
             const loadingMessageEl = document.getElementById('loading-message');
             
@@ -615,7 +617,6 @@
                 loadingMessageEl.style.display = 'none';
             }
             
-            // Adiciona a mensagem de erro APÓS o contêiner de loading
             mainContainer.innerHTML += `
                 <div class="error-message">
                     <h1>❌ Erro de Sincronização</h1>
@@ -1263,7 +1264,7 @@
     // *******************************************************************
     // 6. FUNÇÃO DE GERAÇÃO DO PDF (AGORA GLOBAL E SALVA NO FIREBASE)
     // *******************************************************************
-    function finalizarConferencia() {
+    async function finalizarConferencia() {
         console.log("finalizarConferencia() chamada.");
         
         // --- 1. VERIFICAÇÃO DE HABILITAÇÃO ---
