@@ -58,10 +58,18 @@
         .text-red {
             color: #FF3B3B;
         }
+        
+        /* CORREÇÃO DO CABEÇALHO MOBILE (Idêntico ao index.html) */
+        .header-title-desktop {
+            display: none; /* Padrão: Esconder o título longo */
+        }
+        .header-title-mobile {
+            display: block; /* Padrão: Mostrar o título curto (CBM RR) */
+        }
 
         @media (min-width: 768px) {
-            .header-title-desktop { display: block; }
-            .header-title-mobile { display: none; }
+            .header-title-desktop { display: block; } /* Mostrar título longo no desktop */
+            .header-title-mobile { display: none; } /* Esconder título curto no desktop */
             .header-title-desktop { font-size: 1.2em; }
         }
 
