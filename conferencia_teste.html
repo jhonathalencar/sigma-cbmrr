@@ -1181,12 +1181,17 @@
                 const itemData = window.itemStatus[currentId];
                 
                 if (!itemData || itemData.status === 'PENDING' || itemData.status === 'PENDING_CA') {
-                    // CORREÇÃO 1: Rolagem removida. A tela não deve ser forçada a rolar aqui.
                     
+                    // Se estiver pendente e não visível, faz um scroll suave até O ITEM (e não até o final)
+                    if (!isElementInViewport(currentItem)) {
+                        currentItem.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    }
+
                     if (itemData && itemData.status === 'PENDING_CA') {
                          currentItem.querySelector('textarea').focus();
                     }
-                    if (!itemData || itemData.status === 'PENDING' || itemData.status === 'PENDING_CA') return; 
+                    // Encontrou o próximo pendente, para a função aqui.
+                    return; 
                 }
             }
             
@@ -1199,18 +1204,23 @@
                 });
 
                 if (pendingTombamento) {
-                    // CORREÇÃO 1: Rolagem removida. A tela não deve ser forçada a rolar aqui.
+                    
+                    // Se estiver pendente e não visível, faz um scroll suave até O ITEM
+                    if (!isElementInViewport(pendingTombamento)) {
+                        pendingTombamento.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    }
                     
                     if (window.itemStatus[`${currentId}-${pendingTombamento.dataset.tomb}`]?.status === 'PENDING_CA') {
                         pendingTombamento.querySelector('textarea').focus();
                     }
+                    // Encontrou o próximo pendente, para a função aqui.
                     return; 
                 }
             }
         }
 
-        // Rolagem para o botão Finalizar (mantida suave, caso tenha chegado no fim)
-        document.getElementById('btn-finalizar').scrollIntoView({ behavior: 'smooth', block: 'start' });
+        // REMOVIDO: A linha que causava o erro estava aqui.
+        // document.getElementById('btn-finalizar').scrollIntoView(...) -> APAGADO
     }
 
     function autoAdvanceSetor(currentSetorId) {
@@ -1522,3 +1532,4 @@
 </script>
 </body>
 </html>
+
