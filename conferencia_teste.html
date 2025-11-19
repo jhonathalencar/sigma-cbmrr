@@ -1230,28 +1230,13 @@
                    toggleSetor(nextSetorEl.querySelector('.setor-header')); 
                }
 
-               // === CORREÇÃO FINAL: Focar a rolagem no primeiro item visível do novo setor ===
-               window.requestAnimationFrame(() => {
-                   
-                   // 1. Força o navegador a recalcular o layout e altura atual do elemento.
-                   nextSetorEl.offsetHeight; 
-
-                   // 2. Localiza o primeiro item dentro do novo setor
-                   const firstItem = nextSetorEl.querySelector('.item-conferencia');
-                   
-                   if (firstItem) {
-                       // Rola suavemente para o topo do primeiro item do novo setor.
-                       // O CSS .setor { scroll-margin-top: 60px; } compensa o cabeçalho.
-                       firstItem.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                   } else {
-                       // Se não houver itens, rola para o cabeçalho do setor
-                       nextSetorEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                   }
-               });
-               // === FIM DA CORREÇÃO FINAL ===
+               // === CORREÇÃO: ROLAGEM REMOVIDA ===
+               // Não há mais rolagem forçada. O navegador mantém a posição atual,
+               // e o novo setor é expandido no local do antigo.
+               
             }
         } else {
-             // Se for o último setor, rola para o botão finalizar.
+             // Mantemos a rolagem para o botão Finalizar apenas se for o último setor.
              document.getElementById('btn-finalizar').scrollIntoView({ behavior: 'smooth', block: 'start' });
         }
     }
