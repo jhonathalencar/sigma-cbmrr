@@ -524,7 +524,7 @@
      
     <div id="main-content" style="display: none;">
          
-        <button id="btn-finalizar" disabled>FINALIZAR CONFERÊNCIA (0/X ITENS)</button>
+        <button id="btn-finalizar" onclick="finalizarConferencia()" disabled>FINALIZAR CONFERÊNCIA (0/X ITENS)</button>
     </div>
 
 </div>
@@ -1228,7 +1228,7 @@
                    toggleSetor(nextSetorEl.querySelector('.setor-header')); 
                }
 
-               // === SOLUÇÃO DEFINITIVA DE ROLAGEM: Usa cálculo absoluto com requestAnimationFrame ===
+               // === SOLUÇÃO DEFINITIVA DE ROLAGEM ===
                
                window.requestAnimationFrame(() => {
                    
@@ -1238,6 +1238,7 @@
                    const fixedHeaderOffset = 60; // 50px do header + 10px de margem
                    const setorTopPosition = nextSetorEl.offsetTop;
 
+                   // Rola para a posição absoluta do topo do setor menos o deslocamento do cabeçalho fixo
                    window.scrollTo({
                        top: setorTopPosition - fixedHeaderOffset,
                        behavior: 'smooth'
@@ -1251,6 +1252,184 @@
         }
     }
 
+
+    // *******************************************************************
+    // 6. FUNÇÃO DE GERAÇÃO DO PDF (NOVA)
+    // *******************************************************************
+    function finalizarConferencia() {
+        if (document.getElementById('btn-finalizar').disabled) {
+            alert("A conferência deve ser concluída (100% dos itens conferidos) para gerar o PDF.");
+            return;
+        }
+
+        // --- 1. PREPARAÇÃO DE DADOS ---
+        const militarCompleto = `${userInfo.postoGraduacao} ${userInfo.quadro} ${userInfo.nomeGuerra}`;
+        const dataInfo = document.getElementById('militar-info').innerText.split('\n');
+        const dataHora = dataInfo[1] ? dataInfo[1].replace('Data/Hora:', '').trim() : new Date().toLocaleString('pt-BR');
+        const local = document.getElementById('local-posto-info').innerText;
+        
+        const PDF_MARGIN_X = 14;
+        const RED_COLOR = '#D90F23';
+        const MAROON_COLOR = '#800020';
+        const GREEN_COLOR = '#1B8A3E';
+        
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF('p', 'mm', 'a4');
+        let currentY = 10;
+        
+        // Coleta e formata os dados para a tabela
+        let tableData = [];
+        let itemsCount = 0;
+        let cA_count = 0;
+
+        dadosConferencia.forEach(setor => {
+            // Adicionar cabeçalho do setor
+            tableData.push([
+                { content: setor.nome.toUpperCase(), colSpan: 4, styles: { fillColor: [128, 0, 32], textColor: 255, fontStyle: 'bold' } }
+            ]);
+
+            setor.itens.forEach(item => {
+                let itemsToProcess = [];
+
+                if (item.tipo === 'multi' && item.tombamentos) {
+                    item.tombamentos.forEach(tomb => {
+                        const uniqueId = `${item.id}-${tomb.tomb}`;
+                        const statusData = window.itemStatus[uniqueId];
+                        if (statusData && statusData.status !== 'pending') {
+                            itemsToProcess.push({
+                                nome: `${item.nome} (Tomb: ${tomb.tomb})`,
+                                status: statusData.status,
+                                obs: statusData.obs
+                            });
+                        }
+                    });
+                } else { // Item single
+                    const statusData = window.itemStatus[item.id];
+                    if (statusData && statusData.status !== 'pending') {
+                        itemsToProcess.push({
+                            nome: item.nome,
+                            status: statusData.status,
+                            obs: statusData.obs
+                        });
+                    }
+                }
+                
+                itemsToProcess.forEach(data => {
+                    itemsCount++;
+                    if (data.status === 'C/A') cA_count++;
+                    
+                    const statusCell = data.status === 'S/A' ? 'S/A' : 'C/A';
+                    const statusColor = data.status === 'S/A' ? GREEN_COLOR : RED_COLOR;
+                    
+                    tableData.push([
+                        data.nome,
+                        `QTD: ${item.quantidadeEsperada}`, // Mantém a quantidade do item pai
+                        { content: statusCell, styles: { fillColor: statusColor, textColor: 255 } },
+                        data.obs || '-'
+                    ]);
+                });
+            });
+        });
+
+
+        // --- 2. CABEÇALHO DO PDF (com base nas especificações) ---
+        
+        doc.setFontSize(10);
+        doc.setTextColor(51); // Cor cinza/preto
+
+        // Placeholder para roraima.png (usando o ícone cbmrr.png como fallback visual)
+        const logo = document.querySelector('.header-icon');
+        if (logo) {
+            try {
+                // Tenta converter a imagem para base64 se for um ambiente que permita
+                const canvas = document.createElement('canvas');
+                canvas.width = logo.naturalWidth;
+                canvas.height = logo.naturalHeight;
+                const ctx = canvas.getContext('2d');
+                ctx.drawImage(logo, 0, 0);
+                const logoData = canvas.toDataURL('image/png');
+                doc.addImage(logoData, 'PNG', PDF_MARGIN_X, currentY, 15, 15);
+            } catch (e) {
+                // Se falhar (cors/ambiente), usa placeholder
+                doc.rect(PDF_MARGIN_X, currentY, 15, 15);
+                doc.text('LOGO', PDF_MARGIN_X + 4, currentY + 7);
+            }
+        }
+        
+        // Textos do Cabeçalho
+        doc.setFont('helvetica', 'bold');
+        doc.text('GOVERNO DE RORAIMA', PDF_MARGIN_X + 20, currentY + 5);
+
+        doc.setTextColor(RED_COLOR);
+        doc.text('CORPO DE BOMBEIROS MILITAR DE RORAIMA', PDF_MARGIN_X + 20, currentY + 10);
+        
+        doc.setFont('helvetica', 'italic');
+        doc.setTextColor(51); // Cor cinza/preto
+        doc.text('"Amazônia: patrimônio dos brasileiros"', PDF_MARGIN_X + 20, currentY + 15);
+
+        currentY += 20;
+        
+        // --- 3. DADOS DA CONFERÊNCIA ---
+        doc.setFontSize(11);
+        doc.setFont('helvetica', 'normal');
+        doc.text(`Conferência Concluída em: ${local}`, PDF_MARGIN_X, currentY);
+        currentY += 5;
+        doc.text(`Conferente: ${militarCompleto}`, PDF_MARGIN_X, currentY);
+        currentY += 5;
+        doc.text(`Data/Hora: ${dataHora}`, PDF_MARGIN_X, currentY);
+        currentY += 10;
+        
+        // Status Geral
+        doc.setFontSize(10);
+        doc.setFont('helvetica', 'bold');
+        doc.text(`ITENS TOTAIS CONFERIDOS: ${itemsCount} | ITENS C/A: ${cA_count}`, PDF_MARGIN_X, currentY);
+        currentY += 5;
+        
+        // --- 4. TABELA DE RESULTADOS ---
+        doc.autoTable({
+            startY: currentY,
+            head: [['Material / Tombamento', 'QTD', 'Status', 'Observação']],
+            body: tableData,
+            theme: 'striped',
+            styles: { 
+                fontSize: 8, 
+                halign: 'left', 
+                textColor: 51,
+                cellPadding: 1.5
+            },
+            headStyles: { 
+                fillColor: MAROON_COLOR, 
+                textColor: 255, 
+                fontStyle: 'bold', 
+                fontSize: 9,
+                valign: 'middle'
+            },
+            columnStyles: {
+                0: { cellWidth: 70 },
+                1: { cellWidth: 20, halign: 'center' },
+                2: { cellWidth: 20, halign: 'center' },
+                3: { cellWidth: 70 }
+            },
+            didDrawPage: function(data) {
+                // --- 5. RODAPÉ DO PDF ---
+                doc.setFontSize(8);
+                doc.setTextColor(150);
+                const footerText = 'SIGMA - Sistema Integrado de Gestão de Materiais.';
+                const pageCount = doc.internal.getNumberOfPages();
+                
+                // Posição Y fixa no rodapé da página
+                const footerY = doc.internal.pageSize.height - 10; 
+                
+                doc.text(footerText, PDF_MARGIN_X, footerY);
+                doc.text(`Página ${data.pageNumber} de ${pageCount}`, doc.internal.pageSize.width - PDF_MARGIN_X, footerY, { align: 'right' });
+            }
+        });
+
+        // --- 6. SALVAR O PDF ---
+        doc.save(`Conferencia_${local.replace(/[^a-zA-Z0-9]/g, '')}_${userInfo.nomeGuerra}_${dataHora.replace(/[^a-zA-Z0-9]/g, '')}.pdf`);
+    }
+
+
     // *******************************************************************
     // 5. INICIALIZAÇÃO DA PÁGINA (CHAMA A GERAÇÃO DINÂMICA)
     // *******************************************************************
@@ -1260,6 +1439,9 @@
         
         // Inicia o processo de carregamento remoto
         carregarDadosRemotos();
+        
+        // Vincula a função ao botão (já está no HTML, mas garantimos)
+        document.getElementById('btn-finalizar').addEventListener('click', finalizarConferencia);
     };
 </script>
 </body>
