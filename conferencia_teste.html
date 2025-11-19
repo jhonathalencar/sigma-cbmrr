@@ -573,6 +573,7 @@
                 }
                 db = firebase.firestore();
             } catch (e) {
+                // Se falhar, o erro será capturado abaixo, mas o DB não está pronto.
                 console.error("ERRO: Falha na inicialização do Firestore.", e);
             }
         }
@@ -1163,17 +1164,14 @@
     function focusNextItem(currentItemId) {
         const allItems = Array.from(document.querySelectorAll('.item-conferencia'));
         
-        // Se o currentItemId for de um tombamento (ex: "ITEM_X-TOMB_Y"), encontramos o item principal.
         let baseItemId = currentItemId.split('-')[0];
 
-        // Encontra o item que acabou de ser marcado (ou seu item pai no caso de tombamento)
         const currentIndex = allItems.findIndex(item => item.dataset.id === baseItemId);
 
-        // Percorre a lista a partir do item atual (ou do item pai)
         for (let i = currentIndex; i < allItems.length; i++) { 
             const currentItem = allItems[i];
             
-            // CORREÇÃO: Ponto de falha era aqui. Garante que currentItem existe.
+            // CORREÇÃO: Verifica se o elemento existe (para o caso de índices inválidos no array)
             if (!currentItem) continue;
 
             const currentId = currentItem.dataset.id;
@@ -1184,13 +1182,12 @@
                 
                 if (!itemData || itemData.status === 'PENDING' || itemData.status === 'PENDING_CA') {
                     // Se o item único estiver pendente ou C/A pendente, foca.
-                    if (!isElementInViewport(currentItem)) {
+                    if (!isElementInViewport(currentItem)) { // A rolagem só é feita se o item estiver fora da viewport
                          currentItem.scrollIntoView({ behavior: 'smooth', block: 'start' });
                     }
                     if (itemData && itemData.status === 'PENDING_CA') {
                          currentItem.querySelector('textarea').focus();
                     }
-                    // Se estiver pendente, para a busca para focar nele.
                     if (!itemData || itemData.status === 'PENDING' || itemData.status === 'PENDING_CA') return; 
                 }
             }
@@ -1204,7 +1201,6 @@
                 });
 
                 if (pendingTombamento) {
-                    // Foca no primeiro tombamento pendente encontrado.
                     if (!isElementInViewport(pendingTombamento)) {
                         pendingTombamento.scrollIntoView({ behavior: 'smooth', block: 'start' });
                     }
@@ -1212,19 +1208,17 @@
                     if (window.itemStatus[`${currentId}-${pendingTombamento.dataset.tomb}`]?.status === 'PENDING_CA') {
                         pendingTombamento.querySelector('textarea').focus();
                     }
-                    return; // Encontrou o próximo item para foco, para a busca.
+                    return; 
                 }
             }
         }
 
-        // Se todos os itens estiverem conferidos, rola para o botão finalizar.
         document.getElementById('btn-finalizar').scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
 
     function autoAdvanceSetor(currentSetorId) {
         const currentSetorEl = document.querySelector(`.setor[data-id="${currentSetorId}"]`);
         
-        // 1. RETRAI o setor atual
         if (currentSetorEl) {
            toggleSetor(currentSetorEl.querySelector('.setor-header')); 
         }
@@ -1233,21 +1227,15 @@
         const nextSetorId = window.setorIds[currentSetorIndex + 1];
 
         if (nextSetorId) {
-            // 2. EXPANDI o próximo setor
             const nextSetorEl = document.querySelector(`.setor[data-id="${nextSetorId}"]`);
             if (nextSetorEl) {
                const nextContent = nextSetorEl.querySelector('.setor-content');
                
-               // Expande o setor (apenas abre, sem rolar)
                if (!nextContent.classList.contains('expanded')) {
                    toggleSetor(nextSetorEl.querySelector('.setor-header')); 
                }
-
-               // *** ROLAGEM AINDA REMOVIDA PARA EVITAR SALTO ***
-               
             }
         } else {
-             // Mantemos a rolagem para o botão Finalizar apenas se for o último setor.
              document.getElementById('btn-finalizar').scrollIntoView({ behavior: 'smooth', block: 'start' });
         }
     }
@@ -1259,7 +1247,6 @@
     async function finalizarConferencia() {
         console.log("finalizarConferencia() chamada.");
         
-        // --- 1. VERIFICAÇÃO DE HABILITAÇÃO ---
         const btnFinalizar = document.getElementById('btn-finalizar');
         if (btnFinalizar.disabled) {
             alert("A conferência deve ser concluída (100% dos itens conferidos) para gerar o PDF.");
@@ -1268,6 +1255,12 @@
 
         // --- 2. PREPARAÇÃO DE DADOS ---
         try {
+            // MOVENDO DECLARAÇÃO DE CORES PARA EVITAR ERRO DE INICIALIZAÇÃO
+            const RED_COLOR = '#D90F23';
+            const MAROON_COLOR = '#800020';
+            const GREEN_COLOR = '#1B8A3E';
+            
+            
             const militarCompleto = `${userInfo.postoGraduacao} ${userInfo.quadro} ${userInfo.nomeGuerra}`;
             const militarInfoText = document.getElementById('militar-info').innerText;
             
@@ -1302,7 +1295,7 @@
                                     nomeCompleto: `${item.nome} (Tomb: ${tomb.tomb})`,
                                     status: statusData.status,
                                     obs: statusData.obs,
-                                    quantidade: 1 // CORREÇÃO: 1 UNIDADE POR TOMBAMENTO
+                                    quantidade: 1 
                                 };
                                 itemsToProcess.push(data);
                             }
@@ -1343,28 +1336,30 @@
             });
             
             // --- 4. SALVAR RESULTADOS NO FIREBASE ---
-            await db.collection('resultados_conferencias').add({
-                local: local,
-                conferente: conferenteValor,
-                timestamp: firebase.firestore.Timestamp.fromDate(dataHora),
-                totalItensConferidos: itemsCount,
-                totalCaa: cA_count,
-                itensCaa: itensCaa, 
-            }).then(() => {
-                console.log("Resultados da conferência salvos no Firebase com sucesso!");
-            }).catch((e) => {
-                console.error("Erro ao salvar resultados no Firebase:", e);
-                // Permite que o PDF seja gerado, mesmo que o salvamento no DB falhe
-            });
+            // Adiciona uma verificação extra para garantir que db exista antes de salvar
+            if (db) {
+                 await db.collection('resultados_conferencias').add({
+                    local: local,
+                    conferente: conferenteValor,
+                    timestamp: firebase.firestore.Timestamp.fromDate(dataHora),
+                    totalItensConferidos: itemsCount,
+                    totalCaa: cA_count,
+                    itensCaa: itensCaa, 
+                }).then(() => {
+                    console.log("Resultados da conferência salvos no Firebase com sucesso!");
+                }).catch((e) => {
+                    console.error("Erro ao salvar resultados no Firebase:", e);
+                    // Não interrompe o PDF, apenas avisa
+                });
+            } else {
+                 console.warn("Salvamento no Firebase ignorado: DB não está conectado.");
+            }
 
 
             // --- 5. GERAÇÃO DO PDF ---
             
             const PDF_MARGIN_X = 14;
             const PAGE_WIDTH = 210; // A4 width in mm
-            const RED_COLOR = '#D90F23';
-            const MAROON_COLOR = '#800020';
-            const GREEN_COLOR = '#1B8A3E';
             
             const { jsPDF } = window.jspdf;
             const doc = new jsPDF('p', 'mm', 'a4');
@@ -1506,8 +1501,8 @@
             // --- 6. SALVAR O PDF ---
             doc.save(`Conferencia_${local.replace(/[^a-zA-Z0-9]/g, '')}_${userInfo.nomeGuerra}_${dataHora.toISOString().split('T')[0]}.pdf`);
         } catch (e) {
-            console.error("Erro fatal ao executar finalizarConferencia:", e);
-            alert(`Erro! Não foi possível finalizar: ${e.message}. Por favor, verifique o Console (F12) para detalhes.`);
+            console.error("Erro fatal ao executar finalizarConferencia (Bloco Try):", e);
+            alert(`Erro! Não foi possível finalizar (PDF): ${e.message}. Por favor, verifique o Console (F12) para detalhes.`);
         }
     }
 
