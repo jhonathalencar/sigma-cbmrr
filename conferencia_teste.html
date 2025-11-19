@@ -573,7 +573,6 @@
                 }
                 db = firebase.firestore();
             } catch (e) {
-                // Se falhar, o erro será capturado abaixo, mas o DB não está pronto.
                 console.error("ERRO: Falha na inicialização do Firestore.", e);
             }
         }
@@ -901,6 +900,7 @@
             statusIcon.classList.add('alert');
             alteracaoContainer.style.display = 'block';
             window.itemStatus[item.dataset.id] = { status: 'PENDING_CA', obs: '' };
+            // CORREÇÃO 2: Força o foco no textarea para iniciar a digitação
             observacaoTextarea.focus();
             
             updateSetorStatus(setor);
@@ -936,8 +936,9 @@
             updateItemMainStatusDisplay(item); 
         } else if (status === 'alert') {
             obsContainer.style.display = 'block';
-            obsContainer.querySelector('textarea').focus();
             window.itemStatus[uniqueId] = { status: 'PENDING_CA', obs: '' };
+            // CORREÇÃO 2: Força o foco no textarea para iniciar a digitação
+            obsContainer.querySelector('textarea').focus();
             updateItemMainStatusDisplay(item);
             return; 
         }
@@ -1171,7 +1172,6 @@
         for (let i = currentIndex; i < allItems.length; i++) { 
             const currentItem = allItems[i];
             
-            // CORREÇÃO: Verifica se o elemento existe (para o caso de índices inválidos no array)
             if (!currentItem) continue;
 
             const currentId = currentItem.dataset.id;
@@ -1181,8 +1181,8 @@
                 const itemData = window.itemStatus[currentId];
                 
                 if (!itemData || itemData.status === 'PENDING' || itemData.status === 'PENDING_CA') {
-                    // Se o item único estiver pendente ou C/A pendente, foca.
-                    if (!isElementInViewport(currentItem)) { // A rolagem só é feita se o item estiver fora da viewport
+                    // Rolagem só é feita se o item estiver fora da viewport
+                    if (!isElementInViewport(currentItem)) { 
                          currentItem.scrollIntoView({ behavior: 'smooth', block: 'start' });
                     }
                     if (itemData && itemData.status === 'PENDING_CA') {
@@ -1234,6 +1234,9 @@
                if (!nextContent.classList.contains('expanded')) {
                    toggleSetor(nextSetorEl.querySelector('.setor-header')); 
                }
+
+               // *** NENHUMA ROLAGEM EXPLÍCITA AQUI: Deixa o usuário no contexto ***
+               
             }
         } else {
              document.getElementById('btn-finalizar').scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -1253,13 +1256,12 @@
             return;
         }
 
-        // --- 2. PREPARAÇÃO DE DADOS ---
+        // --- 1. DECLARAÇÃO DE CONSTANTES E PREPARAÇÃO DE DADOS ---
         try {
-            // MOVENDO DECLARAÇÃO DE CORES PARA EVITAR ERRO DE INICIALIZAÇÃO
+            // CORREÇÃO: Variáveis de cor movidas para o topo do bloco try
             const RED_COLOR = '#D90F23';
             const MAROON_COLOR = '#800020';
             const GREEN_COLOR = '#1B8A3E';
-            
             
             const militarCompleto = `${userInfo.postoGraduacao} ${userInfo.quadro} ${userInfo.nomeGuerra}`;
             const militarInfoText = document.getElementById('militar-info').innerText;
@@ -1336,9 +1338,8 @@
             });
             
             // --- 4. SALVAR RESULTADOS NO FIREBASE ---
-            // Adiciona uma verificação extra para garantir que db exista antes de salvar
             if (db) {
-                 await db.collection('resultados_conferencias').add({
+                await db.collection('resultados_conferencias').add({
                     local: local,
                     conferente: conferenteValor,
                     timestamp: firebase.firestore.Timestamp.fromDate(dataHora),
@@ -1349,7 +1350,6 @@
                     console.log("Resultados da conferência salvos no Firebase com sucesso!");
                 }).catch((e) => {
                     console.error("Erro ao salvar resultados no Firebase:", e);
-                    // Não interrompe o PDF, apenas avisa
                 });
             } else {
                  console.warn("Salvamento no Firebase ignorado: DB não está conectado.");
@@ -1394,6 +1394,9 @@
                     doc.text('LOGO', x + 4, HEADER_Y + 7);
                 }
             };
+            
+            // CRÍTICO: HEADER_Y (Variável usada no logoDraw) agora está definida.
+            const HEADER_Y = 10; 
 
             // Logo 1 (CBM-RR / roraima.png) - Esquerda
             logoDraw('cbmrr.png', PDF_MARGIN_X); 
@@ -1511,7 +1514,6 @@
     // 5. INICIALIZAÇÃO DA PÁGINA (CHAMA A GERAÇÃO DINÂMICA)
     // *******************************************************************
     window.onload = function() {
-        // Inicializa o app e começa o carregamento
         carregarDadosRemotos();
     };
 </script>
