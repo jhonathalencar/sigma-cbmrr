@@ -1223,31 +1223,16 @@
             if (nextSetorEl) {
                const nextContent = nextSetorEl.querySelector('.setor-content');
                
-               // Expande o setor
+               // Expande o setor (apenas abre, sem rolar)
                if (!nextContent.classList.contains('expanded')) {
                    toggleSetor(nextSetorEl.querySelector('.setor-header')); 
                }
 
-               // === SOLUÇÃO DEFINITIVA DE ROLAGEM ===
+               // ROLAGEM REMOVIDA: Deixamos o navegador no local para evitar saltos.
                
-               window.requestAnimationFrame(() => {
-                   
-                   // Força o navegador a recalcular o layout e altura atual do elemento.
-                   nextSetorEl.offsetHeight; 
-
-                   const fixedHeaderOffset = 60; // 50px do header + 10px de margem
-                   const setorTopPosition = nextSetorEl.offsetTop;
-
-                   // Rola para a posição absoluta do topo do setor menos o deslocamento do cabeçalho fixo
-                   window.scrollTo({
-                       top: setorTopPosition - fixedHeaderOffset,
-                       behavior: 'smooth'
-                   });
-               });
-               // === FIM DA SOLUÇÃO DEFINITIVA ===
             }
         } else {
-             // Se for o último setor, rola para o botão finalizar.
+             // Mantemos a rolagem para o botão Finalizar apenas se for o último setor.
              document.getElementById('btn-finalizar').scrollIntoView({ behavior: 'smooth', block: 'start' });
         }
     }
@@ -1307,7 +1292,7 @@
                                 nome: `${item.nome} (Tomb: ${tomb.tomb})`,
                                 status: statusData.status,
                                 obs: statusData.obs,
-                                quantidade: 1 // CORREÇÃO APLICADA AQUI
+                                quantidade: 1 // CORREÇÃO APLICADA AQUI: 1 UN
                             });
                         }
                     });
@@ -1405,10 +1390,10 @@
         // Espaçamento horizontal fixo para os valores
         const VALUE_OFFSET = PDF_MARGIN_X + 45; 
         
-        // Local (Correção de texto aplicada: "Local:")
-        doc.setFont('helvetica', 'bold'); 
-        doc.text('Local:', PDF_MARGIN_X, currentY); 
-        doc.setFont('helvetica', 'normal'); 
+        // Local (CORRIGIDO)
+        doc.setFont('helvetica', 'bold'); // Configura negrito para a label
+        doc.text('Local:', PDF_MARGIN_X, currentY); // <-- TEXTO AGORA É "Local:"
+        doc.setFont('helvetica', 'normal'); // Retorna normal para o valor
         doc.text(local, VALUE_OFFSET, currentY);
         currentY += 5;
         
