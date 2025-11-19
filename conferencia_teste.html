@@ -640,7 +640,6 @@
                 if (item.tipo === 'multi' && item.tombamentos && item.tombamentos.length > 0) {
                     // Item com MÚLTIPLOS TOMBAMENTOS
                     item.tombamentos.forEach(tomb => {
-                        // Certifica que o tombamento tem status, senão assume pending
                         const status = tomb.status || 'pending'; 
                         const obs = tomb.obs || '';
 
@@ -665,11 +664,9 @@
                             </div>
                         `;
                         totalItensNoSetor++;
-                        // Inicializa o status no objeto JS (usado para rastrear o progresso)
                         window.itemStatus[`${item.id}-${tomb.tomb}`] = { status: status, obs: obs };
                     });
                      
-                    // Define o status do item pai baseado nos tombamentos
                     const itemStatusData = determinarItemPaiStatus(item);
 
 
@@ -1228,19 +1225,20 @@
                    toggleSetor(nextSetorEl.querySelector('.setor-header')); 
                }
 
-               // *** NENHUMA ROLAGEM AQUI ***
+               // *** NENHUMA ROLAGEM EXPLÍCITA AQUI ***
+               
             }
         } else {
-             // Mantemos a rolagem para o botão Finalizar APENAS para o último setor.
+             // Mantemos a rolagem para o botão Finalizar apenas se for o último setor.
              document.getElementById('btn-finalizar').scrollIntoView({ behavior: 'smooth', block: 'start' });
         }
     }
 
 
     // *******************************************************************
-    // 6. FUNÇÃO DE GERAÇÃO DO PDF (AGORA GLOBAL)
+    // 6. FUNÇÃO DE GERAÇÃO DO PDF (AGORA GLOBAL E SALVA NO FIREBASE)
     // *******************************************************************
-    function finalizarConferencia() {
+    async function finalizarConferencia() {
         // Verifica se o botão está desabilitado (conferência não concluída)
         if (document.getElementById('btn-finalizar').disabled) {
             alert("A conferência deve ser concluída (100% dos itens conferidos) para gerar o PDF.");
@@ -1249,14 +1247,102 @@
 
         // --- 1. PREPARAÇÃO DE DADOS ---
         const militarCompleto = `${userInfo.postoGraduacao} ${userInfo.quadro} ${userInfo.nomeGuerra}`;
-        // Obtém o texto da tela (Local e Data/Hora)
         const militarInfoText = document.getElementById('militar-info').innerText;
         
-        // Ajustamos para extrair o nome e a data/hora da string multi-linha
         const conferenteValor = militarInfoText.split('\n')[0]?.replace('Conferente:', '').trim() || militarCompleto;
-        const dataHora = militarInfoText.split('\n')[1]?.replace('Data/Hora:', '').trim() || new Date().toLocaleString('pt-BR');
+        const dataHora = new Date(); // Objeto Date para salvamento no Firebase
+        const dataHoraString = militarInfoText.split('\n')[1]?.replace('Data/Hora:', '').trim() || dataHora.toLocaleString('pt-BR');
         const local = document.getElementById('local-posto-info').innerText;
         
+        
+        let itensCaa = []; // Array para armazenar apenas os itens C/A para o Firebase
+        let tableData = []; // Array para o PDF
+        let itemsCount = 0;
+        let cA_count = 0;
+
+        // --- 2. COLETA E FORMATAÇÃO DOS RESULTADOS (Para Tabela e Firebase) ---
+        dadosConferencia.forEach(setor => {
+            // Adicionar cabeçalho do setor para o PDF
+            tableData.push([
+                { content: setor.nome.toUpperCase(), colSpan: 4, styles: { fillColor: [128, 0, 32], textColor: 255, fontStyle: 'bold' } }
+            ]);
+
+            setor.itens.forEach(item => {
+                let itemsToProcess = [];
+
+                if (item.tipo === 'multi' && item.tombamentos) {
+                    // Item com Múltiplos Tombamentos
+                    item.tombamentos.forEach(tomb => {
+                        const uniqueId = `${item.id}-${tomb.tomb}`;
+                        const statusData = window.itemStatus[uniqueId];
+                        if (statusData && statusData.status !== 'pending') {
+                            const data = {
+                                nome: item.nome,
+                                tomb: tomb.tomb,
+                                nomeCompleto: `${item.nome} (Tomb: ${tomb.tomb})`,
+                                status: statusData.status,
+                                obs: statusData.obs,
+                                quantidade: 1 // CORREÇÃO: 1 UNIDADE POR TOMBAMENTO
+                            };
+                            itemsToProcess.push(data);
+                        }
+                    });
+                } else { 
+                    // Item Único ou Simples
+                    const statusData = window.itemStatus[item.id];
+                    if (statusData && statusData.status !== 'pending') {
+                        const data = {
+                            nome: item.nome,
+                            tomb: null,
+                            nomeCompleto: item.nome,
+                            status: statusData.status,
+                            obs: statusData.obs,
+                            quantidade: item.quantidadeEsperada
+                        };
+                        itemsToProcess.push(data);
+                    }
+                }
+                
+                // Processa os itens coletados (para PDF e Firebase)
+                itemsToProcess.forEach(data => {
+                    itemsCount++;
+                    if (data.status === 'C/A') {
+                        cA_count++;
+                        itensCaa.push(data); // ADICIONA AO ARRAY DE C/A PARA O FIREBASE
+                    }
+                    
+                    // Adiciona ao corpo da tabela do PDF
+                    const statusCell = data.status === 'S/A' ? 'S/A' : 'C/A';
+                    const statusColor = data.status === 'S/A' ? GREEN_COLOR : RED_COLOR;
+                    
+                    tableData.push([
+                        data.nomeCompleto,
+                        `QTD: ${data.quantidade}`, 
+                        { content: statusCell, styles: { fillColor: statusColor, textColor: 255 } },
+                        data.obs || '-'
+                    ]);
+                });
+            });
+        });
+        
+        // --- 3. SALVAR RESULTADOS NO FIREBASE ---
+        try {
+            await db.collection('resultados_conferencias').add({
+                local: local,
+                conferente: conferenteValor,
+                timestamp: firebase.firestore.Timestamp.fromDate(dataHora),
+                totalItensConferidos: itemsCount,
+                totalCaa: cA_count,
+                itensCaa: itensCaa, // Salva o array de não conformidades
+            });
+            console.log("Resultados da conferência salvos no Firebase com sucesso!");
+        } catch (e) {
+            console.error("Erro ao salvar resultados no Firebase:", e);
+            alert("Erro ao salvar os resultados no sistema. O PDF será gerado, mas o Dashboard pode estar incompleto.");
+        }
+
+
+        // --- 4. GERAÇÃO DO PDF ---
         
         const PDF_MARGIN_X = 14;
         const PAGE_WIDTH = 210; // A4 width in mm
@@ -1268,66 +1354,6 @@
         const doc = new jsPDF('p', 'mm', 'a4');
         let currentY = 10;
         
-        // Coleta e formata os dados para a tabela
-        let tableData = [];
-        let itemsCount = 0;
-        let cA_count = 0;
-
-        dadosConferencia.forEach(setor => {
-            // Adicionar cabeçalho do setor
-            tableData.push([
-                { content: setor.nome.toUpperCase(), colSpan: 4, styles: { fillColor: [128, 0, 32], textColor: 255, fontStyle: 'bold' } }
-            ]);
-
-            setor.itens.forEach(item => {
-                let itemsToProcess = [];
-
-                if (item.tipo === 'multi' && item.tombamentos) {
-                    item.tombamentos.forEach(tomb => {
-                        const uniqueId = `${item.id}-${tomb.tomb}`;
-                        const statusData = window.itemStatus[uniqueId];
-                        if (statusData && statusData.status !== 'pending') {
-                            itemsToProcess.push({
-                                nome: `${item.nome} (Tomb: ${tomb.tomb})`,
-                                status: statusData.status,
-                                obs: statusData.obs,
-                                quantidade: 1 // CORREÇÃO APLICADA AQUI: 1 UN
-                            });
-                        }
-                    });
-                } else { // Item single
-                    const statusData = window.itemStatus[item.id];
-                    if (statusData && statusData.status !== 'pending') {
-                        itemsToProcess.push({
-                            nome: item.nome,
-                            status: statusData.status,
-                            obs: statusData.obs,
-                            quantidade: item.quantidadeEsperada
-                        });
-                    }
-                }
-                
-                itemsToProcess.forEach(data => {
-                    itemsCount++;
-                    if (data.status === 'C/A') cA_count++;
-                    
-                    const statusCell = data.status === 'S/A' ? 'S/A' : 'C/A';
-                    const statusColor = data.status === 'S/A' ? GREEN_COLOR : RED_COLOR;
-                    
-                    tableData.push([
-                        data.nome,
-                        `QTD: ${data.quantidade}`, 
-                        { content: statusCell, styles: { fillColor: statusColor, textColor: 255 } },
-                        data.obs || '-'
-                    ]);
-                });
-            });
-        });
-
-
-        // --- 2. CABEÇALHO DO PDF (com base nas especificações e ajustes) ---
-        
-        const HEADER_Y = 10;
         const LOGO_SIZE = 15;
         const CENTER_X = PAGE_WIDTH / 2;
         
@@ -1379,20 +1405,19 @@
         doc.setTextColor(51); 
         doc.text('"Amazônia: patrimônio dos brasileiros"', CENTER_X, textY, { align: 'center' });
         
-        currentY = HEADER_Y + LOGO_SIZE + 5; // Reinicia Y abaixo da área do cabeçalho
-        currentY += 15; // NOVO: Espaço maior entre o cabeçalho e as informações
+        currentY = HEADER_Y + LOGO_SIZE + 5; 
+        currentY += 15; // Espaço maior
 
         // --- 3. DADOS DA CONFERÊNCIA (Alinhado à Esquerda com Labels em Negrito) ---
         doc.setFontSize(10);
         doc.setFont('helvetica', 'normal');
         
-        // Espaçamento horizontal fixo para os valores
         const VALUE_OFFSET = PDF_MARGIN_X + 45; 
         
-        // Local (CORRIGIDO)
-        doc.setFont('helvetica', 'bold'); // Configura negrito para a label
-        doc.text('Local:', PDF_MARGIN_X, currentY); // <-- TEXTO AGORA É "Local:"
-        doc.setFont('helvetica', 'normal'); // Retorna normal para o valor
+        // Local
+        doc.setFont('helvetica', 'bold'); 
+        doc.text('Local:', PDF_MARGIN_X, currentY); 
+        doc.setFont('helvetica', 'normal'); 
         doc.text(local, VALUE_OFFSET, currentY);
         currentY += 5;
         
@@ -1407,7 +1432,7 @@
         doc.setFont('helvetica', 'bold');
         doc.text('Data/Hora:', PDF_MARGIN_X, currentY);
         doc.setFont('helvetica', 'normal');
-        doc.text(dataHora, VALUE_OFFSET, currentY);
+        doc.text(dataHoraString, VALUE_OFFSET, currentY);
         currentY += 10;
 
 
@@ -1458,7 +1483,7 @@
         });
 
         // --- 6. SALVAR O PDF ---
-        doc.save(`Conferencia_${local.replace(/[^a-zA-Z0-9]/g, '')}_${userInfo.nomeGuerra}_${dataHora.replace(/[^a-zA-Z0-9]/g, '')}.pdf`);
+        doc.save(`Conferencia_${local.replace(/[^a-zA-Z0-9]/g, '')}_${userInfo.nomeGuerra}_${dataHora.toISOString().split('T')[0]}.pdf`);
     }
 
 
@@ -1471,8 +1496,6 @@
         
         // Inicia o processo de carregamento remoto
         carregarDadosRemotos();
-        
-        // Já existe um onclick no botão FINALIZAR no HTML
     };
 </script>
 </body>
