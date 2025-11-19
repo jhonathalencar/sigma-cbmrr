@@ -867,6 +867,9 @@
     }
 
     function setItemStatus(button, status) {
+        // CORREÇÃO: Forçar perda de foco no botão imediatamente
+        button.blur(); 
+        
         const item = button.closest('.item-conferencia');
         const setor = button.closest('.setor');
         
@@ -901,7 +904,7 @@
             statusIcon.classList.add('alert');
             alteracaoContainer.style.display = 'block';
             window.itemStatus[item.dataset.id] = { status: 'PENDING_CA', obs: '' };
-            // CORREÇÃO: Força o foco no textarea para iniciar a digitação
+            // Foca no textarea para iniciar a digitação
             observacaoTextarea.focus();
             
             updateSetorStatus(setor);
@@ -914,6 +917,9 @@
     }
     
     function setTombamentoStatus(button, status) {
+        // CORREÇÃO: Forçar perda de foco no botão imediatamente
+        button.blur(); 
+        
         const tombamentoEl = button.closest('.tombamento-container');
         const item = button.closest('.item-conferencia');
         const setor = button.closest('.setor');
@@ -1182,7 +1188,7 @@
                 const itemData = window.itemStatus[currentId];
                 
                 if (!itemData || itemData.status === 'PENDING' || itemData.status === 'PENDING_CA') {
-                    // *** ROLAGEM REMOVIDA PARA ESTABILIDADE ***
+                    // *** ROLAGEM REMOVIDA ***
                     
                     if (itemData && itemData.status === 'PENDING_CA') {
                          currentItem.querySelector('textarea').focus();
@@ -1200,7 +1206,7 @@
                 });
 
                 if (pendingTombamento) {
-                    // *** ROLAGEM REMOVIDA PARA ESTABILIDADE ***
+                    // *** ROLAGEM REMOVIDA ***
                     
                     if (window.itemStatus[`${currentId}-${pendingTombamento.dataset.tomb}`]?.status === 'PENDING_CA') {
                         pendingTombamento.querySelector('textarea').focus();
@@ -1383,7 +1389,7 @@
                         ctx.drawImage(logoEl, 0, 0, canvas.width, canvas.height);
                         const logoData = canvas.toDataURL('image/png');
                         
-                        const HEADER_Y = 10; // Definindo novamente localmente (embora já definida acima)
+                        const HEADER_Y = 10; 
 
                         // Adiciona a imagem, escalando de volta para o tamanho final (15mm)
                         doc.addImage(logoData, 'PNG', x, HEADER_Y, LOGO_SIZE, LOGO_SIZE);
