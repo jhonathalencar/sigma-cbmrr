@@ -1219,7 +1219,16 @@
             const nextSetorEl = document.querySelector(`.setor[data-id="${nextSetorId}"]`);
             if (nextSetorEl) {
                toggleSetor(nextSetorEl.querySelector('.setor-header')); 
+               
+               // === INÍCIO DA CORREÇÃO DE ROLAGEM ===
+               const headerHeight = 65; // Altura do cabeçalho fixo (50px) + margem (15px)
+               
+               // Rola o elemento para o topo da viewport
                nextSetorEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+               
+               // Aplica a compensação de rolagem para deixar o setor abaixo do cabeçalho fixo
+               window.scrollBy(0, -headerHeight); 
+               // === FIM DA CORREÇÃO DE ROLAGEM ===
             }
         } else {
              // Se for o último setor
