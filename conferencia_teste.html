@@ -547,7 +547,7 @@
 
 <script>
     // *******************************************************************
-    // 1. CONFIGURAÇÃO FIREBASE
+    // 1. CONFIGURAÇÃO FIREBASE (Retornando ao formato síncrono e padrão)
     // *******************************************************************
     const firebaseConfig = {
         apiKey: "AIzaSyCB0PH0UgghgsvH0BgPkG4AkKON6xSQ9mc",
@@ -558,17 +558,15 @@
         appId: "1:378026276038:web:620dd6ff57501b1a8313c7"
     };
 
-    // Variáveis globais para o Firestore
+    // Inicialização direta (síncrona) que você confirmou funcionar
     let db;
-    
-    // Tenta inicializar o Firebase e o Firestore
     try {
         firebase.initializeApp(firebaseConfig);
         db = firebase.firestore();
     } catch (e) {
-        console.error("ERRO FATAL NA INICIALIZAÇÃO DO FIREBASE (FORA DE SCRIPT):", e);
+        console.error("ERRO: Falha na inicialização síncrona do Firebase.", e);
     }
-
+    
     const COLECAO_NOME = 'lista_mestra'; 
     const DOCUMENTO_ID = 'lista_completa'; 
     
@@ -579,14 +577,13 @@
     let dadosConferencia = [];
     
     async function carregarDadosRemotos() {
-        // Se a inicialização falhou acima (catch), o DB não existe.
         if (!db) {
              const mainContainer = document.getElementById('main-content').parentNode;
              document.getElementById('loading-message').style.display = 'none';
              mainContainer.innerHTML += `
                 <div class="error-message">
-                    <h1>❌ Erro de Inicialização do Firebase</h1>
-                    <p>O Firebase não pôde ser iniciado. Verifique a chave 'firebaseConfig' e se os scripts foram carregados.</p>
+                    <h1>❌ Erro Crítico: Inicialização</h1>
+                    <p>O Firebase não pôde ser inicializado. Verifique a chave 'firebaseConfig'.</p>
                 </div>
             `;
             return;
@@ -610,14 +607,19 @@
         } catch (error) {
             console.error("Falha na sincronização ou carregamento dos dados.", error);
             
-            // Exibe o erro detalhado no corpo do HTML
+            // Exibe o erro detalhado no corpo do HTML (Versão de diagnóstico)
             const mainContainer = document.getElementById('main-content').parentNode;
-            document.getElementById('loading-message').style.display = 'none';
+            const loadingMessageEl = document.getElementById('loading-message');
             
+            if (loadingMessageEl) {
+                loadingMessageEl.style.display = 'none';
+            }
+            
+            // Adiciona a mensagem de erro APÓS o contêiner de loading
             mainContainer.innerHTML += `
                 <div class="error-message">
                     <h1>❌ Erro de Sincronização</h1>
-                    <p>Não foi possível carregar a lista. Verifique se o Firebase está configurado corretamente e se a lista foi salva pelo admin.html.</p>
+                    <p>Não foi possível carregar a lista. Verifique a conexão/regras do Firebase.</p>
                     <small>Detalhe do Erro: ${error.message}</small>
                 </div>
             `;
@@ -1364,7 +1366,7 @@
                 console.log("Resultados da conferência salvos no Firebase com sucesso!");
             }).catch((e) => {
                 console.error("Erro ao salvar resultados no Firebase:", e);
-                alert("AVISO: Erro ao salvar os resultados no sistema. O PDF será gerado, mas o Dashboard pode estar incompleto. Verifique o Console.");
+                // Permite que o PDF seja gerado, mesmo que o salvamento no DB falhe
             });
 
 
@@ -1515,6 +1517,9 @@
 
             // --- 6. SALVAR O PDF ---
             doc.save(`Conferencia_${local.replace(/[^a-zA-Z0-9]/g, '')}_${userInfo.nomeGuerra}_${dataHora.toISOString().split('T')[0]}.pdf`);
+        } catch (e) {
+            console.error("Erro fatal ao executar finalizarConferencia:", e);
+            alert("Erro! Não foi possível finalizar. Por favor, verifique o Console (F12) para detalhes.");
         }
     }
 
