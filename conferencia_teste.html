@@ -526,7 +526,7 @@
      
     <div id="main-content" style="display: none;">
          
-        <button id="btn-finalizar" disabled>FINALIZAR CONFERÊNCIA (0/X ITENS)</button>
+        <button id="btn-finalizar" disabled>FINALIZar CONFERÊNCIA (0/X ITENS)</button>
     </div>
 
 </div>
@@ -1225,17 +1225,23 @@
             if (nextSetorEl) {
                const nextContent = nextSetorEl.querySelector('.setor-content');
                
-               // Expande o setor (alternativa de expansão para forçar renderização)
-               // Se o setor não estiver expandido, o toggleSetor expande e aplica o '▼'
+               // Expande o setor
                if (!nextContent.classList.contains('expanded')) {
                    toggleSetor(nextSetorEl.querySelector('.setor-header')); 
                }
-               
-               // === CORREÇÃO FINAL: Usa scroll-margin-top do CSS para compensar o header ===
-               // Rola com animação suave para o topo do elemento.
-               // O CSS .setor { scroll-margin-top: 60px; } fará a compensação da barra fixa.
-               nextSetorEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
-               // === FIM DA CORREÇÃO FINAL ===
+
+               // === CORREÇÃO DEFINITIVA: Estabilizar o layout antes de rolar ===
+               window.requestAnimationFrame(() => {
+                   
+                   // Força o navegador a recalcular o layout e altura atual do elemento.
+                   // Isso é crucial quando transições CSS estão ativas.
+                   nextSetorEl.offsetHeight; 
+                   
+                   // Rola com animação suave para o topo do elemento.
+                   // O CSS .setor { scroll-margin-top: 60px; } fará a compensação da barra fixa.
+                   nextSetorEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+               });
+               // === FIM DA CORREÇÃO DEFINITIVA ===
             }
         } else {
              // Se for o último setor, rola para o botão finalizar.
