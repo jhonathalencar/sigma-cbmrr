@@ -866,7 +866,7 @@
     }
 
     function setItemStatus(button, status, event) {
-        // CORREÇÃO 2: IMPEDE O ARRASTO DE TELA
+        // CORREÇÃO 1: IMPEDE O ARRASTO DE TELA
         if (event) {
             event.preventDefault(); 
         }
@@ -918,7 +918,7 @@
     }
     
     function setTombamentoStatus(button, status, event) {
-        // CORREÇÃO 2: IMPEDE O ARRASTO DE TELA
+        // CORREÇÃO 1: IMPEDE O ARRASTO DE TELA
         if (event) {
             event.preventDefault(); 
         }
@@ -1242,7 +1242,7 @@
                    toggleSetor(nextSetorEl.querySelector('.setor-header')); 
                }
 
-               // *** ROLAGEM EXPLÍCITA REMOVIDA PARA ESTABILIDADE ***
+               // *** NENHUMA ROLAGEM EXPLÍCITA AQUI ***
                
             }
         } else {
@@ -1385,10 +1385,11 @@
                     try {
                         const SCALE_FACTOR = 4; // Fator de escala 4x para melhor resolução
                         const canvas = document.createElement('canvas');
-                        canvas.width = 40 * SCALE_FACTOR; 
-                        canvas.height = 40 * SCALE_FACTOR;
+                        canvas.width = logoEl.naturalWidth * SCALE_FACTOR; 
+                        canvas.height = logoEl.naturalHeight * SCALE_FACTOR;
                         const ctx = canvas.getContext('2d');
                         
+                        // Desenha a imagem no canvas com resolução aumentada
                         ctx.drawImage(logoEl, 0, 0, canvas.width, canvas.height);
                         const logoData = canvas.toDataURL('image/png');
                         
@@ -1410,7 +1411,6 @@
                 }
             };
 
-            // CRÍTICO: HEADER_Y (já definido no escopo de try)
             const HEADER_Y = 10; 
 
             // Logo 1 (CBM-RR / roraima.png) - Esquerda
