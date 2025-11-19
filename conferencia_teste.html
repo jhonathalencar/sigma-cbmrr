@@ -180,7 +180,8 @@
             padding: 10px 0;
             max-height: 0; 
             overflow: hidden;
-            transition: max-height 0.4s ease-out, padding 0.4s ease-out;
+            /* CRÍTICO: REMOVENDO A TRANSIÇÃO DE ALTURA PARA EVITAR SALTO NO SCROLL */
+            transition: padding 0.4s ease-out; 
             background-color: #fff;
             border-left: 1px solid #e0e0e0;
             border-right: 1px solid #e0e0e0;
@@ -1385,11 +1386,10 @@
                     try {
                         const SCALE_FACTOR = 4; // Fator de escala 4x para melhor resolução
                         const canvas = document.createElement('canvas');
-                        canvas.width = logoEl.naturalWidth * SCALE_FACTOR; 
-                        canvas.height = logoEl.naturalHeight * SCALE_FACTOR;
+                        canvas.width = 40 * SCALE_FACTOR; 
+                        canvas.height = 40 * SCALE_FACTOR;
                         const ctx = canvas.getContext('2d');
                         
-                        // Desenha a imagem no canvas com resolução aumentada
                         ctx.drawImage(logoEl, 0, 0, canvas.width, canvas.height);
                         const logoData = canvas.toDataURL('image/png');
                         
