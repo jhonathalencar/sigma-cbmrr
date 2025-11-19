@@ -900,7 +900,7 @@
             statusIcon.classList.add('alert');
             alteracaoContainer.style.display = 'block';
             window.itemStatus[item.dataset.id] = { status: 'PENDING_CA', obs: '' };
-            // CORREÇÃO: Força o foco no textarea para iniciar a digitação
+            // CORREÇÃO 2: Força o foco no textarea para iniciar a digitação
             observacaoTextarea.focus();
             
             updateSetorStatus(setor);
@@ -937,7 +937,7 @@
         } else if (status === 'alert') {
             obsContainer.style.display = 'block';
             window.itemStatus[uniqueId] = { status: 'PENDING_CA', obs: '' };
-            // CORREÇÃO: Força o foco no textarea para iniciar a digitação
+            // CORREÇÃO 2: Força o foco no textarea para iniciar a digitação
             obsContainer.querySelector('textarea').focus();
             updateItemMainStatusDisplay(item);
             return; 
@@ -1181,11 +1181,8 @@
                 const itemData = window.itemStatus[currentId];
                 
                 if (!itemData || itemData.status === 'PENDING' || itemData.status === 'PENDING_CA') {
-                    // Rolagem só é feita se o item estiver fora da viewport
-                    if (!isElementInViewport(currentItem)) { 
-                         // CORREÇÃO 1: Rolagem instantânea para evitar o salto suave
-                         currentItem.scrollIntoView({ behavior: 'auto', block: 'start' });
-                    }
+                    // CORREÇÃO 1: Rolagem removida. A tela não deve ser forçada a rolar aqui.
+                    
                     if (itemData && itemData.status === 'PENDING_CA') {
                          currentItem.querySelector('textarea').focus();
                     }
@@ -1202,10 +1199,7 @@
                 });
 
                 if (pendingTombamento) {
-                    if (!isElementInViewport(pendingTombamento)) {
-                         // CORREÇÃO 1: Rolagem instantânea para evitar o salto suave
-                        pendingTombamento.scrollIntoView({ behavior: 'auto', block: 'start' });
-                    }
+                    // CORREÇÃO 1: Rolagem removida. A tela não deve ser forçada a rolar aqui.
                     
                     if (window.itemStatus[`${currentId}-${pendingTombamento.dataset.tomb}`]?.status === 'PENDING_CA') {
                         pendingTombamento.querySelector('textarea').focus();
@@ -1215,7 +1209,7 @@
             }
         }
 
-        // Rolagem para o botão Finalizar (mantida suave)
+        // Rolagem para o botão Finalizar (mantida suave, caso tenha chegado no fim)
         document.getElementById('btn-finalizar').scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
 
@@ -1237,8 +1231,8 @@
                if (!nextContent.classList.contains('expanded')) {
                    toggleSetor(nextSetorEl.querySelector('.setor-header')); 
                }
-               
-               // *** NENHUMA ROLAGEM EXPLÍCITA AQUI ***
+
+               // *** ROLAGEM EXPLÍCITA REMOVIDA PARA ESTABILIDADE ***
                
             }
         } else {
@@ -1261,7 +1255,7 @@
 
         // --- 1. DECLARAÇÃO DE CONSTANTES E PREPARAÇÃO DE DADOS ---
         try {
-            // CORREÇÃO 3: Declaração de variáveis de cor no topo do try
+            // CORREÇÃO 3: Variáveis de cor movidas para o topo do bloco try
             const RED_COLOR = '#D90F23';
             const MAROON_COLOR = '#800020';
             const GREEN_COLOR = '#1B8A3E';
@@ -1379,20 +1373,21 @@
                 const logoEl = document.getElementById(logoId) || document.querySelector(`img[src*="${logoId}"]`);
                 if (logoEl && logoEl.src) {
                     try {
-                        const SCALE_FACTOR = 4; // Fator para aumentar a resolução
+                        const SCALE_FACTOR = 4; // Fator de escala 4x para melhor resolução
                         const canvas = document.createElement('canvas');
                         canvas.width = 40 * SCALE_FACTOR; 
                         canvas.height = 40 * SCALE_FACTOR;
                         const ctx = canvas.getContext('2d');
                         
-                        // Desenha a imagem no canvas com resolução aumentada
                         ctx.drawImage(logoEl, 0, 0, canvas.width, canvas.height);
+                        // A compressão do PNG Base64 ocorre aqui
                         const logoData = canvas.toDataURL('image/png');
                         
-                        // Adiciona a imagem de volta ao tamanho normal no PDF
+                        // Adiciona a imagem, escalando de volta para o tamanho final (15mm)
                         doc.addImage(logoData, 'PNG', x, HEADER_Y, LOGO_SIZE, LOGO_SIZE);
 
                     } catch (e) {
+                        console.error(`Erro ao processar logo ${logoId}:`, e);
                         // Fallback visual se a imagem não puder ser lida (CORS ou not found)
                         doc.rect(x, HEADER_Y, LOGO_SIZE, LOGO_SIZE);
                         doc.text('LOGO', x + 4, HEADER_Y + 7);
@@ -1403,7 +1398,7 @@
                     doc.text('LOGO', x + 4, HEADER_Y + 7);
                 }
             };
-            
+
             const HEADER_Y = 10; 
 
             // Logo 1 (CBM-RR / roraima.png) - Esquerda
