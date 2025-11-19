@@ -259,7 +259,7 @@
 
     <div class="sidebar">
         <div class="sidebar-header">
-            <img src="logo_sigma.png" alt="Logo SIGMA" onerror="this.onerror=null; this.src='https://placehold.co/50x50/ffffff/800020/fff?text=S'">
+            <img src="cci.png" alt="Logo CCI" onerror="this.onerror=null; this.src='https://placehold.co/50x50/ffffff/800020/fff?text=S'">
             <h2>SIGMA Admin</h2>
         </div>
         
@@ -570,73 +570,4 @@
             s.itens.push(novo); salvarDados(false); renderizarLista();
             document.getElementById(`input-item-nome-${sId}`).value='';
         }
-        function removerItem(sId, iId) { if(confirm("Remover?")){ const s=dadosConferencia.find(x=>x.id===sId); s.itens=s.itens.filter(i=>i.id!==iId); salvarDados(false); renderizarLista(); } }
-        function adicionarTombamento(iId, input) {
-            const val = input.value.trim().toUpperCase(); if(!val) return;
-            const s = dadosConferencia.find(x=>x.itens.some(i=>i.id===iId)); const i=s.itens.find(x=>x.id===iId);
-            if(i.tombamentos.some(t=>t.tomb===val)) return alert("Duplicado");
-            i.tombamentos.push({tomb:val, status:"pending", obs:""}); i.quantidadeEsperada=i.tombamentos.length;
-            salvarDados(false); renderizarLista();
-        }
-        function removerTombamento(iId, val) {
-            if(!confirm("Remover?")) return;
-            const s=dadosConferencia.find(x=>x.itens.some(i=>i.id===iId)); const i=s.itens.find(x=>x.id===iId);
-            i.tombamentos=i.tombamentos.filter(t=>t.tomb!==val); i.quantidadeEsperada=i.tombamentos.length;
-            salvarDados(false); renderizarLista();
-        }
-        function editarTombamento(iId, oldVal, input) {
-            const newVal = input.value.trim().toUpperCase(); if(!newVal || newVal===oldVal) return;
-            const s=dadosConferencia.find(x=>x.itens.some(i=>i.id===iId)); const i=s.itens.find(x=>x.id===iId);
-            const t=i.tombamentos.find(x=>x.tomb===oldVal); if(t){t.tomb=newVal; salvarDados(false);}
-        }
-        function toggleSetorContent(el) { el.nextElementSibling.classList.toggle('collapsed'); }
-
-        function renderizarLista() {
-            const container = document.getElementById('lista-setores-container'); container.innerHTML = '';
-            dadosConferencia.forEach(s => {
-                let itensHtml = '';
-                s.itens.forEach(i => {
-                    let tombHtml = '';
-                    if(i.tipo==='multi' && i.tombamentos){
-                        const lis = i.tombamentos.map(t=>`<li><span><input type="text" value="${t.tomb}" onblur="editarTombamento('${i.id}','${t.tomb}',this)"></span><button class="btn-action btn-remover" style="padding:2px 5px;" onclick="removerTombamento('${i.id}','${t.tomb}')">X</button></li>`).join('');
-                        tombHtml=`<div class="tombamento-container-wrapper"><ul class="tombamento-list">${lis}</ul><div style="display:flex;gap:5px;margin-top:5px;"><input type="text" id="add-tomb-${i.id}"><button class="btn-add" onclick="adicionarTombamento('${i.id}',document.getElementById('add-tomb-${i.id}'))">+</button></div></div>`;
-                    }
-                    itensHtml += `<li class="item-conferencia-admin" data-id="${i.id}" data-setor-id="${s.id}"><div style="width:100%"><div style="display:flex;justify-content:space-between;"><div><strong>${i.nome}</strong><br><small>Qtd: ${i.quantidadeEsperada}</small></div><div class="item-actions-admin"><button class="btn-action btn-edit-alt" onclick="abrirModalEdicao('${s.id}','${i.id}')"><i class="fas fa-edit"></i></button><button class="btn-action btn-remover" onclick="removerItem('${s.id}','${i.id}')"><i class="fas fa-trash"></i></button></div></div>${tombHtml}</div></li>`;
-                });
-                const li = document.createElement('li'); li.className='setor-item'; li.setAttribute('data-id',s.id);
-                li.innerHTML=`<div class="setor-header-admin" onclick="toggleSetorContent(this)"><span>${s.nome}</span><div class="item-actions-admin"><button class="btn-action btn-edit-alt" onclick="event.stopPropagation();promptRenomearSetor('${s.id}','${s.nome}')">Renomear</button><button class="btn-action btn-remover" onclick="event.stopPropagation();removerSetor('${s.id}')">X</button></div></div><div class="setor-content-admin"><div class="add-item-form-setor"><input type="text" id="input-item-nome-${s.id}" placeholder="Item"><input type="number" id="input-item-qtd-${s.id}" value="1" style="width:50px"><select id="select-item-tipo-${s.id}"><option value="single">Único</option><option value="multi">Tombamento</option></select><button class="btn-add" onclick="adicionarItemPorSetor('${s.id}')">+</button></div><ul class="lista-setores item-list-admin" data-setor-id="${s.id}">${itensHtml}</ul></div>`;
-                container.appendChild(li);
-            });
-            aplicarDragAndDrop();
-        }
-
-        function aplicarDragAndDrop() {
-            new Sortable(document.getElementById('lista-setores-container'), { animation:150, handle:'.setor-header-admin', onEnd: function(evt){ const item=dadosConferencia.splice(evt.oldIndex,1)[0]; dadosConferencia.splice(evt.newIndex,0,item); salvarDados(false); } });
-            document.querySelectorAll('.item-list-admin').forEach(l=>{ new Sortable(l, { group:'itens', animation:150, onEnd: function(evt){ const fs=dadosConferencia.find(s=>s.id===evt.from.dataset.setorId); const ts=dadosConferencia.find(s=>s.id===evt.to.dataset.setorId); const i=fs.itens.splice(evt.oldIndex,1)[0]; if(fs!==ts) i.id=ts.id+'-'+gerarNovoId(); ts.itens.splice(evt.newIndex,0,i); salvarDados(false); renderizarLista(); } }); });
-        }
-
-        function abrirModalEdicao(sId, iId) {
-            const s=dadosConferencia.find(x=>x.id===sId); const i=s.itens.find(x=>x.id===iId);
-            document.getElementById('edit-setor-id').value=sId; document.getElementById('edit-item-original-id').value=iId;
-            document.getElementById('edit-item-nome').value=i.nome; document.getElementById('edit-item-qtd').value=i.quantidadeEsperada;
-            document.getElementById('edit-item-qtd').disabled=(i.tipo==='multi'); document.getElementById('edit-item-tipo').value=i.tipo;
-            const sel=document.getElementById('edit-item-setor'); sel.innerHTML=''; dadosConferencia.forEach(ds=>{const o=document.createElement('option'); o.value=ds.id; o.text=ds.nome; if(ds.id===sId)o.selected=true; sel.appendChild(o);});
-            document.getElementById('modal-edicao').style.display='flex';
-        }
-        function fecharModal(){document.getElementById('modal-edicao').style.display='none';}
-        function salvarEdicaoItem(){
-            const oldSId=document.getElementById('edit-setor-id').value; const iId=document.getElementById('edit-item-original-id').value;
-            const nome=document.getElementById('edit-item-nome').value.trim().toUpperCase(); const newSId=document.getElementById('edit-item-setor').value; const qtd=parseInt(document.getElementById('edit-item-qtd').value);
-            const oldS=dadosConferencia.find(x=>x.id===oldSId); const newS=dadosConferencia.find(x=>x.id===newSId); const i=oldS.itens.find(x=>x.id===iId);
-            i.nome=nome; if(i.tipo==='single')i.quantidadeEsperada=qtd;
-            if(oldSId!==newSId){ oldS.itens=oldS.itens.filter(x=>x.id!==iId); i.id=newSId+'-'+gerarNovoId(); newS.itens.push(i); }
-            salvarDados(false); renderizarLista(); fecharModal();
-        }
-
-        function fazerBackupLocal() { const blob=new Blob([JSON.stringify(dadosConferencia,null,2)],{type:"application/json"}); const url=URL.createObjectURL(blob); const a=document.createElement('a'); a.href=url; a.download='backup.json'; a.click(); }
-        function importarBackupLocal(e) { const f=e.target.files[0]; if(!f)return; const r=new FileReader(); r.onload=function(ev){if(confirm("Substituir?")){try{dadosConferencia=JSON.parse(ev.target.result); salvarDados(); renderizarLista();}catch(err){alert("Erro JSON");}}}; r.readAsText(f); }
-
-        document.addEventListener('DOMContentLoaded', () => { loadCaaData(); });
-    </script>
-</body>
-</html>
+        function removerItem(sId, iId) { if(confirm("Remover?")) { const
