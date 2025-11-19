@@ -900,7 +900,7 @@
             statusIcon.classList.add('alert');
             alteracaoContainer.style.display = 'block';
             window.itemStatus[item.dataset.id] = { status: 'PENDING_CA', obs: '' };
-            // CORREÇÃO 2: Força o foco no textarea para iniciar a digitação
+            // CORREÇÃO: Força o foco no textarea para iniciar a digitação
             observacaoTextarea.focus();
             
             updateSetorStatus(setor);
@@ -937,7 +937,7 @@
         } else if (status === 'alert') {
             obsContainer.style.display = 'block';
             window.itemStatus[uniqueId] = { status: 'PENDING_CA', obs: '' };
-            // CORREÇÃO 2: Força o foco no textarea para iniciar a digitação
+            // CORREÇÃO: Força o foco no textarea para iniciar a digitação
             obsContainer.querySelector('textarea').focus();
             updateItemMainStatusDisplay(item);
             return; 
@@ -1183,7 +1183,8 @@
                 if (!itemData || itemData.status === 'PENDING' || itemData.status === 'PENDING_CA') {
                     // Rolagem só é feita se o item estiver fora da viewport
                     if (!isElementInViewport(currentItem)) { 
-                         currentItem.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                         // CORREÇÃO 1: Rolagem instantânea para evitar o salto suave
+                         currentItem.scrollIntoView({ behavior: 'auto', block: 'start' });
                     }
                     if (itemData && itemData.status === 'PENDING_CA') {
                          currentItem.querySelector('textarea').focus();
@@ -1202,7 +1203,8 @@
 
                 if (pendingTombamento) {
                     if (!isElementInViewport(pendingTombamento)) {
-                        pendingTombamento.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                         // CORREÇÃO 1: Rolagem instantânea para evitar o salto suave
+                        pendingTombamento.scrollIntoView({ behavior: 'auto', block: 'start' });
                     }
                     
                     if (window.itemStatus[`${currentId}-${pendingTombamento.dataset.tomb}`]?.status === 'PENDING_CA') {
@@ -1213,6 +1215,7 @@
             }
         }
 
+        // Rolagem para o botão Finalizar (mantida suave)
         document.getElementById('btn-finalizar').scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
 
@@ -1234,8 +1237,8 @@
                if (!nextContent.classList.contains('expanded')) {
                    toggleSetor(nextSetorEl.querySelector('.setor-header')); 
                }
-
-               // *** NENHUMA ROLAGEM EXPLÍCITA AQUI: Deixa o usuário no contexto ***
+               
+               // *** NENHUMA ROLAGEM EXPLÍCITA AQUI ***
                
             }
         } else {
@@ -1258,7 +1261,7 @@
 
         // --- 1. DECLARAÇÃO DE CONSTANTES E PREPARAÇÃO DE DADOS ---
         try {
-            // CORREÇÃO: Variáveis de cor movidas para o topo do bloco try
+            // CORREÇÃO 3: Declaração de variáveis de cor no topo do try
             const RED_COLOR = '#D90F23';
             const MAROON_COLOR = '#800020';
             const GREEN_COLOR = '#1B8A3E';
@@ -1371,16 +1374,22 @@
             doc.setFontSize(10);
             doc.setTextColor(51); 
 
-            // Função robusta para desenhar logo (com tratamento de erro)
+            // Função robusta para desenhar logo (com tratamento de erro e escala)
             const logoDraw = (logoId, x) => {
                 const logoEl = document.getElementById(logoId) || document.querySelector(`img[src*="${logoId}"]`);
                 if (logoEl && logoEl.src) {
                     try {
+                        const SCALE_FACTOR = 4; // Fator para aumentar a resolução
                         const canvas = document.createElement('canvas');
-                        canvas.width = 40; canvas.height = 40;
+                        canvas.width = 40 * SCALE_FACTOR; 
+                        canvas.height = 40 * SCALE_FACTOR;
                         const ctx = canvas.getContext('2d');
-                        ctx.drawImage(logoEl, 0, 0, 40, 40);
+                        
+                        // Desenha a imagem no canvas com resolução aumentada
+                        ctx.drawImage(logoEl, 0, 0, canvas.width, canvas.height);
                         const logoData = canvas.toDataURL('image/png');
+                        
+                        // Adiciona a imagem de volta ao tamanho normal no PDF
                         doc.addImage(logoData, 'PNG', x, HEADER_Y, LOGO_SIZE, LOGO_SIZE);
 
                     } catch (e) {
@@ -1395,7 +1404,6 @@
                 }
             };
             
-            // CRÍTICO: HEADER_Y (Variável usada no logoDraw) agora está definida.
             const HEADER_Y = 10; 
 
             // Logo 1 (CBM-RR / roraima.png) - Esquerda
