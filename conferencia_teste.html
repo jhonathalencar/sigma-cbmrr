@@ -565,7 +565,7 @@
     // *******************************************************************
 
     async function carregarDadosRemotos() {
-        // Inicialização do Firebase movida para dentro desta função ASYNC
+        // Inicialização do Firebase
         if (!db) {
             try {
                 if (!firebase.apps.length) {
@@ -900,7 +900,7 @@
             statusIcon.classList.add('alert');
             alteracaoContainer.style.display = 'block';
             window.itemStatus[item.dataset.id] = { status: 'PENDING_CA', obs: '' };
-            // CORREÇÃO 2: Força o foco no textarea para iniciar a digitação
+            // CORREÇÃO: Força o foco no textarea para iniciar a digitação
             observacaoTextarea.focus();
             
             updateSetorStatus(setor);
@@ -937,7 +937,7 @@
         } else if (status === 'alert') {
             obsContainer.style.display = 'block';
             window.itemStatus[uniqueId] = { status: 'PENDING_CA', obs: '' };
-            // CORREÇÃO 2: Força o foco no textarea para iniciar a digitação
+            // CORREÇÃO: Força o foco no textarea para iniciar a digitação
             obsContainer.querySelector('textarea').focus();
             updateItemMainStatusDisplay(item);
             return; 
@@ -1181,7 +1181,7 @@
                 const itemData = window.itemStatus[currentId];
                 
                 if (!itemData || itemData.status === 'PENDING' || itemData.status === 'PENDING_CA') {
-                    // CORREÇÃO 1: Rolagem REMOVIDA. Apenas foco se for C/A.
+                    // *** ROLAGEM REMOVIDA PARA EVITAR O ARRASTO/SALTO ***
                     
                     if (itemData && itemData.status === 'PENDING_CA') {
                          currentItem.querySelector('textarea').focus();
@@ -1199,7 +1199,7 @@
                 });
 
                 if (pendingTombamento) {
-                    // CORREÇÃO 1: Rolagem REMOVIDA. Apenas foco se for C/A.
+                    // *** ROLAGEM REMOVIDA PARA EVITAR O ARRASTO/SALTO ***
                     
                     if (window.itemStatus[`${currentId}-${pendingTombamento.dataset.tomb}`]?.status === 'PENDING_CA') {
                         pendingTombamento.querySelector('textarea').focus();
@@ -1232,7 +1232,7 @@
                    toggleSetor(nextSetorEl.querySelector('.setor-header')); 
                }
 
-               // *** ROLAGEM EXPLÍCITA REMOVIDA PARA ESTABILIDADE ***
+               // *** NENHUMA ROLAGEM EXPLÍCITA AQUI ***
                
             }
         } else {
@@ -1255,7 +1255,7 @@
 
         // --- 1. DECLARAÇÃO DE CONSTANTES E PREPARAÇÃO DE DADOS ---
         try {
-            // CORREÇÃO 3: Variáveis de cor movidas para o topo do bloco try (resolvendo ReferenceError)
+            // CORREÇÃO 3: Variáveis de cor declaradas no topo do bloco try (resolvendo ReferenceError)
             const RED_COLOR = '#D90F23';
             const MAROON_COLOR = '#800020';
             const GREEN_COLOR = '#1B8A3E';
