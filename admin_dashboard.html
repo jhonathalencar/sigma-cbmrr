@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/png" href="logo_sigma.png" onerror="this.onerror=null; this.src='https://placehold.co/16x16/800020/ffffff?text=S'">
+    <title>Dashboard | SIGMA - Gestão de Conferências</title>
+    <style>
+        /* ESTILOS BASE COMPARTILHADOS */
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f9;
+            color: #333;
+            margin: 0;
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* --- ESTILOS DO MENU LATERAL (Sidebar) --- */
+        .sidebar {
+            width: 250px; /* Largura padrão para desktop */
+            background-color: #800020; /* Cor Vinho (Maroon) */
+            color: white;
+            padding-top: 20px;
+            box-shadow: 2px 0 5px rgba(0, 0, 0, 0.2);
+            position: fixed;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            z-index: 10;
+        }
+        
+        .sidebar-header {
+            text-align: center;
+            padding: 10px 0 20px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+            margin-bottom: 10px;
+        }
+
+        .sidebar-header img {
+            width: 50px;
+            height: auto;
+            margin-bottom: 5px;
+        }
+
+        .sidebar-header h2 {
+            font-size: 1.1em;
+            margin: 0;
+        }
+
+        .sidebar a {
+            padding: 15px 20px;
+            text-decoration: none;
+            font-size: 1em;
+            color: white;
+            display: block;
+            transition: background-color 0.3s;
+        }
+
+        .sidebar a:hover {
+            background-color: #a01d36; /* Vinho mais claro no hover */
+        }
+
+        .sidebar a.active {
+            background-color: #d90f23; /* Vermelho destacado para item ativo */
+            font-weight: bold;
+        }
+
+        /* --- ESTILOS DO CONTEÚDO PRINCIPAL (Dashboard) --- */
+        .content {
+            margin-left: 250px; /* Offset para o menu lateral */
+            flex-grow: 1;
+            padding: 20px;
+            box-sizing: border-box;
+            width: calc(100% - 250px);
+        }
+
+        h1 {
+            color: #d90f23;
+            font-size: 1.8em;
+            margin-top: 0;
+            border-bottom: 2px solid #eee;
+            padding-bottom: 10px;
+        }
+        
+        /* Loading */
+        #loading-message {
+             text-align: center;
+             font-size: 1.2em;
+             margin-top: 50px;
+        }
+
+        /* --- ESTATÍSTICAS E SUMÁRIO --- */
+        .summary-box {
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+            display: inline-block;
+        }
+
+        .summary-box h3 {
+            margin-top: 0;
+            font-size: 1.1em;
+            color: #800020;
+        }
+
+        .summary-value {
+            font-size: 2.5em;
+            font-weight: bold;
+            color: #d90f23;
+        }
+        
+        /* --- TABELA DE DETALHES C/A --- */
+        .ca-table-container {
+            overflow-x: auto;
+            background-color: white;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .ca-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.9em;
+        }
+
+        .ca-table th, .ca-table td {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .ca-table th {
+            background-color: #f4f4f9;
+            color: #800020;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+
+        .ca-table tr:hover {
+            background-color: #fffafb;
+        }
+        
+        .ca-table td:nth-child(2) {
+            /* Coluna da descrição C/A */
+            max-width: 300px;
+            white-space: normal;
+        }
+
+        /* --- RESPONSIVIDADE (Mobile) --- */
+        @media (max-width: 768px) {
+            .sidebar {
+                width: 100%;
+                height: auto;
+                position: relative;
+                padding-top: 0;
+            }
+            
+            .sidebar-header {
+                 display: none; /* Esconde logo e título no mobile */
+            }
+
+            .sidebar a {
+                padding: 10px;
+                text-align: center;
+                display: inline-block;
+                width: 50%;
+                box-sizing: border-box;
+                border-right: 1px solid rgba(255, 255, 255, 0.1);
+            }
+             
+            .content {
+                margin-left: 0;
+                width: 100%;
+                padding-top: 10px;
+            }
+            
+            .summary-box {
+                 width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="sidebar">
+        <div class="sidebar-header">
+            <img src="logo_sigma.png" alt="Logo SIGMA" onerror="this.onerror=null; this.src='https://placehold.co/50x50/ffffff/800020/fff?text=S'">
+            <h2>SIGMA Admin</h2>
+        </div>
+        <nav>
+            <a href="javascript:void(0)" class="active">Dashboard</a>
+            <a href="javascript:void(0)">Gerenciar</a>
+        </nav>
+    </div>
+
+    <div class="content">
+        <h1>Dashboard - Não Conformidades (C/A)</h1>
+
+        <div class="summary-box">
+            <h3>Total de Itens C/A Registrados</h3>
+            <div id="total-ca-count" class="summary-value">...</div>
+        </div>
+
+        <div id="loading-message">
+            Conectando ao Firebase e carregando dados...
+        </div>
+
+        <div class="ca-table-container" style="display: none;">
+            <h2>Detalhes das Alterações por Conferência</h2>
+            <table class="ca-table">
+                <thead>
+                    <tr>
+                        <th>Material/Tombamento</th>
+                        <th>Descrição da Alteração</th>
+                        <th>Local</th>
+                        <th>Conferente</th>
+                        <th>Data</th>
+                    </tr>
+                </thead>
+                <tbody id="ca-list-body">
+                    </tbody>
+            </table>
+        </div>
+        
+    </div>
+
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
+
+    <script>
+        // *******************************************************************
+        // 1. CONFIGURAÇÃO FIREBASE (A MESMA USADA NO ARQUIVO DE CONFERÊNCIA)
+        // *******************************************************************
+        const firebaseConfig = {
+            apiKey: "AIzaSyCB0PH0UgghgsvH0BgPkG4AkKON6xSQ9mc",
+            authDomain: "sigma-cbmrr.firebaseapp.com",
+            projectId: "sigma-cbmrr",
+            storageBucket: "sigma-cbmrr.firebasestorage.app",
+            messagingSenderId: "378026276038",
+            appId: "1:378026276038:web:620dd6ff57501b1a8313c7"
+        };
+
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+        
+        // NOVO: Coleção onde os resultados finais das conferências serão salvos.
+        const COLECAO_RESULTADOS = 'resultados_conferencias'; 
+
+        // *******************************************************************
+        // 2. FUNÇÃO DE CARREGAMENTO DE DADOS C/A
+        // *******************************************************************
+        async function loadCaaData() {
+            try {
+                const resultsSnapshot = await db.collection(COLECAO_RESULTADOS).get();
+                let allCaaItems = [];
+
+                resultsSnapshot.forEach(doc => {
+                    const data = doc.data();
+                    const metadata = {
+                        local: data.local || 'N/D',
+                        conferente: data.conferente || 'N/D',
+                        timestamp: data.timestamp ? new Date(data.timestamp.toDate()).toLocaleString('pt-BR') : 'N/D',
+                        // Se você tiver um ID de lista futura (ex: "Lista_Bravo5"), ele estaria aqui
+                    };
+
+                    // O campo 'itensCaa' é o array de C/A salvo no passo 2
+                    if (Array.isArray(data.itensCaa)) {
+                        data.itensCaa.forEach(item => {
+                            allCaaItems.push({
+                                ...item,
+                                ...metadata // Adiciona metadados a cada item C/A
+                            });
+                        });
+                    }
+                });
+
+                renderCaaTable(allCaaItems);
+
+            } catch (error) {
+                console.error("Erro ao carregar dados do Firebase:", error);
+                document.getElementById('loading-message').textContent = "❌ Erro ao carregar dados: " + error.message;
+            }
+        }
+
+        // *******************************************************************
+        // 3. FUNÇÃO DE RENDERIZAÇÃO
+        // *******************************************************************
+        function renderCaaTable(items) {
+            const tableBody = document.getElementById('ca-list-body');
+            const totalCount = document.getElementById('total-ca-count');
+            const loading = document.getElementById('loading-message');
+            const tableContainer = document.querySelector('.ca-table-container');
+
+            tableBody.innerHTML = ''; // Limpa a tabela
+
+            if (items.length === 0) {
+                loading.textContent = "✅ Não há itens C/A (Com Alteração) registrados.";
+                totalCount.textContent = '0';
+            } else {
+                loading.style.display = 'none';
+                tableContainer.style.display = 'block';
+                totalCount.textContent = items.length;
+
+                items.forEach(item => {
+                    const row = tableBody.insertRow();
+                    
+                    // 1. Nome do Item / Tombamento
+                    const itemCell = row.insertCell();
+                    itemCell.textContent = item.nomeCompleto;
+
+                    // 2. Descrição da Alteração (Observação)
+                    const obsCell = row.insertCell();
+                    obsCell.textContent = item.obs || '-';
+
+                    // 3. Local (Permanece fixo por enquanto, mas preparado para listas futuras)
+                    const localCell = row.insertCell();
+                    localCell.textContent = item.local;
+
+                    // 4. Conferente
+                    const conferenteCell = row.insertCell();
+                    conferenteCell.textContent = item.conferente;
+
+                    // 5. Data
+                    const dateCell = row.insertCell();
+                    dateCell.textContent = item.timestamp;
+                });
+            }
+        }
+
+        // *******************************************************************
+        // 4. INICIALIZAÇÃO
+        // *******************************************************************
+        document.addEventListener('DOMContentLoaded', loadCaaData);
+
+    </script>
+</body>
+</html>
