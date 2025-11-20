@@ -247,9 +247,7 @@
         </div>
     </div>
 
-    <div id="modal-edicao" class="modal-overlay"><div class="modal-content"><button class="close-btn" onclick="fecharModal()"><i class="fas fa-times"></i></button><h2>Editar Item</h2><input type="hidden" id="edit-setor-id"><input type="hidden" id="edit-item-original-id"><label for="edit-item-nome">Nome:</label><input type="text" id="edit-item-nome"><label for="edit-item-setor">Mover para Setor:</label><select id="edit-item-setor"></select><label for="edit-item-qtd">Quantidade:</label><input type="number" id="edit-item-qtd" min="1"><label for="edit-item-tipo">Tipo:</label><select id="edit-item-tipo" disabled style="background-color: #eee;"><option value="single">Item Único</option><option value="multi">Item com Tombamento</option></select><div class="modal-buttons">
-        <button class="btn-modern-action btn-backup" onclick="fecharModal()">Cancelar</button>
-        <button class="btn-modern-action btn-sync" onclick="salvarEdicaoItem()">Salvar</button></div></div></div>
+    <div id="modal-edicao" class="modal-overlay"><div class="modal-content"><button class="close-btn" onclick="fecharModal()"><i class="fas fa-times"></i></button><h2>Editar Item</h2><input type="hidden" id="edit-setor-id"><input type="hidden" id="edit-item-original-id"><label for="edit-item-nome">Nome:</label><input type="text" id="edit-item-nome"><label for="edit-item-setor">Mover para Setor:</label><select id="edit-item-setor"></select><label for="edit-item-qtd">Quantidade:</label><input type="number" id="edit-item-qtd" min="1"><label for="edit-item-tipo">Tipo:</label><select id="edit-item-tipo" disabled style="background-color: #eee;"><option value="single">Item Único</option><option value="multi">Item com Tombamento</option></select><div class="modal-buttons"><button class="btn-action btn-remover" onclick="fecharModal()">Cancelar</button><button class="btn-action btn-sync" onclick="salvarEdicaoItem()">Salvar</button></div></div></div>
 
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script><script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script><script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
     <script>
@@ -370,10 +368,8 @@
                 snap.forEach(doc => {
                     const d = doc.data();
                     const loc = d.local || 'Desconhecido';
-                    
                     // FILTRO DE CARDS OBSOLETOS
                     if (loc === 'ABT-17' || loc === 'ABT-18' || loc === 'PERMANÊNCIA - BRAVO 5') return; 
-                    
                     if (!map[loc]) {
                         map[loc] = { docId: doc.id, local: loc, conferente: d.conferente, date: d.timestamp ? new Date(d.timestamp.toDate()).toLocaleString('pt-BR') : 'N/D', items: [] };
                         if (Array.isArray(d.itensCaa)) {
@@ -398,7 +394,7 @@
         }
 
         // =================================================
-        // FUNÇÃO DE FORMATAÇÃO CORRIGIDA (REGEX & QUEBRA DE LINHA)
+        // FUNÇÃO DE FORMATAÇÃO CORRIGIDA (QUEBRA DE LINHA POR BULLET)
         // =================================================
         const formatarTextoDashboard = (textoBruto) => {
             let html = '<ul class="obs-list">';
@@ -471,7 +467,7 @@
         }
         function fecharTabela(){ document.getElementById('ca-table-wrapper').style.display='none'; document.querySelectorAll('.sector-card').forEach(c=>c.classList.remove('active-card')); }
 
-        // GESTÃO DE STATUS E REMOÇÃO (LÓGICA ATUALIZADA)
+        // GESTÃO DE STATUS E REMOÇÃO (LÓGICA ATUALIZADA E UI REFRESH)
         function abrirModalGestao(i){ 
             document.getElementById('gestao-item-nome').textContent=i.nomeCompleto; 
             document.getElementById('gestao-doc-id').value=i.docId; 
@@ -483,7 +479,6 @@
             const maxQtd = (i.quantidade !== undefined) ? i.quantidade : 1; 
             document.getElementById('gestao-item-max-qtd').value = maxQtd;
             
-            // Atualiza o texto do estoque com o valor correto
             document.querySelector('#div-gestao-qtd small').innerHTML = `Estoque Atual: <strong>${maxQtd}</strong><br>Nota: Se a quantidade zerar, o item será excluído da lista.`;
 
             document.getElementById('gestao-qtd').max = maxQtd;
@@ -502,10 +497,17 @@
                 if(qtd > maxQtd) return alert(`Erro: A quantidade a remover (${qtd}) é maior que o estoque atual (${maxQtd}).`);
                 if(qtd <= 0) return alert("A quantidade deve ser maior que zero.");
             }
+
+            // Feedback visual imediato
+            const btnConfirm = document.querySelector('#modal-gestao-ca .btn-sync');
+            const originalText = btnConfirm.innerText;
+            btnConfirm.innerText = "Salvando...";
+            btnConfirm.disabled = true;
+
             try {
                 const ref=db.collection(COLECAO_RESULTADOS).doc(docId); const snap=await ref.get(); const resData=snap.data(); const items=resData.itensCaa;
                 items[idx].statusAdmin=(status==='Remover'?'Solucionado':status); 
-                items[idx].adminObs = obs; // <--- IMPORTANTE: SALVAR OBS NO HISTÓRICO
+                items[idx].adminObs = obs; 
                 await ref.update({itensCaa:items});
 
                 const listaIdAlvo = resData.lista_id;
@@ -538,8 +540,21 @@
                         if(updated) await listRef.update({list:lista});
                     }
                 }
-                alert("Atualizado!"); fecharModalGestao(); loadCaaData();
-            } catch(e){ console.error(e); alert("Erro ao salvar."); }
+                
+                alert("Atualizado com sucesso!"); 
+                fecharModalGestao(); 
+                
+                // FORÇA O RECARREGAMENTO DA INTERFACE
+                fecharTabela(); // Fecha a tabela para evitar inconsistências
+                loadCaaData(); // Recarrega os cards
+
+            } catch(e){ 
+                console.error(e); 
+                alert("Erro ao salvar."); 
+            } finally {
+                btnConfirm.innerText = originalText;
+                btnConfirm.disabled = false;
+            }
         }
 
         // [FUNÇÕES DE SUPORTE DO EDITOR MANTIDAS]
