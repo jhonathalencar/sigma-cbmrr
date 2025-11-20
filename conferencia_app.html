@@ -47,7 +47,6 @@
         /* ESTILOS PENDÊNCIAS */
         .pendencia-alert-box { font-size: 0.85em; margin-top: 5px; display: block; text-align: left; border-left: 3px solid #d90f23; padding-left: 8px; background-color: #fff0f0; padding: 5px; transition: all 0.3s; }
         .pendencia-alert-box.admin-reply { border-left-color: #2196F3; background-color: #e3f2fd; }
-        /* Estilo quando mantido */
         .pendencia-alert-box.kept { border-left-color: #1b8a3e; background-color: #f0fff0; opacity: 0.9; }
         
         .lista-pendencias { list-style: none; padding: 0; margin: 5px 0; }
@@ -73,7 +72,8 @@
         .tombamento-obs-container textarea, .alteracao-container textarea { width: 100%; padding: 8px; border-radius: 4px; border: 1px solid #d90f23; box-sizing: border-box; font-size: 0.85em; resize: vertical; min-height: 40px; margin-bottom: 5px; }
         .btn-salvar-alteracao { background-color: #800020; color: white; font-weight: bold; border: none; padding: 8px 15px; border-radius: 4px; cursor: pointer; width: 100%; transition: background-color 0.3s; font-size: 0.85em; }
         
-        .descricao-salva, .tombamento-descricao-salva { font-size: 0.9em; margin-top: 5px; display: none; padding-top: 5px; border-top: 1px dashed #ddd; text-align: left; }
+        /* ONDE A DESCRIÇÃO SALVA APARECE */
+        .descricao-salva, .tombamento-descricao-salva { font-size: 0.9em; margin-top: 5px; display: none; padding-top: 5px; border-top: 1px dashed #ddd; text-align: left; background-color: #fff8f8; padding: 8px; border-radius: 4px; }
         .obs-texto { color: #d90f23; font-weight: bold; } .obs-titulo { color: #333; font-weight: bold; }
         
         #btn-finalizar { background-color: #d90f23; color: white; font-weight: bold; border: none; padding: 15px 10px; border-radius: 6px; width: 100%; cursor: pointer; transition: background-color 0.3s ease; margin-top: 30px; font-size: 1.1em; box-shadow: 0 4px 8px rgba(217, 15, 35, 0.4); }
@@ -133,6 +133,27 @@
             return date.toLocaleDateString('pt-BR'); 
         }
 
+        // FUNÇÃO GLOBAL DE FORMATAÇÃO VISUAL (Usada no Load e no Salvar)
+        const formatarTextoVisual = (textoBruto, autorAtual, dataAtual, adminStatus, adminObs) => {
+            let html = '<ul class="lista-pendencias">';
+            if (adminStatus) html += `<li><span class="texto-admin">⚠️ ${adminStatus} (Admin):</span> Resp: ${adminObs}</li>`;
+
+            if (textoBruto.includes('| + NOVA:')) {
+                let partes = textoBruto.split('| + NOVA:');
+                let historicoAntigo = partes[0].trim(); 
+                let textoNovo = partes[1].trim();
+                const regexAntigo = /^"(.*)" \(Por: (.*) em (.*)\)$/;
+                const match = historicoAntigo.match(regexAntigo);
+                if (match) html += `<li><span class="texto-hist">• Por: ${match[2]} em ${match[3]}: "${match[1]}"</span></li>`;
+                else html += `<li><span class="texto-hist">• ${historicoAntigo}</span></li>`;
+                html += `<li><span class="texto-atual">• Por ${autorAtual} (${dataAtual}): "${textoNovo}"</span></li>`;
+            } else {
+                html += `<li><span class="texto-atual">• Por ${autorAtual} (${dataAtual}): "${textoBruto}"</span></li>`;
+            }
+            html += '</ul>';
+            return html;
+        };
+
         // RENDERIZAÇÃO ATUALIZADA
         function renderizarConferencia() {
             const mainContent = document.getElementById('main-content');
@@ -140,27 +161,6 @@
             const setorIds = [];
             dadosConferencia.forEach(s => setorIds.push(s.id));
             window.setorIds = setorIds;
-
-            // Função auxiliar para formatar o texto na tela (Web)
-            const formatarLinhaWeb = (textoBruto, autorAtual, dataAtual, adminStatus, adminObs) => {
-                let html = '<ul class="lista-pendencias">';
-                if (adminStatus) html += `<li><span class="texto-admin">⚠️ ${adminStatus} (Admin):</span> Resp: ${adminObs}</li>`;
-
-                if (textoBruto.includes('| + NOVA:')) {
-                    let partes = textoBruto.split('| + NOVA:');
-                    let historicoAntigo = partes[0].trim(); 
-                    let textoNovo = partes[1].trim();
-                    const regexAntigo = /^"(.*)" \(Por: (.*) em (.*)\)$/;
-                    const match = historicoAntigo.match(regexAntigo);
-                    if (match) html += `<li><span class="texto-hist">• Por: ${match[2]} em ${match[3]}: "${match[1]}"</span></li>`;
-                    else html += `<li><span class="texto-hist">• ${historicoAntigo}</span></li>`;
-                    html += `<li><span class="texto-atual">• Por ${autorAtual} (${dataAtual}): "${textoNovo}"</span></li>`;
-                } else {
-                    html += `<li><span class="texto-atual">• Por ${autorAtual} (${dataAtual}): "${textoBruto}"</span></li>`;
-                }
-                html += '</ul>';
-                return html;
-            };
 
             dadosConferencia.forEach(setor => {
                 let htmlItens = ''; let totalItensNoSetor = 0;
@@ -174,10 +174,9 @@
                         const quem = pendenciaObj.quem || 'Anônimo';
                         const dataPend = formatarDataSimples(pendenciaObj.data);
                         const historicoTxtParaEdicao = `"${obs}" (Por: ${quem} em ${dataPend})`;
-                        const htmlFormatado = formatarLinhaWeb(obs, quem, dataPend, pendenciaObj.statusAdmin, pendenciaObj.adminObs);
+                        const htmlFormatado = formatarTextoVisual(obs, quem, dataPend, pendenciaObj.statusAdmin, pendenciaObj.adminObs);
                         let classAdmin = pendenciaObj.statusAdmin ? "admin-reply" : "";
 
-                        // IMPORTANTE: Usar encodeURIComponent para passar o texto seguro para a função
                         const safeHistorico = encodeURIComponent(historicoTxtParaEdicao);
 
                         return `
@@ -218,7 +217,7 @@
             updateHeaderInfo(); updateOverallStatus();
         }
 
-        // FUNÇÕES DE LÓGICA E INTERAÇÃO
+        // FUNÇÕES DE LÓGICA
         const userInfo = { postoGraduacao: getUrlParameter('posto_grad') || "ND", quadro: getUrlParameter('quadro_mil') || "ND", nomeGuerra: getUrlParameter('nome_guerra') || "ND" };
         function getUrlParameter(n) { return (new URLSearchParams(window.location.search)).get(n) || ''; }
         function updateHeaderInfo() { document.getElementById('militar-info').innerHTML = `<strong>Conferente:</strong> ${userInfo.postoGraduacao} ${userInfo.quadro} ${userInfo.nomeGuerra}<br><strong>Data/Hora:</strong> ${new Date().toLocaleString()}`; }
@@ -228,25 +227,21 @@
         function focusNextItem(currentItemId) { const allItems = Array.from(document.querySelectorAll('.item-conferencia')); let baseId = currentItemId.split('-')[0]; const idx = allItems.findIndex(i => i.dataset.id === baseId); for (let i = idx; i < allItems.length; i++) { const item = allItems[i]; if (!item) continue; const id = item.dataset.id; if (item.dataset.type === 'single') { const st = window.itemStatus[id]; if (!st || st.status === 'pending' || st.status === 'PENDING_CA') { if (!isElementInViewport(item)) item.scrollIntoView({ behavior: 'smooth', block: 'center' }); if (st && st.status === 'PENDING_CA') item.querySelector('textarea').focus(); return; } } if (item.dataset.type === 'multi') { const pendingTomb = Array.from(item.querySelectorAll('.tombamento-container')).find(t => { const uid = `${id}-${t.dataset.tomb}`; const s = window.itemStatus[uid]?.status; return s === 'pending' || s === 'PENDING_CA'; }); if (pendingTomb) { if (!isElementInViewport(pendingTomb)) pendingTomb.scrollIntoView({ behavior: 'smooth', block: 'center' }); const uid = `${id}-${pendingTomb.dataset.tomb}`; if (window.itemStatus[uid]?.status === 'PENDING_CA') pendingTomb.querySelector('textarea').focus(); return; } } } }
         function autoAdvanceSetor(sid) { const s = document.querySelector(`.setor[data-id="${sid}"]`); if (s) toggleSetor(s.querySelector('.setor-header')); const idx = window.setorIds.indexOf(sid); const nextId = window.setorIds[idx + 1]; if (nextId) { const next = document.querySelector(`.setor[data-id="${nextId}"]`); if (next) { const h = next.querySelector('.setor-header'); const c = next.querySelector('.setor-content'); if(!c.classList.contains('expanded')) toggleSetor(h); next.scrollIntoView({ behavior: 'smooth', block: 'center' }); } } }
 
-        // NOVA LÓGICA DE PENDÊNCIAS CORRIGIDA
         function manterPendencia(btnElement, uid) {
             const box = btnElement.closest('.pendencia-alert-box');
             if(box) {
                 const actions = box.querySelector('.pendencia-actions');
-                if(actions) actions.style.display = 'none'; // Some apenas com os botões
+                if(actions) actions.style.display = 'none'; 
                 
-                box.classList.add('kept'); // Adiciona estilo visual de aceito
-                // Adiciona marcação visual
+                box.classList.add('kept'); 
                 box.insertAdjacentHTML('beforeend', '<div style="color:#1b8a3e; font-weight:bold; font-size:0.9em; margin-top:5px; border-top:1px dashed #ccc; padding-top:3px;">✔ Mantido</div>');
 
                 window.itemStatus[uid] = { status: 'KEEP', obs: '' };
                 
-                // Atualiza estados visuais gerais
                 const container = box.closest('.tombamento-container') || box.closest('.item-conferencia');
                 const btnCA = container.querySelector('.ca-alert');
                 if(btnCA) btnCA.classList.add('active');
                 
-                // Atualiza contadores
                 const item = container.classList.contains('item-conferencia') ? container : container.closest('.item-conferencia');
                 if(container.classList.contains('tombamento-container')) updateItemMainStatusDisplay(item);
                 const setor = container.closest('.setor'); 
@@ -259,7 +254,7 @@
             const alertBox = btnElement.closest('.pendencia-alert-box');
             if(alertBox) {
                 container = alertBox.closest('.tombamento-container') || alertBox.closest('.item-conferencia');
-                alertBox.style.display = 'none'; // Aqui esconde pois vai abrir a edição
+                alertBox.style.display = 'none'; 
             }
 
             if (container) {
@@ -276,7 +271,7 @@
                     
                     const histDiv = editArea.querySelector('.historico-fixo');
                     if(histDiv) {
-                        histDiv.textContent = decodeURIComponent(encodedHistorico); // Decodifica texto seguro
+                        histDiv.textContent = decodeURIComponent(encodedHistorico); 
                         histDiv.style.display = 'block';
                     }
 
@@ -295,17 +290,19 @@
         function setItemStatus(button, status) { const item = button.closest('.item-conferencia'); const setor = button.closest('.setor'); item.querySelectorAll('.item-options .action-button').forEach(b => b.classList.remove('active')); button.classList.add('active'); item.querySelector('.descricao-salva').style.display = 'none'; item.querySelector('.alteracao-container').style.display = 'none'; const pb=item.querySelector('.pendencia-alert-box'); if(pb)pb.style.display='none'; if (status === 'ok') { item.className = 'item-conferencia status-ok'; item.querySelector('.status-icon').className = 'status-icon ok'; window.itemStatus[item.dataset.id] = { status: 'S/A', obs: '' }; } else { item.className = 'item-conferencia status-alert'; item.querySelector('.status-icon').className = 'status-icon alert'; item.querySelector('.alteracao-container').style.display = 'block'; window.itemStatus[item.dataset.id] = { status: 'PENDING_CA', obs: '' }; item.querySelector('textarea').focus(); updateSetorStatus(setor); return; } updateSetorStatus(setor); updateOverallStatus(); checkSetorCompletion(setor, item.dataset.id); }
         function setTombamentoStatus(button, status) { const tombEl = button.closest('.tombamento-container'); const item = button.closest('.item-conferencia'); const setor = button.closest('.setor'); const uid = `${item.dataset.id}-${tombEl.dataset.tomb}`; tombEl.querySelectorAll('.action-button').forEach(b => b.classList.remove('active')); button.classList.add('active'); tombEl.querySelector('.tombamento-obs-container').style.display = 'none'; tombEl.querySelector('.tombamento-descricao-salva').style.display = 'none'; const pb=tombEl.querySelector('.pendencia-alert-box'); if(pb)pb.style.display='none'; if (status === 'ok') { window.itemStatus[uid] = { status: 'S/A', obs: '' }; updateItemMainStatusDisplay(item); } else { tombEl.querySelector('.tombamento-obs-container').style.display = 'block'; window.itemStatus[uid] = { status: 'PENDING_CA', obs: '' }; tombEl.querySelector('textarea').focus(); updateItemMainStatusDisplay(item); return; } updateSetorStatus(setor); updateOverallStatus(); checkSetorCompletion(setor, item.dataset.id); }
         
-        // SALVAR ITEM (COM LÓGICA DE CONCATENAÇÃO)
+        // SALVAR ITEM (ATUALIZADO PARA USAR FORMATADOR VISUAL)
         function salvarItem(button) { 
             const item = button.closest('.item-conferencia'); 
             const obs = item.querySelector('textarea').value.trim();
             
             const histFixo = item.querySelector('.historico-fixo');
             let obsFinal = obs;
+            let temHistorico = false;
+
             if(histFixo && histFixo.style.display !== 'none' && histFixo.textContent) {
                 if(obs.length < 3) return alert("Digite a nova alteração.");
-                // SEPARADOR ESPECIAL: | + NOVA:
                 obsFinal = `${histFixo.textContent} | + NOVA: ${obs}`;
+                temHistorico = true;
             } else {
                 if (obs.length < 3) return alert("Descreva a alteração.");
             }
@@ -313,12 +310,19 @@
             window.itemStatus[item.dataset.id] = { status: 'C/A', obs: obsFinal }; 
             item.querySelector('.alteracao-container').style.display = 'none'; 
             const d = item.querySelector('.descricao-salva'); 
-            d.innerHTML = `<span class="obs-titulo">Alteração:</span> <span class="obs-texto">${obs}</span>`; 
+            
+            // AQUI ESTÁ A MÁGICA VISUAL:
+            const conferente = `${userInfo.postoGraduacao} ${userInfo.quadro} ${userInfo.nomeGuerra}`;
+            const dataAgora = new Date().toLocaleDateString('pt-BR');
+            const htmlVisual = formatarTextoVisual(obsFinal, conferente, dataAgora, null, null);
+            
+            d.innerHTML = htmlVisual; // Usa o formatador para mostrar lista bonita
             d.style.display = 'block'; 
+            
             updateSetorStatus(button.closest('.setor')); updateOverallStatus(); checkSetorCompletion(button.closest('.setor'), item.dataset.id); 
         }
 
-        // SALVAR TOMBAMENTO (COM LÓGICA DE CONCATENAÇÃO)
+        // SALVAR TOMBAMENTO (ATUALIZADO PARA USAR FORMATADOR VISUAL)
         function salvarTombamento(button) { 
             const tombEl = button.closest('.tombamento-container'); 
             const item = button.closest('.item-conferencia'); 
@@ -326,9 +330,9 @@
             
             const histFixo = tombEl.querySelector('.historico-fixo');
             let obsFinal = obs;
+
             if(histFixo && histFixo.style.display !== 'none' && histFixo.textContent) {
                 if(obs.length < 3) return alert("Digite a nova alteração.");
-                // SEPARADOR ESPECIAL: | + NOVA:
                 obsFinal = `${histFixo.textContent} | + NOVA: ${obs}`;
             } else {
                 if (obs.length < 3) return alert("Descreva a alteração.");
@@ -337,8 +341,15 @@
             window.itemStatus[`${item.dataset.id}-${tombEl.dataset.tomb}`] = { status: 'C/A', obs: obsFinal }; 
             tombEl.querySelector('.tombamento-obs-container').style.display = 'none'; 
             const d = tombEl.querySelector('.tombamento-descricao-salva'); 
-            d.innerHTML = `<span class="obs-titulo">Alteração:</span> <span class="obs-texto">${obs}</span>`; 
+            
+            // AQUI TAMBÉM:
+            const conferente = `${userInfo.postoGraduacao} ${userInfo.quadro} ${userInfo.nomeGuerra}`;
+            const dataAgora = new Date().toLocaleDateString('pt-BR');
+            const htmlVisual = formatarTextoVisual(obsFinal, conferente, dataAgora, null, null);
+
+            d.innerHTML = htmlVisual;
             d.style.display = 'block'; 
+            
             updateItemMainStatusDisplay(item); updateSetorStatus(button.closest('.setor')); updateOverallStatus(); checkSetorCompletion(button.closest('.setor'), item.dataset.id); 
         }
 
@@ -359,7 +370,6 @@
 
                 let updated = false;
                 
-                // 1. PERSISTÊNCIA DE LISTA (Atualiza Pendências no DB)
                 const atualizarListaDB = (itemOuTomb, uid) => {
                     const s = window.itemStatus[uid];
                     if(!s) return;
@@ -380,7 +390,6 @@
                     });
                 });
                 
-                // 2. GERAÇÃO DE DADOS PARA O DASHBOARD E PDF
                 let itensCaa = []; let itemsCount = 0; let cA_count = 0; let tableData = [];
                 const RED='#D90F23', GREEN='#1B8A3E';
                 
