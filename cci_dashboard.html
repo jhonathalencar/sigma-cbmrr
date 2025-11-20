@@ -17,6 +17,11 @@
         .main-header { position: fixed; top: 0; left: 0; width: 100%; height: 50px; background-color: #800020; box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2); z-index: 100; display: flex; align-items: center; padding: 0 15px; box-sizing: border-box; gap: 10px; }
         .header-icon { height: 40px; width: auto; } .header-title-desktop, .header-title-mobile { font-weight: bold; font-size: 1.1em; line-height: 1.2; } .text-white { color: white; } .text-red { color: #FF3B3B; } .header-title-desktop { display: none; } .header-title-mobile { display: block; } 
         #menu-btn { display: none; background: none; border: none; color: white; font-size: 1.5em; cursor: pointer; padding: 0 5px; }
+        
+        /* Botão Nova Conferência no Header */
+        .btn-header-action { margin-left: auto; background-color: rgba(255,255,255,0.2); color: white; border: 1px solid rgba(255,255,255,0.4); padding: 6px 12px; border-radius: 4px; text-decoration: none; font-size: 0.85em; transition: all 0.2s; display: flex; align-items: center; gap: 5px; cursor: pointer; }
+        .btn-header-action:hover { background-color: white; color: #800020; }
+        
         @media (min-width: 768px) { .header-title-desktop { display: block; font-size: 1.2em; } .header-title-mobile { display: none; } #menu-btn { display: none; } }
         .footer-central { position: fixed; bottom: 0; left: 0; width: 100%; text-align: center; padding: 5px 0 5px; background-color: #f4f4f9; color: #555; font-size: 0.65em; line-height: 1.3; z-index: 100; box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.05); } .footer-central strong, .footer-autor { display: block; width: 100%; text-align: center; } .footer-central strong { font-weight: bold; } .footer-autor { margin-top: 10px; color: #888; font-size: 0.9em; }
         
@@ -112,6 +117,7 @@
             .content { margin-left: 0; width: 100%; padding-top: 15px; }
             .form-row { flex-direction: column; align-items: stretch; }
             .btn-create-row, .btn-add-simple { width: 100%; }
+            .btn-header-text { display: none; } /* Esconde texto do botão header no mobile */
         }
         @media (min-width: 769px) { .sidebar-overlay { display: none !important; } }
     </style>
@@ -124,6 +130,10 @@
         <img src="cbmrr.png" alt="CBM-RR" class="header-icon" onerror="this.onerror=null; this.src='https://placehold.co/40x40/ffffff/800020/fff?text=CBM'">
         <div class="header-title-desktop"><span class="text-white">CORPO DE BOMBEIROS MILITAR </span><span class="text-red">RORAIMA</span></div>
         <div class="header-title-mobile"><span class="text-white">CBM</span><span class="text-red">RR</span></div>
+        
+        <a href="index.html" class="btn-header-action" title="Iniciar Nova Conferência">
+            <i class="fas fa-plus-circle"></i> <span class="btn-header-text">Nova Conferência</span>
+        </a>
     </header>
     
     <div class="sidebar" id="main-sidebar">
@@ -408,8 +418,10 @@
             const maxQtd = parseInt(document.getElementById('gestao-item-max-qtd').value);
 
             if(!obs) return alert("Descreva a ação.");
-            if(status === 'Remover') { if(qtd > maxQtd) return alert(`Erro: Quantidade maior que estoque.`); if(qtd <= 0) return alert("Qtd deve ser > 0."); }
-
+            if(status === 'Remover') {
+                if(qtd > maxQtd) return alert(`Erro: Quantidade maior que estoque.`);
+                if(qtd <= 0) return alert("Qtd deve ser > 0.");
+            }
             const btn = document.querySelector('#modal-gestao-ca .btn-sync'); btn.textContent = "Salvando..."; btn.disabled = true;
             try {
                 const ref=db.collection(COLECAO_RESULTADOS).doc(docId); const snap=await ref.get(); const resData=snap.data(); const items=resData.itensCaa;
@@ -473,11 +485,11 @@
                     const listas = listasPorSetor[nomeSetor]; const card = document.createElement('div'); card.className = 'setor-manager-card';
                     let htmlListas = ''; listas.forEach(l => { htmlListas += `<li class="setor-lista-li"><span>${l.nome}</span><button class="btn-move-list" onclick="abrirModalMover('${l.id}', '${l.nome}')" title="Mover"><i class="fas fa-exchange-alt"></i></button></li>`; });
                     if(listas.length === 0) htmlListas = '<li class="setor-lista-li" style="color:#999;">Nenhuma lista neste setor.</li>';
-                    const btnRemove = nomeSetor !== 'SEM SETOR' ? `<button class="btn-remover-setor" onclick="removerPosto('${nomeSetor}')"><i class="fas fa-trash"></i></button>` : '';
-                    card.innerHTML = `<div class="setor-manager-header"><div><h3>${nomeSetor}</h3><span class="badge-count">${listas.length} listas</span></div>${btnRemove}</div><ul class="setor-listas-ul">${htmlListas}</ul>`;
+                    const btnRemoveSetor = nomeSetor !== 'SEM SETOR' ? `<button class="btn-remover-setor" onclick="removerPosto('${nomeSetor}')"><i class="fas fa-trash"></i></button>` : '';
+                    card.innerHTML = `<div class="setor-manager-header"><div><h3>${nomeSetor}</h3><span class="badge-count">${listas.length} listas</span></div>${btnRemoveSetor}</div><ul class="setor-listas-ul">${htmlListas}</ul>`;
                     container.appendChild(card);
                 });
-            } catch (e) { console.error(e); container.innerHTML = 'Erro.'; }
+            } catch (e) { console.error(e); container.innerHTML = 'Erro ao carregar.'; }
         }
         async function abrirModalMover(id, nome) {
             document.getElementById('mover-lista-id').value = id; document.getElementById('mover-lista-nome').textContent = nome;
@@ -491,7 +503,7 @@
         async function confirmarMoverLista() {
             const id = document.getElementById('mover-lista-id').value; const novoSetor = document.getElementById('mover-lista-select-setor').value; if(!novoSetor) return alert("Selecione um setor.");
             try {
-                const docRotas = await DOC_CONFIG_ROTAS.get(); if(!docRotas.exists) throw new Error("Config erro.");
+                const docRotas = await DOC_CONFIG_ROTAS.get(); if(!docRotas.exists) throw new Error("Config rotas não existe.");
                 const data = docRotas.data();
                 if(data[id]) { data[id].posto = novoSetor; await DOC_CONFIG_ROTAS.set(data); await db.collection(COLECAO_LISTAS).doc(id).update({ posto: novoSetor }).catch(err => console.log("Ok.")); alert("Movido!"); document.getElementById('modal-mover-lista').style.display = 'none'; carregarVisaoSetores(); }
             } catch(e) { alert("Erro: " + e.message); }
