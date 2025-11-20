@@ -106,7 +106,7 @@
         function formatarDataSimples(timestamp) {
             if (!timestamp) return "";
             const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
-            return date.toLocaleDateString('pt-BR'); // Retorna apenas a data
+            return date.toLocaleDateString('pt-BR'); 
         }
 
         // RENDERIZAÇÃO E UTILITÁRIOS
@@ -229,17 +229,16 @@
                             item.tombamentos.forEach(t => {
                                 const s = window.itemStatus[`${item.id}-${t.tomb}`];
                                 if (s && s.status !== 'pending') {
-                                    // LOGICA CORRIGIDA PDF (Sem HTML entities)
+                                    // LOGICA CORRIGIDA PDF (SEM EMOJIS)
                                     let finalObs = s.obs;
                                     if (t.pendencia) {
                                         const dataStr = formatarDataSimples(t.pendencia.data);
                                         const autorOriginal = t.pendencia.quem || 'Anônimo';
                                         
                                         if (t.pendencia.statusAdmin) {
-                                            finalObs = `⚠️ ${t.pendencia.statusAdmin}: ${t.pendencia.adminObs} (Admin)\nOriginal: "${t.pendencia.obs}" - Por: ${autorOriginal} (${dataStr})`;
+                                            finalObs = `[${t.pendencia.statusAdmin.toUpperCase()}]: ${t.pendencia.adminObs} (Admin)\nOriginal: "${t.pendencia.obs}" - Por: ${autorOriginal} (${dataStr})`;
                                         } else if (s.status === 'C/A' && s.obs === t.pendencia.obs) {
-                                            // Verifica se é uma manutenção da pendencia (obs igual)
-                                            finalObs = `⚠️ Alteração Mantida:\n"${t.pendencia.obs}"\nReportado por: ${autorOriginal} em ${dataStr}`;
+                                            finalObs = `[ALTERAÇÃO MANTIDA]:\n"${t.pendencia.obs}"\nReportado por: ${autorOriginal} em ${dataStr}`;
                                         }
                                     }
                                     itemsToProcess.push({ nomeCompleto: `${item.nome} (${t.tomb})`, status: s.status, obs: finalObs, quantidade: 1, id: `${item.id}-${t.tomb}`, statusAdmin: clean(t.pendencia?.statusAdmin) });
@@ -254,9 +253,9 @@
                                     const autorOriginal = item.pendencia.quem || 'Anônimo';
                                     
                                     if (item.pendencia.statusAdmin) {
-                                        finalObs = `⚠️ ${item.pendencia.statusAdmin}: ${item.pendencia.adminObs} (Admin)\nOriginal: "${item.pendencia.obs}" - Por: ${autorOriginal} (${dataStr})`;
+                                        finalObs = `[${item.pendencia.statusAdmin.toUpperCase()}]: ${item.pendencia.adminObs} (Admin)\nOriginal: "${item.pendencia.obs}" - Por: ${autorOriginal} (${dataStr})`;
                                     } else if (s.status === 'C/A' && s.obs === item.pendencia.obs) {
-                                        finalObs = `⚠️ Alteração Mantida:\n"${item.pendencia.obs}"\nReportado por: ${autorOriginal} em ${dataStr}`;
+                                        finalObs = `[ALTERAÇÃO MANTIDA]:\n"${item.pendencia.obs}"\nReportado por: ${autorOriginal} em ${dataStr}`;
                                     }
                                 }
                                 itemsToProcess.push({ nomeCompleto: item.nome, status: s.status, obs: finalObs, quantidade: item.quantidadeEsperada, id: item.id, statusAdmin: clean(item.pendencia?.statusAdmin) });
