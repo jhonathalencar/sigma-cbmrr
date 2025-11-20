@@ -352,10 +352,8 @@
         function updateOverallStatus() { let total = 0, completed = 0; document.querySelectorAll('.setor').forEach(s => { total += parseInt(s.dataset.totalItems); completed += parseInt(s.querySelector('.setor-status').dataset.completed); }); const btn = document.getElementById('btn-finalizar'); btn.textContent = `FINALIZAR CONFERÊNCIA (${completed}/${total} ITENS)`; btn.disabled = (completed !== total); }
 
         async function finalizarConferencia() {
-            // === CORREÇÃO AQUI: Definição das variáveis de data/hora ===
             const dataHora = new Date();
             const dataHoraStr = dataHora.toLocaleString('pt-BR');
-            // ==========================================================
 
             const btn = document.getElementById('btn-finalizar'); if (btn.disabled) return;
             btn.textContent = "Salvando..."; btn.disabled = true;
@@ -475,7 +473,7 @@
                 doc.setFont('helvetica','bold'); doc.text('Data/Hora:', X_LABEL, y); doc.setFont('helvetica','normal'); doc.text(dataHora.toLocaleString(), X_VAL, y);
                 doc.setFont('helvetica','bold'); doc.setTextColor(128, 0, 32); doc.text(`TOTAL: ${itemsCount} | C/A: ${cA_count}`, PG_W - MARGIN - 5, 46, {align:'right'});
 
-                doc.autoTable({ startY: 70, body: tableData, theme: 'striped', styles: { fontSize: 8, halign: 'left', textColor: 51, cellPadding: 1.5 }, columnStyles: { 0:{cellWidth:70}, 1:{cellWidth:20,halign:'center'}, 2:{cellWidth:20,halign:'center'} } });
+                doc.autoTable({ startY: 70, body: tableData, theme: 'striped', styles: { fontSize: 8, halign: 'left', valign: 'middle', textColor: 51, cellPadding: 1.5 }, columnStyles: { 0:{cellWidth:70}, 1:{cellWidth:20,halign:'center'}, 2:{cellWidth:20,halign:'center'} } });
                 
                 const totalPages = doc.internal.getNumberOfPages();
                 for (let i = 1; i <= totalPages; i++) {
