@@ -376,24 +376,46 @@
             });
         }
 
-        // FORMATAÇÃO DE TEXTO (COM ASSINATURA DO ÚLTIMO ITEM)
+        // FORMATAÇÃO DE TEXTO (CORRIGIDA PARA EVITAR DUPLICAÇÃO)
         const formatarTextoDashboard = (textoBruto, autorPrincipal, dataPrincipal) => {
             let html = '<ul class="obs-list">';
             const separator = ' | + NOVA: ';
+            
             if (textoBruto && textoBruto.includes(separator)) {
+                // LISTA (múltiplos itens)
                 const partes = textoBruto.split(separator);
                 partes.forEach(parte => {
                     parte = parte.trim();
                     const regex = /^"(.*)" \(Por: (.*) em (.*)\)$/;
                     const match = parte.match(regex);
-                    if (match) html += `<li class="texto-hist">Por: ${match[2]} em ${match[3]}: "${match[1]}"</li>`;
-                    else html += `<li class="texto-atual">Por: ${autorPrincipal} em ${dataPrincipal}: "${parte}"</li>`; // Assina o último
+
+                    if (match) {
+                         // Já tem assinatura
+                         html += `<li class="texto-hist">Por: ${match[2]} em ${match[3]}: "${match[1]}"</li>`;
+                    } else {
+                         // Não tem assinatura (é a parte nova do app), usamos os dados do card
+                         html += `<li class="texto-atual">Por: ${autorPrincipal} em ${dataPrincipal}: "${parte}"</li>`;
+                    }
                 });
             } else {
-                const regex = /^"(.*)" \(Por: (.*) em (.*)\)$/;
-                const match = textoBruto.match(regex);
-                if (match) html += `<li class="texto-atual">Por: ${match[2]} em ${match[3]}: "${match[1]}"</li>`;
-                else html += `<li class="texto-atual">Por: ${autorPrincipal} em ${dataPrincipal}: "${textoBruto}"</li>`;
+                // ITEM ÚNICO
+                // Verifica se JÁ ESTÁ formatado (começa com Por: ou • Por:)
+                // Isso acontece se a lista foi editada por um app que salva o texto completo
+                const regexJaFormatado = /^(?:•\s*)?Por:.*em.*:/i;
+                const regexAppOld = /^"(.*)" \(Por: (.*) em (.*)\)$/;
+                
+                const matchOld = textoBruto.match(regexAppOld);
+                
+                if (matchOld) {
+                    // Formato antigo do app "(Texto) (Por...)"
+                    html += `<li class="texto-atual">Por: ${matchOld[2]} em ${matchOld[3]}: "${matchOld[1]}"</li>`;
+                } else if (regexJaFormatado.test(textoBruto)) {
+                    // Já está no formato "Por: ...", apenas imprime limpando bullets extras
+                    html += `<li class="texto-atual">${textoBruto.replace(/^•\s*/, '')}</li>`;
+                } else {
+                    // Texto cru real, precisa de assinatura
+                    html += `<li class="texto-atual">Por: ${autorPrincipal} em ${dataPrincipal}: "${textoBruto}"</li>`;
+                }
             }
             html += '</ul>';
             return html;
@@ -409,7 +431,7 @@
                     const tr = tbody.insertRow();
                     if(i.statusAdmin==='Em solução') tr.classList.add('row-amarelo');
                     if(i.statusAdmin==='Cautelado') tr.classList.add('row-laranja');
-                    // Passa conferente e data para assinar o item cru
+                    // Passa conferente e data para assinar o item cru se necessário
                     const obsFormatada = formatarTextoDashboard(i.obs || '-', data.conferente, data.date);
                     tr.innerHTML = `<td><strong>${i.nomeCompleto}</strong></td><td><span class="status-badge">${i.statusAdmin||'Pendente'}</span></td><td>${obsFormatada}</td><td><small>${data.conferente}<br>${data.date}</small></td>`;
                     const td = tr.insertCell(); td.innerHTML = `<button class="btn-action btn-edit-list" onclick='abrirModalGestao(${JSON.stringify(i)})'><i class="fas fa-cog"></i> Gerenciar</button>`;
