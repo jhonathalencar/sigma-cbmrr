@@ -71,15 +71,26 @@
 
         .ca-table-container { overflow-x: auto; background-color: white; padding: 20px; border-radius: 8px; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); margin-top: 10px; border-top: 3px solid #d90f23; } 
         .ca-table { width: 100%; border-collapse: collapse; font-size: 0.9em; } .ca-table th, .ca-table td { padding: 12px 15px; text-align: left; border-bottom: 1px solid #ddd; vertical-align: top; } .ca-table th { background-color: #f8f8f8; color: #800020; font-weight: bold; text-transform: uppercase; }
-        .row-amarelo { background-color: #fffde7 !important; } .row-laranja { background-color: #fff3e0 !important; } .status-badge { padding: 4px 8px; border-radius: 4px; font-size: 0.8em; font-weight: bold; } .badge-pendente { background-color: #ffebee; color: #d32f2f; } .badge-solucao { background-color: #fff9c4; color: #fbc02d; border: 1px solid #fbc02d; } .badge-cautela { background-color: #ffe0b2; color: #f57c00; border: 1px solid #f57c00; }
+        
+        /* CORES DE LINHA */
+        .row-amarelo { background-color: #fffde7 !important; } 
+        .row-laranja { background-color: #fff3e0 !important; } 
+        
+        .status-badge { padding: 4px 8px; border-radius: 4px; font-size: 0.8em; font-weight: bold; } 
+        .badge-pendente { background-color: #ffebee; color: #d32f2f; } 
+        .badge-solucao { background-color: #fff9c4; color: #fbc02d; border: 1px solid #fbc02d; } 
+        .badge-cautela { background-color: #ffe0b2; color: #f57c00; border: 1px solid #f57c00; }
         
         /* OBSERVAÇÕES FORMATADAS */
         .obs-list { list-style: none; padding: 0; margin: 0; }
         .obs-list li { margin-bottom: 4px; padding-bottom: 4px; border-bottom: 1px dotted #eee; }
         .obs-list li:last-child { border-bottom: none; }
-        .texto-hist { color: #666; font-style: italic; font-size: 0.9em; }
-        .texto-atual { color: #d90f23; font-weight: bold; }
         
+        /* Cores para o texto */
+        .texto-padrao { color: #333; } 
+        .texto-hist { color: #666; font-style: italic; } 
+        .texto-destaque { color: #d90f23; font-weight: bold; } 
+
         /* ADMIN EDITOR */
         .admin-container { background-color: #fff; padding: 20px; border-radius: 10px; box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1); width: 100%; max-width: 900px; margin: 0 auto 20px auto; box-sizing: border-box; text-align: center; } .logo-admin { display: block; margin: 0 auto 15px auto; max-width: 80px; height: auto; } h1.page-title { color: #d90f23; margin-bottom: 15px; font-size: 1.8em; border-bottom: 2px solid #e0e0e0; padding-bottom: 10px; text-align: center; } .global-actions { display: flex; gap: 15px; margin-bottom: 25px; justify-content: flex-start; flex-wrap: wrap; padding: 15px; background-color: #fafafa; border-radius: 8px; border: 1px solid #eee; } 
         .btn-add { background-color: #800020; color: white; border: none; padding: 8px 15px; border-radius: 4px; cursor: pointer; } .lista-setores { padding: 0; list-style: none; text-align: left; } .setor-item { margin-bottom: 15px; border: 1px solid #800020; border-radius: 6px; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); background: #fff; } .setor-header-admin { background-color: #800020; color: white; padding: 10px 15px; display: flex; justify-content: space-between; align-items: center; font-weight: bold; cursor: grab; } .setor-content-admin { transition: max-height 0.4s ease-out; overflow: hidden; max-height: 2000px; padding: 10px; } .setor-content-admin.collapsed { max-height: 0; padding: 0 !important; } .item-conferencia-admin { display: flex; justify-content: space-between; align-items: flex-start; padding: 10px 0; border-bottom: 1px solid #eee; cursor: move; } .add-setor-form, .add-item-form-setor { display: flex; gap: 5px; margin-bottom: 10px; } .add-setor-form input, .add-item-form-setor input, .add-item-form-setor select { flex-grow: 1; padding: 8px; border: 1px solid #ccc; border-radius: 4px; } .btn-remover { background-color: #d90f23; color:white; border:none; padding:5px 10px; border-radius:4px; cursor:pointer;} .btn-edit-alt { background-color: #7f8c8d; color:white; border:none; padding:5px 10px; border-radius:4px; cursor:pointer;} .item-actions-admin { display: flex; gap: 5px; } .tombamento-container-wrapper { margin-top: 5px; padding-left: 20px; background: #f9f9f9; border-left: 3px solid #ccc; width: 100%; box-sizing: border-box; } .tombamento-list { list-style: none; padding: 0; margin: 0; } .tombamento-list li { display: flex; justify-content: space-between; align-items: center; padding: 5px 0; border-bottom: 1px dotted #eee; } .tombamento-section { padding: 10px; } .tombamento-section h4 { margin: 0 0 10px 0; font-size: 0.9em; color: #555; border-bottom: 1px dotted #ccc; } .add-tombamento-form { display: flex; gap: 5px; margin-top: 10px; padding-top: 10px; border-top: 1px dashed #e0e0e0; } .add-tombamento-form input { padding: 6px; font-size: 0.9em; flex-grow: 1; border: 1px solid #ccc; border-radius: 4px; }
@@ -269,7 +280,7 @@
             overlay.style.display = 'none';
         }
         function switchView(v) { 
-            closeMenuMobile(); // Fecha menu ao clicar em link
+            closeMenuMobile(); 
             document.querySelectorAll('.view-section').forEach(e=>e.classList.remove('active-view')); 
             document.querySelectorAll('.sidebar a').forEach(e=>e.classList.remove('active')); 
             
@@ -380,25 +391,50 @@
             });
         }
 
-        // FORMATAÇÃO DE TEXTO
-        const formatarTextoDashboard = (textoBruto, autorPrincipal, dataPrincipal) => {
+        // =================================================
+        // FUNÇÃO DE FORMATAÇÃO CORRIGIDA (AGRESSIVA COM SEPARADORES)
+        // =================================================
+        const formatarTextoDashboard = (textoBruto) => {
             let html = '<ul class="obs-list">';
-            const separator = ' | + NOVA: ';
-            if (textoBruto && textoBruto.includes(separator)) {
-                const partes = textoBruto.split(separator);
-                partes.forEach(parte => {
-                    parte = parte.trim();
-                    const regex = /^"(.*)" \(Por: (.*) em (.*)\)$/;
-                    const match = parte.match(regex);
-                    if (match) html += `<li class="texto-hist">Por: ${match[2]} em ${match[3]}: "${match[1]}"</li>`;
-                    else html += `<li class="texto-atual">Por: ${autorPrincipal} em ${dataPrincipal}: "${parte}"</li>`;
-                });
-            } else {
-                const regex = /^"(.*)" \(Por: (.*) em (.*)\)$/;
-                const match = textoBruto.match(regex);
-                if (match) html += `<li class="texto-atual">Por: ${match[2]} em ${match[3]}: "${match[1]}"</li>`;
-                else html += `<li class="texto-atual">Por: ${autorPrincipal} em ${dataPrincipal}: "${textoBruto}"</li>`;
+            let partes = [];
+
+            // 1. Tenta separar pelo padrão de edição do App
+            if (textoBruto.includes(' | + NOVA: ')) {
+                partes = textoBruto.split(' | + NOVA: ');
+            } 
+            // 2. Se não achar, tenta separar por bullets (caso venha de um PDF ou texto já formatado)
+            else if (textoBruto.includes('•')) {
+                partes = textoBruto.split('•').map(s => s.trim()).filter(s => s.length > 0);
+            } 
+            // 3. Fallback: Considera tudo uma linha só
+            else {
+                partes = [textoBruto];
             }
+
+            partes.forEach(parte => {
+                parte = parte.trim();
+                if(parte.length === 0) return;
+
+                // Regex para detectar se JÁ TEM assinatura (formato novo)
+                const regexAssinatura = /^Por: (.*?) em (.*?): "(.*?)"$/i;
+                // Regex para formato antigo
+                const regexAntigo = /^"(.*)" \(Por: (.*) em (.*)\)$/i;
+
+                const matchAssinatura = parte.match(regexAssinatura);
+                const matchAntigo = parte.match(regexAntigo);
+
+                if (matchAssinatura) {
+                    html += `<li class="texto-hist">Por: ${matchAssinatura[1]} em ${matchAssinatura[2]}: "${matchAssinatura[3]}"</li>`;
+                } else if (matchAntigo) {
+                    html += `<li class="texto-hist">Por: ${matchAntigo[2]} em ${matchAntigo[3]}: "${matchAntigo[1]}"</li>`;
+                } else {
+                    // Se não tem assinatura, exibe o texto cru.
+                    // NÃO ADICIONA MAIS "Por: ...", pois isso causava a duplicação quando o texto
+                    // já vinha formatado mas o regex falhava por algum detalhe.
+                    html += `<li class="texto-atual">${parte}</li>`;
+                }
+            });
+
             html += '</ul>';
             return html;
         };
@@ -413,7 +449,9 @@
                     const tr = tbody.insertRow();
                     if(i.statusAdmin==='Em solução') tr.classList.add('row-amarelo');
                     if(i.statusAdmin==='Cautelado') tr.classList.add('row-laranja');
-                    const obsFormatada = formatarTextoDashboard(i.obs || '-', data.conferente, data.date);
+                    
+                    // Passamos apenas o texto bruto, sem tentar adivinhar autor
+                    const obsFormatada = formatarTextoDashboard(i.obs || '-');
                     
                     let adminHtml = '';
                     if(i.statusAdmin && i.statusAdmin !== 'Pendente' && i.statusAdmin !== 'Solucionado') {
@@ -430,9 +468,7 @@
         }
         function fecharTabela(){ document.getElementById('ca-table-wrapper').style.display='none'; document.querySelectorAll('.sector-card').forEach(c=>c.classList.remove('active-card')); }
 
-        // =============================================
         // GESTÃO DE STATUS E REMOÇÃO (LÓGICA ATUALIZADA)
-        // =============================================
         function abrirModalGestao(i){ 
             document.getElementById('gestao-item-nome').textContent=i.nomeCompleto; 
             document.getElementById('gestao-doc-id').value=i.docId; 
@@ -441,15 +477,13 @@
             document.getElementById('gestao-status').value=i.statusAdmin||'Solucionado'; 
             document.getElementById('gestao-obs').value=''; 
             document.getElementById('gestao-qtd').value='1'; 
-            
-            // Lógica para definir quantidade máxima permitida
-            // Se for item com tombamento (multi), a quantidade é sempre 1 (remove aquele tombamento específico)
-            // Se for item único, usamos a quantidade que vem do objeto 'i' (que é a quantidadeEsperada)
             const maxQtd = (i.quantidade !== undefined) ? i.quantidade : 1; 
             document.getElementById('gestao-item-max-qtd').value = maxQtd;
-            document.getElementById('gestao-qtd-max-display').textContent = maxQtd;
-            document.getElementById('gestao-qtd').max = maxQtd;
+            
+            // Atualiza o texto do estoque com o valor correto
+            document.getElementById('gestao-qtd').parentNode.querySelector('small').innerHTML = `Estoque Atual: <strong>${maxQtd}</strong><br>Nota: Se a quantidade zerar, o item será excluído da lista.`;
 
+            document.getElementById('gestao-qtd').max = maxQtd;
             toggleGestaoQtd(); 
             document.getElementById('modal-gestao-ca').style.display='flex'; 
         }
@@ -462,11 +496,8 @@
 
             if(!obs) return alert("Descreva a ação.");
             
-            // VALIDAÇÃO DE QUANTIDADE
             if(status === 'Remover') {
-                if(qtd > maxQtd) {
-                    return alert(`Erro: A quantidade a remover (${qtd}) é maior que o estoque atual (${maxQtd}).`);
-                }
+                if(qtd > maxQtd) return alert(`Erro: A quantidade a remover (${qtd}) é maior que o estoque atual (${maxQtd}).`);
                 if(qtd <= 0) return alert("A quantidade deve ser maior que zero.");
             }
             
@@ -482,62 +513,27 @@
                     const listSnap = await listRef.get();
                     if(listSnap.exists) {
                         let lista = listSnap.data().list; let updated = false;
-                        
-                        // Percorre a estrutura: Setor -> Itens
                         for (let sIndex = 0; sIndex < lista.length; sIndex++) {
                             const s = lista[sIndex];
-                            // Usamos um loop for reverso ou filter para poder remover itens com segurança
                             for (let iIndex = s.itens.length - 1; iIndex >= 0; iIndex--) {
                                 const i = s.itens[iIndex];
-
-                                // CASO 1: ITEM ÚNICO (Single)
                                 if(i.id === itemId && i.tipo === 'single') {
                                     if(status === 'Remover') {
-                                        if (qtd === i.quantidadeEsperada) {
-                                            // Se remover tudo, EXCLUI da lista
-                                            s.itens.splice(iIndex, 1);
-                                        } else {
-                                            // Se sobrar, apenas subtrai
-                                            i.quantidadeEsperada -= qtd;
-                                            delete i.pendencia;
-                                        }
-                                    } else if(status === 'Solucionado') { 
-                                        delete i.pendencia; 
-                                    } else { 
-                                        if(!i.pendencia) i.pendencia={}; 
-                                        i.pendencia.statusAdmin=status; 
-                                        i.pendencia.adminObs=obs; 
-                                    }
+                                        if (qtd === i.quantidadeEsperada) { s.itens.splice(iIndex, 1); } else { i.quantidadeEsperada -= qtd; delete i.pendencia; }
+                                    } else if(status === 'Solucionado') { delete i.pendencia; } else { if(!i.pendencia) i.pendencia={}; i.pendencia.statusAdmin=status; i.pendencia.adminObs=obs; }
                                     updated=true;
                                 }
-
-                                // CASO 2: ITEM COM TOMBAMENTO (Multi)
                                 if(i.tipo === 'multi' && i.tombamentos) {
-                                    // Procura o tombamento específico
                                     const tIdx = i.tombamentos.findIndex(t => `${i.id}-${t.tomb}` === itemId);
                                     if(tIdx > -1) {
-                                        if(status === 'Remover') {
-                                            // Remove o tombamento específico
-                                            i.tombamentos.splice(tIdx, 1);
-                                            i.quantidadeEsperada = i.tombamentos.length;
-                                            
-                                            // SE NÃO SOBRAR NENHUM TOMBAMENTO, REMOVE O ITEM PAI
-                                            if (i.tombamentos.length === 0) {
-                                                s.itens.splice(iIndex, 1);
-                                            }
-                                        } else if(status === 'Solucionado') { 
-                                            delete i.tombamentos[tIdx].pendencia; 
-                                        } else { 
-                                            if(!i.tombamentos[tIdx].pendencia) i.tombamentos[tIdx].pendencia={}; 
-                                            i.tombamentos[tIdx].pendencia.statusAdmin=status; 
-                                            i.tombamentos[tIdx].pendencia.adminObs=obs; 
-                                        }
+                                        if(status === 'Remover') { i.tombamentos.splice(tIdx, 1); i.quantidadeEsperada = i.tombamentos.length; if (i.tombamentos.length === 0) { s.itens.splice(iIndex, 1); } } 
+                                        else if(status === 'Solucionado') { delete i.tombamentos[tIdx].pendencia; } 
+                                        else { if(!i.tombamentos[tIdx].pendencia) i.tombamentos[tIdx].pendencia={}; i.tombamentos[tIdx].pendencia.statusAdmin=status; i.tombamentos[tIdx].pendencia.adminObs=obs; }
                                         updated=true;
                                     }
                                 }
                             }
                         }
-                        
                         if(updated) await listRef.update({list:lista});
                     }
                 }
