@@ -50,10 +50,14 @@
         .pendencia-alert-box.kept { border-left-color: #1b8a3e; background-color: #f0fff0; opacity: 0.9; }
         
         .lista-pendencias { list-style: none; padding: 0; margin: 5px 0; }
-        .lista-pendencias li { margin-bottom: 6px; display: block; padding-left: 5px; text-align: left; line-height: 1.3; }
+        .lista-pendencias li { margin-bottom: 6px; display: block; padding-left: 5px; text-align: left; line-height: 1.3; border-bottom: 1px dotted #eee; padding-bottom: 4px; }
+        .lista-pendencias li:last-child { border-bottom: none; }
+        
         .texto-admin { font-weight: bold; color: #0d47a1; }
-        .texto-hist { color: #555; font-style: italic; }
-        .texto-atual { color: #d90f23; font-weight: bold; }
+        
+        /* Padronização do texto conforme solicitado */
+        .linha-historico { color: #333; }
+        .linha-destaque { font-weight: bold; color: #d90f23; }
 
         .pendencia-actions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 10px; border-top: 1px dotted #ccc; padding-top: 5px; }
         .btn-manter { background-color: #e0e0e0; border: 1px solid #ccc; color: #333; font-size: 0.8em; padding: 5px 10px; cursor: pointer; border-radius: 4px; } .btn-manter:hover { background-color: #1b8a3e; color: white; }
@@ -72,7 +76,6 @@
         .tombamento-obs-container textarea, .alteracao-container textarea { width: 100%; padding: 8px; border-radius: 4px; border: 1px solid #d90f23; box-sizing: border-box; font-size: 0.85em; resize: vertical; min-height: 40px; margin-bottom: 5px; }
         .btn-salvar-alteracao { background-color: #800020; color: white; font-weight: bold; border: none; padding: 8px 15px; border-radius: 4px; cursor: pointer; width: 100%; transition: background-color 0.3s; font-size: 0.85em; }
         
-        /* ONDE A DESCRIÇÃO SALVA APARECE */
         .descricao-salva, .tombamento-descricao-salva { font-size: 0.9em; margin-top: 5px; display: none; padding-top: 5px; border-top: 1px dashed #ddd; text-align: left; background-color: #fff8f8; padding: 8px; border-radius: 4px; }
         .obs-texto { color: #d90f23; font-weight: bold; } .obs-titulo { color: #333; font-weight: bold; }
         
@@ -133,28 +136,62 @@
             return date.toLocaleDateString('pt-BR'); 
         }
 
-        // FUNÇÃO GLOBAL DE FORMATAÇÃO VISUAL (Usada no Load e no Salvar)
+        // FORMATAÇÃO VISUAL (Exibição na tela)
         const formatarTextoVisual = (textoBruto, autorAtual, dataAtual, adminStatus, adminObs) => {
             let html = '<ul class="lista-pendencias">';
+            
             if (adminStatus) html += `<li><span class="texto-admin">⚠️ ${adminStatus} (Admin):</span> Resp: ${adminObs}</li>`;
 
-            if (textoBruto.includes('| + NOVA:')) {
-                let partes = textoBruto.split('| + NOVA:');
-                let historicoAntigo = partes[0].trim(); 
-                let textoNovo = partes[1].trim();
-                const regexAntigo = /^"(.*)" \(Por: (.*) em (.*)\)$/;
-                const match = historicoAntigo.match(regexAntigo);
-                if (match) html += `<li><span class="texto-hist">• Por: ${match[2]} em ${match[3]}: "${match[1]}"</span></li>`;
-                else html += `<li><span class="texto-hist">• ${historicoAntigo}</span></li>`;
-                html += `<li><span class="texto-atual">• Por ${autorAtual} (${dataAtual}): "${textoNovo}"</span></li>`;
-            } else {
-                html += `<li><span class="texto-atual">• Por ${autorAtual} (${dataAtual}): "${textoBruto}"</span></li>`;
-            }
+            // Divide o texto pelo separador de histórico
+            const separator = ' | + NOVA: ';
+            const partes = textoBruto.split(separator);
+
+            partes.forEach((parte, index) => {
+                parte = parte.trim();
+                // Tenta extrair: "Texto" (Por: Autor em Data)
+                const regex = /^"(.*)" \(Por: (.*) em (.*)\)$/;
+                const match = parte.match(regex);
+
+                if (match) {
+                    // Se casou com regex, usa os dados extraídos
+                    html += `<li class="linha-historico">Por: ${match[2]} em ${match[3]}: "${match[1]}"</li>`;
+                } else {
+                    // Se não casou (geralmente é o texto recém digitado que ainda não tem a assinatura embutida na string)
+                    // Usamos os dados do Autor Atual passados como argumento
+                    html += `<li class="linha-destaque">Por: ${autorAtual} em ${dataAtual}: "${parte}"</li>`;
+                }
+            });
+
             html += '</ul>';
             return html;
         };
 
-        // RENDERIZAÇÃO ATUALIZADA
+        // LÓGICA DE MONTAGEM LINEAR (Para evitar aninhamento no banco de dados)
+        const montarHistoricoLinear = (obsAnterior, novoTexto, autorAnterior, dataAnterior) => {
+            const separator = ' | + NOVA: ';
+            let novoHistorico = "";
+
+            if (obsAnterior.includes(separator)) {
+                // Se já é uma lista, pegamos a última parte (que estava "crua" ou apenas associada ao metadado do DB)
+                // e a "assinamos" permanentemente na string.
+                let partes = obsAnterior.split(separator);
+                let ultimaParte = partes.pop(); // Remove a última
+                let resto = partes.join(separator); // O que veio antes já está assinado
+                
+                // Assina a última parte antiga
+                let ultimaAssinada = `"${ultimaParte}" (Por: ${autorAnterior} em ${dataAnterior})`;
+                
+                // Reconstrói: Passado Assinado + Último Assinado + Novo Cru
+                novoHistorico = `${resto}${separator}${ultimaAssinada}${separator}${novoTexto}`;
+            } else {
+                // Se era item único, assina ele e adiciona o novo
+                let anteriorAssinado = `"${obsAnterior}" (Por: ${autorAnterior} em ${dataAnterior})`;
+                novoHistorico = `${anteriorAssinado}${separator}${novoTexto}`;
+            }
+            return novoHistorico;
+        };
+
+        // RENDERIZAÇÃO
         function renderizarConferencia() {
             const mainContent = document.getElementById('main-content');
             let htmlSetores = '';
@@ -173,11 +210,16 @@
                         const obs = pendenciaObj.obs ? pendenciaObj.obs.replace(/'/g, "\\'") : '';
                         const quem = pendenciaObj.quem || 'Anônimo';
                         const dataPend = formatarDataSimples(pendenciaObj.data);
-                        const historicoTxtParaEdicao = `"${obs}" (Por: ${quem} em ${dataPend})`;
+                        
+                        // Prepara o texto seguro para o botão "Acrescentar"
+                        // A lógica aqui é crucial: não podemos passar a string bruta para edição direta
+                        // precisamos passar metadados para a função montarHistoricoLinear saber quem assinou o anterior.
+                        // Para simplificar, passamos o "obs" atual e os dados do autor atual.
+                        const dadosHistorico = JSON.stringify({ obs: obs, autor: quem, data: dataPend });
+                        const safeHistorico = encodeURIComponent(dadosHistorico);
+
                         const htmlFormatado = formatarTextoVisual(obs, quem, dataPend, pendenciaObj.statusAdmin, pendenciaObj.adminObs);
                         let classAdmin = pendenciaObj.statusAdmin ? "admin-reply" : "";
-
-                        const safeHistorico = encodeURIComponent(historicoTxtParaEdicao);
 
                         return `
                         <div class="pendencia-alert-box ${classAdmin}">
@@ -194,7 +236,7 @@
                         item.tombamentos.forEach(tomb => {
                             const uid = `${item.id}-${tomb.tomb}`;
                             const pendenciaHtml = montarPendenciaHtml(uid, tomb.pendencia);
-                            htmlTombamentos += `<div class="tombamento-container" data-tomb="${tomb.tomb}" data-item-id="${item.id}"><div class="tombamento-controls"><span>Tomb.: ${tomb.tomb}</span><div class="tombamento-options"><button class="action-button sa-ok" onclick="setTombamentoStatus(this, 'ok')">S/A</button><button class="action-button ca-alert" onclick="setTombamentoStatus(this, 'alert')">C/A</button></div></div>${pendenciaHtml}<p class="tombamento-descricao-salva"></p><div class="tombamento-obs-container"><div class="historico-fixo"></div><label>Descreva a alteração:</label><textarea placeholder="Detalhe a alteração."></textarea><button type="button" class="btn-salvar-alteracao" onclick="salvarTombamento(this)">SALVAR OBSERVAÇÃO</button></div></div>`;
+                            htmlTombamentos += `<div class="tombamento-container" data-tomb="${tomb.tomb}" data-item-id="${item.id}"><div class="tombamento-controls"><span>Tomb.: ${tomb.tomb}</span><div class="tombamento-options"><button class="action-button sa-ok" onclick="setTombamentoStatus(this, 'ok')">S/A</button><button class="action-button ca-alert" onclick="setTombamentoStatus(this, 'alert')">C/A</button></div></div>${pendenciaHtml}<p class="tombamento-descricao-salva"></p><div class="tombamento-obs-container"><div class="historico-fixo" style="display:none;"></div><label>Descreva a alteração:</label><textarea placeholder="Detalhe a alteração."></textarea><button type="button" class="btn-salvar-alteracao" onclick="salvarTombamento(this)">SALVAR OBSERVAÇÃO</button></div></div>`;
                             totalItensNoSetor++;
                             window.itemStatus[uid] = { status: 'pending', obs: '' };
                         });
@@ -206,7 +248,7 @@
                              else classExtra = 'status-existing-alert';
                         }
                         const pendenciaHtml = montarPendenciaHtml(item.id, item.pendencia);
-                        htmlItens += `<div class="item-conferencia ${classExtra}" data-type="single" data-status="pending" data-id="${item.id}"><div class="item-header"><span class="status-icon"></span><span class="item-label">${item.nome}</span><span class="item-quantidade">QTD: ${item.quantidadeEsperada}</span></div><div class="item-options"><button class="action-button sa-ok" onclick="setItemStatus(this, 'ok')">S/A</button><button class="action-button ca-alert" onclick="setItemStatus(this, 'alert')">C/A</button></div>${pendenciaHtml}<p class="descricao-salva"></p><div class="alteracao-container"><div class="historico-fixo"></div><label>Descreva a alteração:</label><textarea data-id="${item.id}" placeholder="Descreva a alteração."></textarea><button type="button" class="btn-salvar-alteracao" onclick="salvarItem(this)">SALVAR</button></div></div>`;
+                        htmlItens += `<div class="item-conferencia ${classExtra}" data-type="single" data-status="pending" data-id="${item.id}"><div class="item-header"><span class="status-icon"></span><span class="item-label">${item.nome}</span><span class="item-quantidade">QTD: ${item.quantidadeEsperada}</span></div><div class="item-options"><button class="action-button sa-ok" onclick="setItemStatus(this, 'ok')">S/A</button><button class="action-button ca-alert" onclick="setItemStatus(this, 'alert')">C/A</button></div>${pendenciaHtml}<p class="descricao-salva"></p><div class="alteracao-container"><div class="historico-fixo" style="display:none;"></div><label>Descreva a alteração:</label><textarea data-id="${item.id}" placeholder="Descreva a alteração."></textarea><button type="button" class="btn-salvar-alteracao" onclick="salvarItem(this)">SALVAR</button></div></div>`;
                         totalItensNoSetor++;
                         window.itemStatus[item.id] = { status: 'pending', obs: '' };
                     }
@@ -249,7 +291,7 @@
             }
         }
 
-        function acrescentarPendencia(btnElement, uid, encodedHistorico) {
+        function acrescentarPendencia(btnElement, uid, encodedData) {
             let container; 
             const alertBox = btnElement.closest('.pendencia-alert-box');
             if(alertBox) {
@@ -269,10 +311,12 @@
                 if(editArea) {
                     editArea.style.display = 'block';
                     
+                    // Armazena os dados antigos em um atributo do elemento para uso no Salvar
+                    // Não exibimos mais o texto cru na tela para o usuário
                     const histDiv = editArea.querySelector('.historico-fixo');
                     if(histDiv) {
-                        histDiv.textContent = decodeURIComponent(encodedHistorico); 
-                        histDiv.style.display = 'block';
+                        histDiv.dataset.meta = encodedData; // Guarda JSON codificado
+                        histDiv.style.display = 'none'; // Esconde visualmente pois já vimos na lista acima
                     }
 
                     const textarea = editArea.querySelector('textarea');
@@ -290,19 +334,20 @@
         function setItemStatus(button, status) { const item = button.closest('.item-conferencia'); const setor = button.closest('.setor'); item.querySelectorAll('.item-options .action-button').forEach(b => b.classList.remove('active')); button.classList.add('active'); item.querySelector('.descricao-salva').style.display = 'none'; item.querySelector('.alteracao-container').style.display = 'none'; const pb=item.querySelector('.pendencia-alert-box'); if(pb)pb.style.display='none'; if (status === 'ok') { item.className = 'item-conferencia status-ok'; item.querySelector('.status-icon').className = 'status-icon ok'; window.itemStatus[item.dataset.id] = { status: 'S/A', obs: '' }; } else { item.className = 'item-conferencia status-alert'; item.querySelector('.status-icon').className = 'status-icon alert'; item.querySelector('.alteracao-container').style.display = 'block'; window.itemStatus[item.dataset.id] = { status: 'PENDING_CA', obs: '' }; item.querySelector('textarea').focus(); updateSetorStatus(setor); return; } updateSetorStatus(setor); updateOverallStatus(); checkSetorCompletion(setor, item.dataset.id); }
         function setTombamentoStatus(button, status) { const tombEl = button.closest('.tombamento-container'); const item = button.closest('.item-conferencia'); const setor = button.closest('.setor'); const uid = `${item.dataset.id}-${tombEl.dataset.tomb}`; tombEl.querySelectorAll('.action-button').forEach(b => b.classList.remove('active')); button.classList.add('active'); tombEl.querySelector('.tombamento-obs-container').style.display = 'none'; tombEl.querySelector('.tombamento-descricao-salva').style.display = 'none'; const pb=tombEl.querySelector('.pendencia-alert-box'); if(pb)pb.style.display='none'; if (status === 'ok') { window.itemStatus[uid] = { status: 'S/A', obs: '' }; updateItemMainStatusDisplay(item); } else { tombEl.querySelector('.tombamento-obs-container').style.display = 'block'; window.itemStatus[uid] = { status: 'PENDING_CA', obs: '' }; tombEl.querySelector('textarea').focus(); updateItemMainStatusDisplay(item); return; } updateSetorStatus(setor); updateOverallStatus(); checkSetorCompletion(setor, item.dataset.id); }
         
-        // SALVAR ITEM (ATUALIZADO PARA USAR FORMATADOR VISUAL)
+        // SALVAR ITEM (CORRIGIDO PARA LISTA LINEAR)
         function salvarItem(button) { 
             const item = button.closest('.item-conferencia'); 
             const obs = item.querySelector('textarea').value.trim();
-            
             const histFixo = item.querySelector('.historico-fixo');
             let obsFinal = obs;
-            let temHistorico = false;
 
-            if(histFixo && histFixo.style.display !== 'none' && histFixo.textContent) {
+            // Recupera metadados anteriores se for adição
+            if(histFixo && histFixo.dataset.meta) {
                 if(obs.length < 3) return alert("Digite a nova alteração.");
-                obsFinal = `${histFixo.textContent} | + NOVA: ${obs}`;
-                temHistorico = true;
+                
+                const meta = JSON.parse(decodeURIComponent(histFixo.dataset.meta));
+                // Monta a string linear sem aninhamento
+                obsFinal = montarHistoricoLinear(meta.obs, obs, meta.autor, meta.data);
             } else {
                 if (obs.length < 3) return alert("Descreva a alteração.");
             }
@@ -311,29 +356,28 @@
             item.querySelector('.alteracao-container').style.display = 'none'; 
             const d = item.querySelector('.descricao-salva'); 
             
-            // AQUI ESTÁ A MÁGICA VISUAL:
             const conferente = `${userInfo.postoGraduacao} ${userInfo.quadro} ${userInfo.nomeGuerra}`;
-            const dataAgora = new Date().toLocaleDateString('pt-BR');
-            const htmlVisual = formatarTextoVisual(obsFinal, conferente, dataAgora, null, null);
+            const dataAgora = formatarDataSimples(new Date());
             
-            d.innerHTML = htmlVisual; // Usa o formatador para mostrar lista bonita
+            d.innerHTML = formatarTextoVisual(obsFinal, conferente, dataAgora, null, null);
             d.style.display = 'block'; 
             
             updateSetorStatus(button.closest('.setor')); updateOverallStatus(); checkSetorCompletion(button.closest('.setor'), item.dataset.id); 
         }
 
-        // SALVAR TOMBAMENTO (ATUALIZADO PARA USAR FORMATADOR VISUAL)
+        // SALVAR TOMBAMENTO (CORRIGIDO PARA LISTA LINEAR)
         function salvarTombamento(button) { 
             const tombEl = button.closest('.tombamento-container'); 
             const item = button.closest('.item-conferencia'); 
             const obs = tombEl.querySelector('textarea').value.trim(); 
-            
             const histFixo = tombEl.querySelector('.historico-fixo');
             let obsFinal = obs;
 
-            if(histFixo && histFixo.style.display !== 'none' && histFixo.textContent) {
+            if(histFixo && histFixo.dataset.meta) {
                 if(obs.length < 3) return alert("Digite a nova alteração.");
-                obsFinal = `${histFixo.textContent} | + NOVA: ${obs}`;
+                
+                const meta = JSON.parse(decodeURIComponent(histFixo.dataset.meta));
+                obsFinal = montarHistoricoLinear(meta.obs, obs, meta.autor, meta.data);
             } else {
                 if (obs.length < 3) return alert("Descreva a alteração.");
             }
@@ -342,12 +386,10 @@
             tombEl.querySelector('.tombamento-obs-container').style.display = 'none'; 
             const d = tombEl.querySelector('.tombamento-descricao-salva'); 
             
-            // AQUI TAMBÉM:
             const conferente = `${userInfo.postoGraduacao} ${userInfo.quadro} ${userInfo.nomeGuerra}`;
-            const dataAgora = new Date().toLocaleDateString('pt-BR');
-            const htmlVisual = formatarTextoVisual(obsFinal, conferente, dataAgora, null, null);
+            const dataAgora = formatarDataSimples(new Date());
 
-            d.innerHTML = htmlVisual;
+            d.innerHTML = formatarTextoVisual(obsFinal, conferente, dataAgora, null, null);
             d.style.display = 'block'; 
             
             updateItemMainStatusDisplay(item); updateSetorStatus(button.closest('.setor')); updateOverallStatus(); checkSetorCompletion(button.closest('.setor'), item.dataset.id); 
@@ -357,15 +399,13 @@
         function updateSetorStatus(setor) { const items = setor.querySelectorAll('.item-conferencia'); let completed = 0, altered = 0, total = 0; items.forEach(item => { if (item.dataset.type === 'single') { total++; const s = window.itemStatus[item.dataset.id]?.status; if (s === 'S/A') completed++; else if (s === 'C/A' || s === 'KEEP') { completed++; altered++; } } else { const tombs = item.querySelectorAll('.tombamento-container'); tombs.forEach(t => { total++; const s = window.itemStatus[`${item.dataset.id}-${t.dataset.tomb}`]?.status; if (s === 'S/A') completed++; else if (s === 'C/A' || s === 'KEEP') { completed++; altered++; } }); } }); setor.dataset.totalItems = total; const st = setor.querySelector('.setor-status'); st.dataset.completed = completed; if (completed === total && altered === 0) { st.textContent = 'S/A'; st.classList.add('ok'); } else if (altered > 0) { st.textContent = `${altered} C/A`; st.classList.remove('ok'); } else { st.textContent = `${completed}/${total}`; st.classList.remove('ok'); } }
         function updateOverallStatus() { let total = 0, completed = 0; document.querySelectorAll('.setor').forEach(s => { total += parseInt(s.dataset.totalItems); completed += parseInt(s.querySelector('.setor-status').dataset.completed); }); const btn = document.getElementById('btn-finalizar'); btn.textContent = `FINALIZAR CONFERÊNCIA (${completed}/${total} ITENS)`; btn.disabled = (completed !== total); }
 
-        // FINALIZAR (Lógica de Preservação vs Edição + PDF Formatado)
+        // FINALIZAR (Atualizado para não duplicar assinatura no DB se já estiver na string)
         async function finalizarConferencia() {
             const btn = document.getElementById('btn-finalizar'); if (btn.disabled) return;
             btn.textContent = "Salvando..."; btn.disabled = true;
             try {
                 const p = userInfo; const conferente = `${p.postoGraduacao} ${p.quadro} ${p.nomeGuerra}`;
                 const localNome = `${infoLocal.posto} - ${infoLocal.nome}`; 
-                const dataHora = new Date();
-                const dataHoraStr = dataHora.toLocaleString('pt-BR');
                 const clean = (val) => val === undefined ? null : val;
 
                 let updated = false;
@@ -376,6 +416,8 @@
                     
                     if(s.status === 'C/A') { 
                         let old = itemOuTomb.pendencia || {};
+                        // A string s.obs já contém a lista formatada com assinaturas internas
+                        // Mas para o PDF precisamos salvar o 'quem' e 'data' da ÚLTIMA alteração também
                         itemOuTomb.pendencia = { obs: s.obs, quem: conferente, data: firebase.firestore.Timestamp.now(), statusAdmin: clean(old.statusAdmin), adminObs: clean(old.adminObs) }; 
                         updated=true; 
                     } else if(s.status === 'S/A' && itemOuTomb.pendencia) { 
@@ -405,34 +447,59 @@
                                 let statusFinal = s.status;
                                 let pdfText = "";
 
-                                const formatarLinhaAntiga = (txt) => {
-                                    const regex = /^"(.*)" \(Por: (.*) em (.*)\)$/;
-                                    const m = txt.match(regex);
-                                    if(m) return `• Por: ${m[2]} em ${m[3]}: "${m[1]}"`;
-                                    return `• ${txt}`;
-                                };
-
+                                // Para o PDF, usamos lógica similar ao Visual
                                 if (statusFinal === 'KEEP' && originalPendencia) {
                                     statusFinal = 'C/A'; 
-                                    const dataStr = formatarDataSimples(originalPendencia.data);
-                                    const autorOriginal = originalPendencia.quem || 'Anônimo';
-                                    if (originalPendencia.statusAdmin) pdfText += `• [${originalPendencia.statusAdmin.toUpperCase()}] (Admin): ${originalPendencia.adminObs}\n`;
-                                    pdfText += `• Por: ${autorOriginal} em ${dataStr}: "${originalPendencia.obs}"`;
+                                    // Reutiliza a formatação visual, mas substitui tags HTML por quebras de linha
+                                    // A função visual usa a lista completa, então é só limpar o HTML
+                                    // Mas o PDF não aceita HTML, então reconstruímos simples
+                                    const formatarParaPDF = (txt) => {
+                                        let out = "";
+                                        if(originalPendencia.statusAdmin) out += `[${originalPendencia.statusAdmin.toUpperCase()}] (Admin): ${originalPendencia.adminObs}\n`;
+                                        
+                                        const separator = ' | + NOVA: ';
+                                        const partes = txt.split(separator);
+                                        partes.forEach(p => {
+                                            p=p.trim();
+                                            const r = /^"(.*)" \(Por: (.*) em (.*)\)$/;
+                                            const m = p.match(r);
+                                            if(m) out += `• Por: ${m[2]} em ${m[3]}: "${m[1]}"\n`;
+                                            else out += `• ${p}\n`; // Fallback
+                                        });
+                                        return out.trim();
+                                    };
+                                    finalObs = formatarParaPDF(originalPendencia.obs);
                                 
                                 } else if (statusFinal === 'C/A') {
-                                    if (s.obs.includes('| + NOVA:')) {
-                                        let parts = s.obs.split('| + NOVA:');
-                                        let historyPart = parts[0].trim();
-                                        let newPart = parts[1].trim();
-                                        if (originalPendencia && originalPendencia.statusAdmin) pdfText += `• [${originalPendencia.statusAdmin.toUpperCase()}] (Admin): ${originalPendencia.adminObs}\n`;
-                                        pdfText += formatarLinhaAntiga(historyPart) + "\n";
-                                        pdfText += `• Por ${conferente} em ${dataHoraStr}: "${newPart}"`;
-                                    } else {
-                                        if (originalPendencia && originalPendencia.statusAdmin) pdfText += `• [${originalPendencia.statusAdmin.toUpperCase()}] (Admin): ${originalPendencia.adminObs}\n`;
-                                        pdfText += `• Por ${conferente} em ${dataHoraStr}: "${s.obs}"`;
-                                    }
+                                    // O s.obs já é a string linear montada por montarHistoricoLinear
+                                    // mas o último item é cru (não tem assinatura na string ainda, só no metadado do DB que será salvo)
+                                    // Precisamos simular a assinatura para o PDF agora
+                                    
+                                    let txtCompleto = s.obs;
+                                    // Como o último item é cru na string s.obs (ex: "... | + NOVA: TextoNovo"),
+                                    // precisamos formatá-lo manualmente para o PDF usando o conferente atual
+                                    
+                                    let out = "";
+                                    if(originalPendencia && originalPendencia.statusAdmin) out += `[${originalPendencia.statusAdmin.toUpperCase()}] (Admin): ${originalPendencia.adminObs}\n`;
+                                    
+                                    const separator = ' | + NOVA: ';
+                                    const partes = txtCompleto.split(separator);
+                                    
+                                    partes.forEach((p, idx) => {
+                                        p=p.trim();
+                                        const r = /^"(.*)" \(Por: (.*) em (.*)\)$/;
+                                        const m = p.match(r);
+                                        
+                                        if(m) {
+                                            out += `• Por: ${m[2]} em ${m[3]}: "${m[1]}"\n`;
+                                        } else {
+                                            // É o último item (o novo), usamos dados atuais
+                                            const dataH = new Date().toLocaleDateString('pt-BR');
+                                            out += `• Por: ${conferente} em ${dataH}: "${p}"\n`;
+                                        }
+                                    });
+                                    finalObs = out.trim();
                                 }
-                                if(pdfText) finalObs = pdfText;
                                 itemsToProcess.push({ nomeCompleto: nome, status: statusFinal === 'KEEP' ? 'C/A' : statusFinal, obs: finalObs, quantidade: qtd, id: id });
                             }
                         };
