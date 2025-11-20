@@ -202,8 +202,8 @@
                         <div class="pendencia-alert-box ${classAdmin}">
                             ${htmlFormatado}
                             <div class="pendencia-actions">
-                                <button class="btn-manter" onclick="manterPendencia('${uid}')">✅ Concordo (Manter)</button>
-                                <button class="btn-acrescentar" onclick="acrescentarPendencia('${uid}', '${historicoTxtParaEdicao.replace(/'/g, "\\'")}')">➕ Acrescentar</button>
+                                <button class="btn-manter" onclick="manterPendencia(this, '${uid}')">✅ Concordo (Manter)</button>
+                                <button class="btn-acrescentar" onclick="acrescentarPendencia(this, '${uid}', '${historicoTxtParaEdicao.replace(/'/g, "\\'")}')">➕ Acrescentar</button>
                             </div>
                         </div>`;
                     };
@@ -248,21 +248,20 @@
         function focusNextItem(currentItemId) { const allItems = Array.from(document.querySelectorAll('.item-conferencia')); let baseId = currentItemId.split('-')[0]; const idx = allItems.findIndex(i => i.dataset.id === baseId); for (let i = idx; i < allItems.length; i++) { const item = allItems[i]; if (!item) continue; const id = item.dataset.id; if (item.dataset.type === 'single') { const st = window.itemStatus[id]; if (!st || st.status === 'pending' || st.status === 'PENDING_CA') { if (!isElementInViewport(item)) item.scrollIntoView({ behavior: 'smooth', block: 'center' }); if (st && st.status === 'PENDING_CA') item.querySelector('textarea').focus(); return; } } if (item.dataset.type === 'multi') { const pendingTomb = Array.from(item.querySelectorAll('.tombamento-container')).find(t => { const uid = `${id}-${t.dataset.tomb}`; const s = window.itemStatus[uid]?.status; return s === 'pending' || s === 'PENDING_CA'; }); if (pendingTomb) { if (!isElementInViewport(pendingTomb)) pendingTomb.scrollIntoView({ behavior: 'smooth', block: 'center' }); const uid = `${id}-${pendingTomb.dataset.tomb}`; if (window.itemStatus[uid]?.status === 'PENDING_CA') pendingTomb.querySelector('textarea').focus(); return; } } } }
         function autoAdvanceSetor(sid) { const s = document.querySelector(`.setor[data-id="${sid}"]`); if (s) toggleSetor(s.querySelector('.setor-header')); const idx = window.setorIds.indexOf(sid); const nextId = window.setorIds[idx + 1]; if (nextId) { const next = document.querySelector(`.setor[data-id="${nextId}"]`); if (next) { const h = next.querySelector('.setor-header'); const c = next.querySelector('.setor-content'); if(!c.classList.contains('expanded')) toggleSetor(h); next.scrollIntoView({ behavior: 'smooth', block: 'center' }); } } }
 
-        // NOVA LÓGICA DE PENDÊNCIAS
-        function manterPendencia(uid) {
+        // NOVA LÓGICA DE PENDÊNCIAS CORRIGIDA
+        function manterPendencia(btnElement, uid) {
             window.itemStatus[uid] = { status: 'KEEP', obs: '' };
-            atualizarVisualConfirmacao(uid, "Alteração mantida (Autor Original preservado)");
+            // Passa null para não exibir mensagem de texto, apenas "carimbar"
+            atualizarVisualConfirmacao(btnElement, uid, null);
         }
 
-        function acrescentarPendencia(uid, textoHistorico) {
+        function acrescentarPendencia(btnElement, uid, textoHistorico) {
             let container; 
-            // Busca pelo botão clicado para achar contexto correto
-            if(event && event.target) {
-                const alertBox = event.target.closest('.pendencia-alert-box');
-                if(alertBox) {
-                    container = alertBox.closest('.tombamento-container') || alertBox.closest('.item-conferencia');
-                    alertBox.style.display = 'none';
-                }
+            // Busca pelo botão clicado DIRETAMENTE
+            const alertBox = btnElement.closest('.pendencia-alert-box');
+            if(alertBox) {
+                container = alertBox.closest('.tombamento-container') || alertBox.closest('.item-conferencia');
+                alertBox.style.display = 'none';
             }
 
             if (container) {
@@ -298,10 +297,11 @@
             }
         }
 
-        function atualizarVisualConfirmacao(uid, msg) {
+        function atualizarVisualConfirmacao(elementContext, uid, msg) {
             let container; 
-            if(event && event.target) {
-                const box = event.target.closest('.pendencia-alert-box');
+            // Encontra container a partir do elemento passado
+            if(elementContext) {
+                const box = elementContext.closest('.pendencia-alert-box');
                 if(box) {
                     container = box.closest('.tombamento-container') || box.closest('.item-conferencia');
                     box.style.display='none';
@@ -311,8 +311,20 @@
             if(container) {
                 const btnCA = container.querySelector('.ca-alert'); 
                 const descEl = container.querySelector('.descricao-salva') || container.querySelector('.tombamento-descricao-salva');
+                
+                // Sempre ativa o C/A visualmente (pois manter pendência = alerta)
                 if(btnCA) btnCA.classList.add('active');
-                if(descEl) { descEl.innerHTML = `<span class="obs-texto">✔ ${msg}</span>`; descEl.style.display = 'block'; }
+                
+                // LÓGICA: Se msg for null, não mostra nada (carimbo silencioso). Se tiver msg, mostra.
+                if(msg) {
+                    if(descEl) { 
+                        descEl.innerHTML = `<span class="obs-texto">✔ ${msg}</span>`; 
+                        descEl.style.display = 'block'; 
+                    }
+                } else {
+                    // Garante que área de mensagem esteja oculta se for "Manter"
+                    if(descEl) descEl.style.display = 'none';
+                }
                 
                 const item = container.classList.contains('item-conferencia') ? container : container.closest('.item-conferencia');
                 if(container.classList.contains('tombamento-container')) updateItemMainStatusDisplay(item);
