@@ -6,53 +6,76 @@
     <link rel="icon" type="image/png" href="logo_sigma.png" onerror="this.onerror=null; this.src='https://placehold.co/16x16/800020/ffffff?text=S'">
     <title>Conferência - PERMANÊNCIA BRAVO 5</title>
     <style>
-        /* ESTILOS ORIGINAIS DO SEU ARQUIVO */
+        /* ESTILOS ORIGINAIS (VISUAL LIMPO) */
         body { font-family: Arial, sans-serif; background-color: #f4f4f9; color: #333; min-height: 100vh; margin: 0; display: flex; flex-direction: column; align-items: center; padding-bottom: 90px; padding-top: 60px; box-sizing: border-box; }
         .main-header { position: fixed; top: 0; left: 0; width: 100%; height: 50px; background-color: #800020; box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2); z-index: 100; display: flex; align-items: center; padding: 0 15px; box-sizing: border-box; }
         .header-icon { height: 40px; width: auto; vertical-align: middle; }
         .header-title-desktop, .header-title-mobile { font-weight: bold; font-size: 1.1em; line-height: 1.2; margin-left: 10px; }
-        .text-white { color: white; } .text-red { color: #FF3B3B; } .header-title-desktop { display: none; } .header-title-mobile { display: block; }
+        .text-white { color: white; } .text-red { color: #FF3B3B; }
+        .header-title-desktop { display: none; } .header-title-mobile { display: block; }
         @media (min-width: 768px) { .header-title-desktop { display: block; font-size: 1.2em; } .header-title-mobile { display: none; } }
+        
         .container { background-color: #fff; padding: 20px; border-radius: 10px; box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1); width: 95%; max-width: 700px; margin-bottom: 20px; text-align: center; box-sizing: border-box; }
-        .loading-message { margin-top: 50px; font-size: 1.2em; color: #800020; font-weight: bold; } .error-message { margin-top: 50px; padding: 20px; border: 1px solid #d90f23; background-color: #fff0f0; border-radius: 8px; }
+        .loading-message { margin-top: 50px; font-size: 1.2em; color: #800020; font-weight: bold; }
+        .error-message { margin-top: 50px; padding: 20px; border: 1px solid #d90f23; background-color: #fff0f0; border-radius: 8px; }
         .logo { width: 80px; height: auto; margin-bottom: 10px; display: block; margin-left: auto; margin-right: auto; }
         h1 { color: #d90f23; margin-bottom: 3px; font-size: 1.6em; padding-bottom: 5px; border-bottom: 1px solid #e0e0e0; margin-bottom: 10px; }
         .subtitulo { font-size: 0.9em; color: #666; margin-bottom: 20px; font-weight: 600; }
         .user-info-display { font-size: 0.8em; color: #333; text-align: left; margin-top: -10px; margin-bottom: 15px; padding-bottom: 5px; border-bottom: 1px solid #eee; }
+
+        /* SETORES */
         .setor-header { background-color: #800020; color: white; padding: 12px 15px; margin-top: 20px; border-radius: 6px; cursor: pointer; text-align: left; font-weight: bold; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); transition: background-color 0.3s; }
         .setor-info { display: flex; align-items: center; gap: 10px; }
-        .setor-status { background-color: #d90f23; color: white; font-size: 0.9em; padding: 3px 8px; border-radius: 4px; min-width: 35px; text-align: center; transition: background-color 0.3s; } .setor-status.ok { background-color: #1b8a3e; }
-        .setor-content { padding: 10px 0; max-height: 0; overflow: hidden; transition: max-height 0.4s ease-out, padding 0.4s ease-out; background-color: #fff; border-left: 1px solid #e0e0e0; border-right: 1px solid #e0e0e0; } .setor-content.expanded { max-height: 5000px; padding-bottom: 20px; border-bottom: 1px solid #e0e0e0; border-radius: 0 0 6px 6px; }
+        .setor-status { background-color: #d90f23; color: white; font-size: 0.9em; padding: 3px 8px; border-radius: 4px; min-width: 35px; text-align: center; transition: background-color 0.3s; }
+        .setor-status.ok { background-color: #1b8a3e; }
+        .setor-content { padding: 10px 0; max-height: 0; overflow: hidden; transition: max-height 0.4s ease-out, padding 0.4s ease-out; background-color: #fff; border-left: 1px solid #e0e0e0; border-right: 1px solid #e0e0e0; }
+        .setor-content.expanded { max-height: 5000px; padding-bottom: 20px; border-bottom: 1px solid #e0e0e0; border-radius: 0 0 6px 6px; }
         .arrow { font-size: 1.2em; transition: transform 0.4s; }
+
+        /* ITENS */
         .item-conferencia { border: 1px solid #e0e0e0; border-left: 5px solid #ccc; border-radius: 6px; padding: 10px; margin: 10px; background-color: #fafafa; transition: border-left-color 0.3s ease, background-color 0.3s ease; }
         .item-conferencia.status-ok { border-left-color: #1b8a3e; background-color: #f0fff0; }
         .item-conferencia.status-alert { border-left-color: #d90f23; background-color: #fff0f0; }
+        .item-conferencia.status-existing-alert { border-left-color: #ff9800; background-color: #fff8e1; }
+
         .item-header { display: flex; flex-direction: column; justify-content: space-between; align-items: flex-start; margin-bottom: 5px; flex-wrap: wrap; }
         .item-label { font-weight: bold; color: #333; flex-grow: 1; margin-right: 10px; text-align: left; font-size: 0.95em; width: 100%; }
         .item-quantidade { font-size: 0.9em; color: #800020; font-weight: bold; flex-shrink: 0; margin-top: 5px; }
         .status-icon { font-weight: bold; font-size: 0; padding: 0; width: 18px; height: 18px; line-height: 18px; background-color: transparent; border: 1px dashed #aaa; display: inline-block; margin-right: 5px; vertical-align: middle; }
         .status-icon.ok { background-color: #1b8a3e; border: none; } .status-icon.ok:after { content: '✓'; font-size: 12px; line-height: 18px; color: white; display: block; text-align: center; }
         .status-icon.alert { background-color: #d90f23; border: none; } .status-icon.alert:after { content: 'C/A'; font-size: 10px; line-height: 18px; color: white; display: block; text-align: center; }
+
         .item-options { display: flex; justify-content: flex-end; margin-top: 5px; gap: 10px; padding-top: 5px; border-top: 1px solid #f0f0f0; }
         .action-button { padding: 8px 15px; border: 1px solid #ccc; border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 0.9em; transition: background-color 0.2s, color 0.2s, border-color 0.2s; background-color: #f0f0f0; color: #333; }
-        .action-button.active.sa-ok { background-color: #1b8a3e; color: white; border-color: #1b8a3e; } .action-button.active.ca-alert { background-color: #d90f23; color: white; border-color: #d90f23; }
+        .action-button.active.sa-ok { background-color: #1b8a3e; color: white; border-color: #1b8a3e; }
+        .action-button.active.ca-alert { background-color: #d90f23; color: white; border-color: #d90f23; }
+
+        /* ESTILOS PARA PENDENCIA ANTERIOR (Botão Manter) */
+        .pendencia-alert-box { font-size: 0.85em; color: #d90f23; margin-top: 5px; display: block; text-align: left; border-left: 3px solid #d90f23; padding-left: 8px; background-color: #fff0f0; padding: 5px; }
+        .btn-manter { background-color: #e0e0e0; border: 1px solid #ccc; color: #333; font-size: 0.8em; padding: 5px 10px; cursor: pointer; margin-left: auto; display: inline-block; margin-top: 5px; border-radius: 4px; }
+        .btn-manter:hover { background-color: #d90f23; color: white; }
+
+        /* TOMBAMENTOS */
         .tombamento-container { border-top: 1px dotted #eee; margin-top: 5px; padding-top: 5px; text-align: left; padding-bottom: 5px; }
         .tombamento-controls { display: flex; justify-content: space-between; align-items: center; font-size: 0.85em; }
-        .tombamento-options { display: flex; gap: 5px; } .tombamento-options .action-button { padding: 5px 10px; font-size: 0.8em; margin: 0; }
+        .tombamento-options { display: flex; gap: 5px; }
+        .tombamento-options .action-button { padding: 5px 10px; font-size: 0.8em; margin: 0; }
+
+        /* FORMULARIOS */
         .tombamento-obs-container, .alteracao-container { margin-top: 10px; padding-top: 10px; border-top: 1px dashed #d90f23; display: none; text-align: left; }
         .tombamento-obs-container label, .alteracao-container label { display: block; margin-bottom: 5px; font-weight: bold; color: #d90f23; font-size: 0.85em; }
         .tombamento-obs-container textarea, .alteracao-container textarea { width: 100%; padding: 8px; border-radius: 4px; border: 1px solid #d90f23; box-sizing: border-box; font-size: 0.85em; resize: vertical; min-height: 40px; margin-bottom: 5px; }
         .btn-salvar-alteracao { background-color: #800020; color: white; font-weight: bold; border: none; padding: 8px 15px; border-radius: 4px; cursor: pointer; width: 100%; transition: background-color 0.3s; font-size: 0.85em; }
         .descricao-salva, .tombamento-descricao-salva { font-size: 0.9em; margin-top: 5px; display: none; padding-top: 5px; border-top: 1px dashed #ddd; text-align: left; }
         .obs-texto { color: #d90f23; font-weight: bold; } .obs-titulo { color: #333; font-weight: bold; }
+
         #btn-finalizar { background-color: #d90f23; color: white; font-weight: bold; border: none; padding: 15px 10px; border-radius: 6px; width: 100%; cursor: pointer; transition: background-color 0.3s ease; margin-top: 30px; font-size: 1.1em; box-shadow: 0 4px 8px rgba(217, 15, 35, 0.4); }
         #btn-finalizar:disabled { background-color: #999; cursor: not-allowed; box-shadow: none; }
-        .footer-central { position: fixed; bottom: 0; left: 0; width: 100%; text-align: center; padding: 5px 0 5px; background-color: #f4f4f9; color: #555; font-size: 0.65em; line-height: 1.3; z-index: 99; box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.05); }
-        .footer-central strong, .footer-autor { display: block; width: 100%; text-align: center; } .footer-central strong { font-weight: bold; } .footer-autor { margin-top: 5px; color: #888; font-size: 0.9em; }
 
-        /* ESTILOS PARA A NOVA LÓGICA (MINIMALISTAS) */
-        .pendencia-anterior-box { background-color: #fff3cd; border: 1px solid #ffeeba; color: #856404; padding: 8px; border-radius: 4px; margin-top: 5px; text-align: left; font-size: 0.85em; }
-        .btn-confirmar-pendencia { background-color: #d90f23; color: white; border: none; padding: 4px 8px; border-radius: 3px; cursor: pointer; font-size: 0.85em; margin-left: 10px; float: right; }
+        .footer-central { position: fixed; bottom: 0; left: 0; width: 100%; text-align: center; padding: 5px 0 5px; background-color: #f4f4f9; color: #555; font-size: 0.65em; line-height: 1.3; z-index: 99; box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.05); }
+        .footer-central strong, .footer-autor { display: block; width: 100%; text-align: center; }
+        .footer-central strong { font-weight: bold; }
+        .footer-autor { margin-top: 5px; color: #888; font-size: 0.9em; }
     </style>
 </head>
 <body>
@@ -72,6 +95,7 @@
         <button id="btn-finalizar" onclick="finalizarConferencia()" disabled>FINALIZAR CONFERÊNCIA (0/X ITENS)</button>
     </div>
 </div>
+
 <div class="footer-central">
     <strong>GOVERNO DE RORAIMA</strong>
     <strong>CORPO DE BOMBEIROS MILITAR DE RORAIMA</strong>
@@ -86,224 +110,423 @@
 <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
 
 <script>
-    const firebaseConfig = { apiKey: "AIzaSyCB0PH0UgghgsvH0BgPkG4AkKON6xSQ9mc", authDomain: "sigma-cbmrr.firebaseapp.com", projectId: "sigma-cbmrr", storageBucket: "sigma-cbmrr.firebasestorage.app", messagingSenderId: "378026276038", appId: "1:378026276038:web:620dd6ff57501b1a8313c7" };
+    // 1. FIREBASE
+    const firebaseConfig = {
+        apiKey: "AIzaSyCB0PH0UgghgsvH0BgPkG4AkKON6xSQ9mc",
+        authDomain: "sigma-cbmrr.firebaseapp.com",
+        projectId: "sigma-cbmrr",
+        storageBucket: "sigma-cbmrr.firebasestorage.app",
+        messagingSenderId: "378026276038",
+        appId: "1:378026276038:web:620dd6ff57501b1a8313c7"
+    };
+
     let db;
-    const COLECAO_NOME='lista_mestra', DOCUMENTO_ID='lista_completa', COLECAO_RESULTADOS='resultados_conferencias';
-    let dadosConferencia=[]; window.itemStatus={};
+    const COLECAO_NOME = 'lista_mestra'; 
+    const DOCUMENTO_ID = 'lista_completa'; 
+    let dadosConferencia = [];
+    window.itemStatus = {}; 
 
     async function carregarDadosRemotos() {
-        if (!db) { try { if (!firebase.apps.length) firebase.initializeApp(firebaseConfig); db = firebase.firestore(); } catch (e) { console.error("ERRO DB", e); } }
-        if (!db) { document.getElementById('loading-message').style.display='none'; return; }
+        if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+        db = firebase.firestore();
+        
         try {
             const doc = await db.collection(COLECAO_NOME).doc(DOCUMENTO_ID).get();
-            if (!doc.exists || !Array.isArray(doc.data().list)) throw new Error("Lista vazia.");
+            if (!doc.exists) throw new Error("Lista não encontrada");
             dadosConferencia = doc.data().list;
             renderizarConferencia();
-            document.getElementById('loading-message').style.display='none'; 
-            document.getElementById('main-content').style.display='block';
-        } catch (error) { console.error(error); document.getElementById('loading-message').textContent="Erro: "+error.message; }
+            document.getElementById('loading-message').style.display = 'none'; 
+            document.getElementById('main-content').style.display = 'block';
+        } catch (e) {
+            document.getElementById('loading-message').textContent = "Erro: " + e.message;
+        }
     }
 
+    // 2. RENDERIZAÇÃO
     function renderizarConferencia() {
         const mainContent = document.getElementById('main-content');
         let htmlSetores = '';
         const setorIds = [];
-        dadosConferencia.forEach(setor => setorIds.push(setor.id));
+        dadosConferencia.forEach(s => setorIds.push(s.id));
         window.setorIds = setorIds;
 
         dadosConferencia.forEach(setor => {
-            let htmlItens = ''; let totalItensNoSetor = 0;
+            let htmlItens = '';
+            let totalItensNoSetor = 0; 
             const isFirstSetor = setor.id === setorIds[0];
 
             setor.itens.forEach(item => {
-                // Lógica de Pendência Anterior (Recuperar do DB)
-                const pendencia = item.pendencia; // { obs: string, quem: string, data: timestamp }
                 let htmlTombamento = '';
-
-                if (item.tipo === 'multi' && item.tombamentos && item.tombamentos.length > 0) {
+                
+                if (item.tipo === 'multi' && item.tombamentos) {
                     item.tombamentos.forEach(tomb => {
-                        // Verifica pendência em tombamento específico
-                        let pHtml = '';
-                        if(tomb.pendencia) {
-                            pHtml = `<div class="pendencia-anterior-box">⚠ Pendência: ${tomb.pendencia.obs} <button class="btn-confirmar-pendencia" onclick="confirmarPendencia('${item.id}-${tomb.tomb}', '${tomb.pendencia.obs.replace(/'/g,"\\'")}'); event.stopPropagation();">Manter Alteração</button></div>`;
+                        // Lógica de Pendência Visual
+                        let pendenciaHtml = '';
+                        if (tomb.pendencia) {
+                            pendenciaHtml = `
+                                <div class="pendencia-alert-box">
+                                    <span class="alert-msg">⚠️ <strong>Alteração Anterior:</strong> ${tomb.pendencia.obs} (${tomb.pendencia.quem})</span>
+                                    <div style="text-align:right;"><button class="btn-manter" onclick="confirmarPendencia('${item.id}-${tomb.tomb}', '${tomb.pendencia.obs.replace(/'/g, "\\'")}')">Manter Alteração</button></div>
+                                </div>`;
                         }
+
                         htmlTombamento += `
                             <div class="tombamento-container" data-tomb="${tomb.tomb}" data-item-id="${item.id}">
-                                <div class="tombamento-controls"><span>Tomb.: ${tomb.tomb}</span><div class="tombamento-options"><button class="action-button sa-ok" onclick="setTombamentoStatus(this, 'ok')">S/A</button><button class="action-button ca-alert" onclick="setTombamentoStatus(this, 'alert')">C/A</button></div></div>
-                                ${pHtml}
+                                <div class="tombamento-controls">
+                                    <span>Tomb.: ${tomb.tomb}</span>
+                                    <div class="tombamento-options">
+                                        <button class="action-button sa-ok" onclick="setTombamentoStatus(this, 'ok')">S/A</button>
+                                        <button class="action-button ca-alert" onclick="setTombamentoStatus(this, 'alert')">C/A</button>
+                                    </div>
+                                </div>
+                                ${pendenciaHtml}
                                 <p class="tombamento-descricao-salva"></p>
-                                <div class="tombamento-obs-container"><label>Alteração encontrada:</label><textarea placeholder="Detalhe a alteração."></textarea><button type="button" class="btn-salvar-alteracao" onclick="salvarTombamento(this)">SALVAR OBSERVAÇÃO</button></div>
-                            </div>`;
+                                <div class="tombamento-obs-container">
+                                    <label>Alteração encontrada:</label>
+                                    <textarea placeholder="Detalhe a alteração."></textarea>
+                                    <button type="button" class="btn-salvar-alteracao" onclick="salvarTombamento(this)">SALVAR OBSERVAÇÃO</button>
+                                </div>
+                            </div>
+                        `;
                         totalItensNoSetor++;
+                        // CORREÇÃO: Status inicial sempre minúsculo para bater com a função de busca
                         window.itemStatus[`${item.id}-${tomb.tomb}`] = { status: 'pending', obs: '' };
                     });
-                    htmlItens += `<div class="item-conferencia item-has-tombamentos" data-type="multi" data-total-tombamentos="${item.tombamentos.length}" data-status="pending" data-id="${item.id}"><div class="item-header"><span class="status-icon"></span><span class="item-label">${item.nome}</span><span class="item-quantidade">QTD: ${item.quantidadeEsperada}</span></div>${htmlTombamento}</div>`;
+
+                    htmlItens += `
+                        <div class="item-conferencia item-has-tombamentos" data-type="multi" data-id="${item.id}">
+                            <div class="item-header">
+                                <span class="status-icon"></span>
+                                <span class="item-label">${item.nome}</span> 
+                                <span class="item-quantidade">QTD: ${item.quantidadeEsperada}</span>
+                            </div>
+                            ${htmlTombamento}
+                        </div>
+                    `;
                 } else {
-                    let pHtml = '';
-                    if(item.pendencia) {
-                        pHtml = `<div class="pendencia-anterior-box">⚠ Pendência: ${item.pendencia.obs} <button class="btn-confirmar-pendencia" onclick="confirmarPendencia('${item.id}', '${item.pendencia.obs.replace(/'/g,"\\'")}'); event.stopPropagation();">Manter Alteração</button></div>`;
+                    // SINGLE ITEM
+                    let pendenciaHtml = '';
+                    let classExtra = '';
+                    if (item.pendencia) {
+                         classExtra = 'status-existing-alert';
+                         pendenciaHtml = `
+                            <div class="pendencia-alert-box">
+                                <span class="alert-msg">⚠️ <strong>Alteração Anterior:</strong> ${item.pendencia.obs} (${item.pendencia.quem})</span>
+                                <div style="text-align:right;"><button class="btn-manter" onclick="confirmarPendencia('${item.id}', '${item.pendencia.obs.replace(/'/g, "\\'")}')">Manter Alteração</button></div>
+                            </div>`;
                     }
-                    htmlItens += `<div class="item-conferencia" data-type="single" data-status="pending" data-id="${item.id}"><div class="item-header"><span class="status-icon"></span><span class="item-label">${item.nome}</span><span class="item-quantidade">QTD: ${item.quantidadeEsperada}</span></div><div class="item-options"><button class="action-button sa-ok" onclick="setItemStatus(this, 'ok')">S/A</button><button class="action-button ca-alert" onclick="setItemStatus(this, 'alert')">C/A</button></div>${pHtml}<p class="descricao-salva"></p><div class="alteracao-container"><label>Alteração encontrada:</label><textarea data-id="${item.id}" placeholder="Descreva a alteração."></textarea><button type="button" class="btn-salvar-alteracao" onclick="salvarItem(this)">SALVAR</button></div></div>`;
+
+                    htmlItens += `
+                        <div class="item-conferencia ${classExtra}" data-type="single" data-id="${item.id}">
+                            <div class="item-header">
+                                <span class="status-icon"></span>
+                                <span class="item-label">${item.nome}</span>
+                                <span class="item-quantidade">QTD: ${item.quantidadeEsperada}</span>
+                            </div>
+                            <div class="item-options">
+                                <button class="action-button sa-ok" onclick="setItemStatus(this, 'ok')">S/A</button>
+                                <button class="action-button ca-alert" onclick="setItemStatus(this, 'alert')">C/A</button>
+                            </div>
+                            ${pendenciaHtml}
+                            <p class="descricao-salva"></p>
+                            <div class="alteracao-container">
+                                <label>Alteração encontrada:</label>
+                                <textarea data-id="${item.id}" placeholder="Descreva a alteração."></textarea>
+                                <button type="button" class="btn-salvar-alteracao" onclick="salvarItem(this)">SALVAR</button>
+                            </div>
+                        </div>
+                    `;
                     totalItensNoSetor++;
+                    // CORREÇÃO: Status inicial sempre minúsculo
                     window.itemStatus[item.id] = { status: 'pending', obs: '' };
                 }
             });
 
-            htmlSetores += `<div class="setor" data-total-items="${totalItensNoSetor}" data-id="${setor.id}"><div class="setor-header" onclick="toggleSetor(this)"><div class="setor-info"><span>${setor.nome}</span><div class="setor-status" data-completed="0">0/${totalItensNoSetor}</div></div><span class="arrow">${isFirstSetor?'▼':'►'}</span></div><div class="setor-content ${isFirstSetor?'expanded':''}">${htmlItens}</div></div>`;
+            htmlSetores += `
+                <div class="setor" data-total-items="${totalItensNoSetor}" data-id="${setor.id}">
+                    <div class="setor-header" onclick="toggleSetor(this)">
+                        <div class="setor-info">
+                            <span>${setor.nome}</span>
+                            <div class="setor-status" data-completed="0">0/${totalItensNoSetor}</div>
+                        </div>
+                        <span class="arrow">${isFirstSetor ? '▼' : '►'}</span>
+                    </div>
+                    <div class="setor-content ${isFirstSetor ? 'expanded' : ''}">
+                        ${htmlItens}
+                    </div>
+                </div>
+            `;
         });
-        
+
         mainContent.querySelector('#btn-finalizar').insertAdjacentHTML('beforebegin', htmlSetores);
-        updateHeaderInfo(); updateOverallStatus();
+        updateHeaderInfo();
+        updateOverallStatus();
     }
 
-    function getUrlParameter(name) { name = name.replace(/[\[]/, '\\[').replace(/[\]]/, '\\]'); const regex = new RegExp('[\\?&]' + name + '=([^&#]*)'); const results = regex.exec(location.search); return results === null ? '' : decodeURIComponent(results[1].replace(/\+/g, ' ')); }
-    const userInfo = { postoGraduacao: getUrlParameter('posto_grad') || "3º SGT", quadro: getUrlParameter('quadro_mil') || "QPCBM", nomeGuerra: getUrlParameter('nome_guerra') || "JHONATH" };
-    function updateHeaderInfo() { const militarCompleto = `${userInfo.postoGraduacao} ${userInfo.quadro} ${userInfo.nomeGuerra}`; const now = new Date(); document.getElementById('militar-info').innerHTML = `<strong>Conferente:</strong> ${militarCompleto}<br><strong>Data/Hora:</strong> ${now.toLocaleDateString('pt-BR')}, ${now.toLocaleTimeString('pt-BR')}`; document.getElementById('local-posto-info').innerHTML = `<span style="color: blue; font-weight: bold;">PERMANÊNCIA - BRAVO 5</span>`; }
-    function toggleSetor(header) { const content = header.nextElementSibling; const arrow = header.querySelector('.arrow'); if (content.classList.contains('expanded')) { content.classList.remove('expanded'); arrow.textContent = '►'; } else { document.querySelectorAll('.setor-content.expanded').forEach(c => {c.classList.remove('expanded'); c.previousElementSibling.querySelector('.arrow').textContent='►';}); content.classList.add('expanded'); arrow.textContent = '▼'; } }
-    function checkSetorCompletion(currentSetor, currentItemId) { const totalItems = parseInt(currentSetor.dataset.totalItems); const completedItems = parseInt(currentSetor.querySelector('.setor-status').dataset.completed); if (completedItems === totalItems) { autoAdvanceSetor(currentSetor.dataset.id); } else { focusNextItem(currentItemId); } }
-    function isElementInViewport(el) { const rect = el.getBoundingClientRect(); return (rect.top >= 60 && rect.left >= 0 && rect.bottom <= (window.innerHeight || document.documentElement.clientHeight) && rect.right <= (window.innerWidth || document.documentElement.clientWidth)); }
+    // 3. LÓGICA
+    const userInfo = {
+        postoGraduacao: getUrlParameter('posto_grad') || "3º SGT",
+        quadro: getUrlParameter('quadro_mil') || "QPCBM", 
+        nomeGuerra: getUrlParameter('nome_guerra') || "JHONATH", 
+    };
+    function getUrlParameter(name) { return (new URLSearchParams(window.location.search)).get(name) || ''; }
+
+    function updateHeaderInfo() {
+        const militarCompleto = `${userInfo.postoGraduacao} ${userInfo.quadro} ${userInfo.nomeGuerra}`;
+        const now = new Date();
+        document.getElementById('militar-info').innerHTML = `<strong>Conferente:</strong> ${militarCompleto}<br><strong>Data/Hora:</strong> ${now.toLocaleDateString('pt-BR')}, ${now.toLocaleTimeString('pt-BR')}`;
+        document.getElementById('local-posto-info').innerHTML = `<span style="color: blue; font-weight: bold;">PERMANÊNCIA - BRAVO 5</span>`;
+    }
+
+    function toggleSetor(header) {
+        const content = header.nextElementSibling;
+        const arrow = header.querySelector('.arrow');
+        if (content.classList.contains('expanded')) { content.classList.remove('expanded'); arrow.textContent = '►'; }
+        else { document.querySelectorAll('.setor-content.expanded').forEach(c=>{c.classList.remove('expanded'); c.previousElementSibling.querySelector('.arrow').textContent='►'}); content.classList.add('expanded'); arrow.textContent = '▼'; }
+    }
+
+    // --- FUNÇÃO CORRIGIDA DE SCROLL E FOCO ---
     function focusNextItem(currentItemId) {
         const allItems = Array.from(document.querySelectorAll('.item-conferencia'));
-        let baseItemId = currentItemId.split('-')[0];
-        const currentIndex = allItems.findIndex(item => item.dataset.id === baseItemId);
-        for (let i = currentIndex; i < allItems.length; i++) { 
-            const currentItem = allItems[i]; if (!currentItem) continue;
-            const currentId = currentItem.dataset.id;
-            if (currentItem.dataset.type === 'single') {
-                const itemData = window.itemStatus[currentId];
-                if (!itemData || itemData.status === 'PENDING' || itemData.status === 'PENDING_CA') {
-                    if (!isElementInViewport(currentItem)) { currentItem.scrollIntoView({ behavior: 'smooth', block: 'center' }); }
-                    if (itemData && itemData.status === 'PENDING_CA') currentItem.querySelector('textarea').focus();
-                    return; 
+        let baseId = currentItemId.split('-')[0];
+        const idx = allItems.findIndex(i => i.dataset.id === baseId);
+
+        for (let i = idx; i < allItems.length; i++) {
+            const item = allItems[i];
+            if (!item) continue;
+            const id = item.dataset.id;
+
+            // Single
+            if (item.dataset.type === 'single') {
+                const st = window.itemStatus[id];
+                // CORREÇÃO: Usar 'pending' minúsculo para bater com a inicialização
+                if (!st || st.status === 'pending' || st.status === 'PENDING_CA') {
+                    if (!isElementInViewport(item)) item.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    if (st && st.status === 'PENDING_CA') item.querySelector('textarea').focus();
+                    return;
                 }
             }
-            if (currentItem.dataset.type === 'multi') {
-                const pendingTombamento = Array.from(currentItem.querySelectorAll('.tombamento-container')).find(tomb => {
-                    const uniqueId = `${currentId}-${tomb.dataset.tomb}`;
-                    const status = window.itemStatus[uniqueId]?.status;
-                    return status === 'pending' || status === 'PENDING_CA';
+            // Multi
+            if (item.dataset.type === 'multi') {
+                const pendingTomb = Array.from(item.querySelectorAll('.tombamento-container')).find(t => {
+                    const uid = `${id}-${t.dataset.tomb}`;
+                    const s = window.itemStatus[uid]?.status;
+                    // CORREÇÃO: Usar 'pending' minúsculo
+                    return s === 'pending' || s === 'PENDING_CA';
                 });
-                if (pendingTombamento) {
-                    if (!isElementInViewport(pendingTombamento)) { pendingTombamento.scrollIntoView({ behavior: 'smooth', block: 'center' }); }
-                    if (window.itemStatus[`${currentId}-${pendingTombamento.dataset.tomb}`]?.status === 'PENDING_CA') { pendingTombamento.querySelector('textarea').focus(); }
-                    return; 
+                if (pendingTomb) {
+                    if (!isElementInViewport(pendingTomb)) pendingTomb.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    const uid = `${id}-${pendingTomb.dataset.tomb}`;
+                    if (window.itemStatus[uid]?.status === 'PENDING_CA') pendingTomb.querySelector('textarea').focus();
+                    return;
                 }
             }
         }
+        // REMOVIDO O SCROLL FORÇADO PARA BAIXO
     }
-    function autoAdvanceSetor(currentSetorId) { const currentSetorEl = document.querySelector(`.setor[data-id="${currentSetorId}"]`); if (currentSetorEl) toggleSetor(currentSetorEl.querySelector('.setor-header')); const idx = window.setorIds.indexOf(currentSetorId); const nextId = window.setorIds[idx + 1]; if (nextId) { const nextSetorEl = document.querySelector(`.setor[data-id="${nextId}"]`); if (nextSetorEl) { toggleSetor(nextSetorEl.querySelector('.setor-header')); nextSetorEl.scrollIntoView({ behavior: 'smooth', block: 'center' }); } } else { /* document.getElementById('btn-finalizar').scrollIntoView({ behavior: 'smooth', block: 'start' }); */ } }
 
-    // --- CONFIRMAR PENDENCIA EXISTENTE ---
+    function isElementInViewport(el) {
+        const rect = el.getBoundingClientRect();
+        return (rect.top >= 60 && rect.left >= 0 && rect.bottom <= (window.innerHeight || document.documentElement.clientHeight) && rect.right <= (window.innerWidth || document.documentElement.clientWidth));
+    }
+
+    function checkSetorCompletion(currentSetor, currentItemId) {
+        const total = parseInt(currentSetor.dataset.totalItems);
+        const comp = parseInt(currentSetor.querySelector('.setor-status').dataset.completed);
+        if (comp === total) autoAdvanceSetor(currentSetor.dataset.id);
+        else focusNextItem(currentItemId);
+    }
+
+    function autoAdvanceSetor(sid) {
+        const s = document.querySelector(`.setor[data-id="${sid}"]`);
+        if (s) toggleSetor(s.querySelector('.setor-header'));
+        const idx = window.setorIds.indexOf(sid);
+        const nextId = window.setorIds[idx + 1];
+        if (nextId) {
+            const next = document.querySelector(`.setor[data-id="${nextId}"]`);
+            if (next) { 
+                const h = next.querySelector('.setor-header');
+                const c = next.querySelector('.setor-content');
+                if(!c.classList.contains('expanded')) toggleSetor(h);
+                next.scrollIntoView({ behavior: 'smooth', block: 'center' }); 
+            }
+        }
+    }
+
+    // --- AÇÕES ---
     function confirmarPendencia(uid, obs) {
         window.itemStatus[uid] = { status: 'C/A', obs: obs };
-        // Achar elemento DOM
-        let container, descEl, btnCA;
-        // Tenta achar pelo ID do botão clicado
+        // Achar na DOM
+        let container;
         const btn = event.target;
-        if(btn) {
-             const box = btn.closest('.pendencia-anterior-box');
-             container = box.closest('.tombamento-container') || box.closest('.item-conferencia');
-             box.style.display='none';
+        const box = btn.closest('.pendencia-alert-box');
+        if(box) {
+            container = box.closest('.tombamento-container') || box.closest('.item-conferencia');
+            box.style.display='none';
         }
         if(container) {
-             btnCA = container.querySelector('.ca-alert');
-             descEl = container.querySelector('.descricao-salva') || container.querySelector('.tombamento-descricao-salva');
-             if(btnCA) btnCA.classList.add('active');
-             if(descEl) { descEl.innerHTML = `<span class="obs-titulo">Mantido:</span> <span class="obs-texto">${obs}</span>`; descEl.style.display = 'block'; }
-             
-             const item = container.classList.contains('item-conferencia') ? container : container.closest('.item-conferencia');
-             const setor = container.closest('.setor');
-             
-             if(container.classList.contains('tombamento-container')) updateItemMainStatusDisplay(item);
-             updateSetorStatus(setor); updateOverallStatus(); checkSetorCompletion(setor, item.dataset.id);
+            const btnCA = container.querySelector('.ca-alert');
+            const descEl = container.querySelector('.descricao-salva') || container.querySelector('.tombamento-descricao-salva');
+            if(btnCA) btnCA.classList.add('active');
+            if(descEl) { descEl.innerHTML = `<span class="obs-titulo">Mantido:</span> <span class="obs-texto">${obs}</span>`; descEl.style.display = 'block'; }
+            
+            const item = container.classList.contains('item-conferencia') ? container : container.closest('.item-conferencia');
+            const setor = container.closest('.setor');
+            
+            if(container.classList.contains('tombamento-container')) updateItemMainStatusDisplay(item);
+            updateSetorStatus(setor); updateOverallStatus(); checkSetorCompletion(setor, item.dataset.id);
         }
     }
 
-    // --- STATUS ---
     function setItemStatus(button, status) {
-        const item = button.closest('.item-conferencia'); const setor = button.closest('.setor'); const buttons = item.querySelectorAll('.item-options .action-button');
-        buttons.forEach(btn => btn.classList.remove('active')); button.classList.add('active');
-        item.querySelector('.descricao-salva').style.display = 'none'; item.querySelector('.alteracao-container').style.display = 'none';
-        const pBox = item.querySelector('.pendencia-anterior-box'); if(pBox) pBox.style.display='none';
-        if (status === 'ok') { item.className = 'item-conferencia status-ok'; item.querySelector('.status-icon').className = 'status-icon ok'; window.itemStatus[item.dataset.id] = { status: 'S/A', obs: '' }; } 
-        else { item.className = 'item-conferencia status-alert'; item.querySelector('.status-icon').className = 'status-icon alert'; item.querySelector('.alteracao-container').style.display = 'block'; window.itemStatus[item.dataset.id] = { status: 'PENDING_CA', obs: '' }; item.querySelector('textarea').focus(); updateSetorStatus(setor); return; }
+        const item = button.closest('.item-conferencia');
+        const setor = button.closest('.setor');
+        item.querySelectorAll('.item-options .action-button').forEach(b => b.classList.remove('active'));
+        button.classList.add('active');
+        item.querySelector('.descricao-salva').style.display = 'none';
+        item.querySelector('.alteracao-container').style.display = 'none';
+        const pb = item.querySelector('.pendencia-alert-box'); if(pb) pb.style.display='none';
+
+        if (status === 'ok') {
+            item.className = 'item-conferencia status-ok';
+            item.querySelector('.status-icon').className = 'status-icon ok';
+            window.itemStatus[item.dataset.id] = { status: 'S/A', obs: '' };
+        } else {
+            item.className = 'item-conferencia status-alert';
+            item.querySelector('.status-icon').className = 'status-icon alert';
+            item.querySelector('.alteracao-container').style.display = 'block';
+            window.itemStatus[item.dataset.id] = { status: 'PENDING_CA', obs: '' };
+            item.querySelector('textarea').focus(); updateSetorStatus(setor); return;
+        }
         updateSetorStatus(setor); updateOverallStatus(); checkSetorCompletion(setor, item.dataset.id);
     }
+
     function setTombamentoStatus(button, status) {
-        const tombEl = button.closest('.tombamento-container'); const item = button.closest('.item-conferencia'); const setor = button.closest('.setor'); const uid = `${item.dataset.id}-${tombEl.dataset.tomb}`;
-        tombEl.querySelectorAll('.action-button').forEach(btn => btn.classList.remove('active')); button.classList.add('active');
-        tombEl.querySelector('.tombamento-obs-container').style.display = 'none'; tombEl.querySelector('.tombamento-descricao-salva').style.display = 'none';
-        const pBox = tombEl.querySelector('.pendencia-anterior-box'); if(pBox) pBox.style.display='none';
-        if (status === 'ok') { window.itemStatus[uid] = { status: 'S/A', obs: '' }; updateItemMainStatusDisplay(item); } 
-        else { tombEl.querySelector('.tombamento-obs-container').style.display = 'block'; window.itemStatus[uid] = { status: 'PENDING_CA', obs: '' }; tombEl.querySelector('textarea').focus(); updateItemMainStatusDisplay(item); return; }
+        const tombEl = button.closest('.tombamento-container');
+        const item = button.closest('.item-conferencia');
+        const setor = button.closest('.setor');
+        const uid = `${item.dataset.id}-${tombEl.dataset.tomb}`;
+        tombEl.querySelectorAll('.action-button').forEach(b => b.classList.remove('active'));
+        button.classList.add('active');
+        tombEl.querySelector('.tombamento-obs-container').style.display = 'none';
+        tombEl.querySelector('.tombamento-descricao-salva').style.display = 'none';
+        const pb = tombEl.querySelector('.pendencia-alert-box'); if(pb) pb.style.display='none';
+
+        if (status === 'ok') {
+            window.itemStatus[uid] = { status: 'S/A', obs: '' };
+            updateItemMainStatusDisplay(item);
+        } else {
+            tombEl.querySelector('.tombamento-obs-container').style.display = 'block';
+            window.itemStatus[uid] = { status: 'PENDING_CA', obs: '' };
+            tombEl.querySelector('textarea').focus();
+            updateItemMainStatusDisplay(item); return;
+        }
         updateSetorStatus(setor); updateOverallStatus(); checkSetorCompletion(setor, item.dataset.id);
     }
+
     function salvarItem(button) {
-        const item = button.closest('.item-conferencia'); const obs = item.querySelector('textarea').value.trim();
-        if (obs.length < 3) { alert("Descreva a alteração."); return; }
+        const item = button.closest('.item-conferencia');
+        const obs = item.querySelector('textarea').value.trim();
+        if (obs.length < 3) return alert("Descreva a alteração.");
         window.itemStatus[item.dataset.id] = { status: 'C/A', obs: obs };
-        item.querySelector('.alteracao-container').style.display = 'none'; const descEl = item.querySelector('.descricao-salva'); descEl.innerHTML = `<span class="obs-titulo">Alteração:</span> <span class="obs-texto">${obs}</span>`; descEl.style.display = 'block';
+        item.querySelector('.alteracao-container').style.display = 'none';
+        const d = item.querySelector('.descricao-salva');
+        d.innerHTML = `<span class="obs-titulo">Alteração:</span> <span class="obs-texto">${obs}</span>`; d.style.display = 'block';
         updateSetorStatus(button.closest('.setor')); updateOverallStatus(); checkSetorCompletion(button.closest('.setor'), item.dataset.id);
     }
+
     function salvarTombamento(button) {
-        const tombEl = button.closest('.tombamento-container'); const item = button.closest('.item-conferencia'); const obs = tombEl.querySelector('textarea').value.trim();
-        if (obs.length < 3) { alert("Descreva a alteração."); return; }
+        const tombEl = button.closest('.tombamento-container');
+        const item = button.closest('.item-conferencia');
+        const obs = tombEl.querySelector('textarea').value.trim();
+        if (obs.length < 3) return alert("Descreva a alteração.");
         window.itemStatus[`${item.dataset.id}-${tombEl.dataset.tomb}`] = { status: 'C/A', obs: obs };
-        tombEl.querySelector('.tombamento-obs-container').style.display = 'none'; const descEl = tombEl.querySelector('.tombamento-descricao-salva'); descEl.innerHTML = `<span class="obs-titulo">Alteração:</span> <span class="obs-texto">${obs}</span>`; descEl.style.display = 'block';
+        tombEl.querySelector('.tombamento-obs-container').style.display = 'none';
+        const d = tombEl.querySelector('.tombamento-descricao-salva');
+        d.innerHTML = `<span class="obs-titulo">Alteração:</span> <span class="obs-texto">${obs}</span>`; d.style.display = 'block';
         updateItemMainStatusDisplay(item); updateSetorStatus(button.closest('.setor')); updateOverallStatus(); checkSetorCompletion(button.closest('.setor'), item.dataset.id);
     }
-    function updateItemMainStatusDisplay(item) { if (item.dataset.type === 'single') return; const tombs = item.querySelectorAll('.tombamento-container'); let conf = 0, alt = 0; tombs.forEach(t => { const s = window.itemStatus[`${item.dataset.id}-${t.dataset.tomb}`]?.status; if (s === 'S/A' || s === 'C/A') { conf++; if (s === 'C/A') alt++; } }); const icon = item.querySelector('.status-icon'); item.className = 'item-conferencia item-has-tombamentos'; icon.className = 'status-icon'; if (conf === tombs.length) { if (alt > 0) { icon.classList.add('alert'); item.classList.add('status-alert'); } else { icon.classList.add('ok'); item.classList.add('status-ok'); } } }
-    function updateSetorStatus(setor) { const items = setor.querySelectorAll('.item-conferencia'); let completed = 0, altered = 0, total = 0; items.forEach(item => { if (item.dataset.type === 'single') { total++; const s = window.itemStatus[item.dataset.id]?.status; if (s === 'S/A') completed++; else if (s === 'C/A') { completed++; altered++; } } else { const tombs = item.querySelectorAll('.tombamento-container'); tombs.forEach(t => { total++; const s = window.itemStatus[`${item.dataset.id}-${t.dataset.tomb}`]?.status; if (s === 'S/A') completed++; else if (s === 'C/A') { completed++; altered++; } }); } }); setor.dataset.totalItems = total; const statusDiv = setor.querySelector('.setor-status'); statusDiv.dataset.completed = completed; if (completed === total && altered === 0) { statusDiv.textContent = 'S/A'; statusDiv.classList.add('ok'); } else if (altered > 0) { statusDiv.textContent = `${altered} C/A`; statusDiv.classList.remove('ok'); } else { statusDiv.textContent = `${completed}/${total}`; statusDiv.classList.remove('ok'); } }
-    function updateOverallStatus() { let total = 0, completed = 0; document.querySelectorAll('.setor').forEach(s => { total += parseInt(s.dataset.totalItems); completed += parseInt(s.querySelector('.setor-status').dataset.completed); }); const btn = document.getElementById('btn-finalizar'); btn.textContent = `FINALIZAR CONFERÊNCIA (${completed}/${total} ITENS)`; btn.disabled = (completed !== total); }
 
-    // --- FINALIZAR ---
+    function updateItemMainStatusDisplay(item) {
+        if (item.dataset.type === 'single') return;
+        const tombs = item.querySelectorAll('.tombamento-container');
+        let conf = 0, alt = 0;
+        tombs.forEach(t => {
+            const s = window.itemStatus[`${item.dataset.id}-${t.dataset.tomb}`]?.status;
+            if (s === 'S/A' || s === 'C/A') { conf++; if (s === 'C/A') alt++; }
+        });
+        const icon = item.querySelector('.status-icon');
+        item.className = 'item-conferencia item-has-tombamentos'; icon.className = 'status-icon';
+        if (conf === tombs.length) {
+            if (alt > 0) { icon.classList.add('alert'); item.classList.add('status-alert'); }
+            else { icon.classList.add('ok'); item.classList.add('status-ok'); }
+        }
+    }
+
+    function updateSetorStatus(setor) {
+        const items = setor.querySelectorAll('.item-conferencia');
+        let completed = 0, altered = 0, total = 0;
+        items.forEach(item => {
+            if (item.dataset.type === 'single') {
+                total++;
+                const s = window.itemStatus[item.dataset.id]?.status;
+                if (s === 'S/A') completed++; else if (s === 'C/A') { completed++; altered++; }
+            } else {
+                item.querySelectorAll('.tombamento-container').forEach(t => {
+                    total++;
+                    const s = window.itemStatus[`${item.dataset.id}-${t.dataset.tomb}`]?.status;
+                    if (s === 'S/A') completed++; else if (s === 'C/A') { completed++; altered++; }
+                });
+            }
+        });
+        setor.dataset.totalItems = total;
+        const st = setor.querySelector('.setor-status'); st.dataset.completed = completed;
+        if (completed === total && altered === 0) { st.textContent = 'S/A'; st.classList.add('ok'); }
+        else if (altered > 0) { st.textContent = `${altered} C/A`; st.classList.remove('ok'); }
+        else { st.textContent = `${completed}/${total}`; st.classList.remove('ok'); }
+    }
+
+    function updateOverallStatus() {
+        let total = 0, completed = 0;
+        document.querySelectorAll('.setor').forEach(s => { total += parseInt(s.dataset.totalItems); completed += parseInt(s.querySelector('.setor-status').dataset.completed); });
+        const btn = document.getElementById('btn-finalizar'); btn.textContent = `FINALIZAR CONFERÊNCIA (${completed}/${total} ITENS)`; btn.disabled = (completed !== total);
+    }
+
+    // --- FINALIZAR COM PERSISTÊNCIA ---
     async function finalizarConferencia() {
-        const btn = document.getElementById('btn-finalizar'); if (btn.disabled) return;
-        btn.textContent = "Processando..."; btn.disabled = true;
-
+        const btn = document.getElementById('btn-finalizar'); if(btn.disabled) return;
+        btn.disabled = true; btn.textContent = "Salvando...";
         try {
             const infoText = document.getElementById('militar-info').innerText;
             const conferente = infoText.split('\n')[0].replace('Conferente:', '').trim();
             
-            // LÓGICA DE PERSISTÊNCIA
-            let updated = false;
+            // 1. Atualiza Lista Mestra (Pendencias)
+            let hasUpdates = false;
             dadosConferencia.forEach(setor => {
                 setor.itens.forEach(item => {
-                    // Single
                     if(item.tipo === 'single') {
                         const s = window.itemStatus[item.id];
-                        if(s.status === 'C/A') { item.pendencia = { obs: s.obs, quem: conferente, data: firebase.firestore.Timestamp.now() }; updated=true; }
-                        else if(s.status === 'S/A' && item.pendencia) { delete item.pendencia; updated=true; }
-                    }
-                    // Multi
-                    if(item.tombamentos) {
+                        if(s.status === 'C/A') { item.pendencia = { obs: s.obs, quem: conferente, data: firebase.firestore.Timestamp.now() }; hasUpdates=true; }
+                        else if(s.status === 'S/A' && item.pendencia) { delete item.pendencia; hasUpdates=true; }
+                    } else if(item.tombamentos) {
                         item.tombamentos.forEach(t => {
-                            const s = window.itemStatus[`${item.id}-${t.tomb}`];
-                            if(s.status === 'C/A') { t.pendencia = { obs: s.obs, quem: conferente, data: firebase.firestore.Timestamp.now() }; updated=true; }
-                            else if(s.status === 'S/A' && t.pendencia) { delete t.pendencia; updated=true; }
+                            const uid = `${item.id}-${t.tomb}`;
+                            const s = window.itemStatus[uid];
+                            if(s.status === 'C/A') { t.pendencia = { obs: s.obs, quem: conferente, data: firebase.firestore.Timestamp.now() }; hasUpdates=true; }
+                            else if(s.status === 'S/A' && t.pendencia) { delete t.pendencia; hasUpdates=true; }
                         });
                     }
                 });
             });
+            
+            if(hasUpdates) await db.collection(COLECAO_NOME).doc(DOCUMENTO_ID).update({ list: dadosConferencia });
 
-            // Salva Lista Mestra Atualizada
-            if(updated) await db.collection(COLECAO_NOME).doc(DOCUMENTO_ID).update({ list: dadosConferencia });
-
-            // Salva Resultados
-            let itensCaa = []; let count = 0; let ca = 0;
-            dadosConferencia.forEach(setor => {
-                setor.itens.forEach(item => {
-                     if(item.tipo === 'single') {
-                         const st = window.itemStatus[item.id];
-                         if(st && st.status!=='pending') { count++; if(st.status==='C/A'){ ca++; itensCaa.push({nomeCompleto:item.nome, local:setor.nome, obs:st.obs, statusAdmin:'Pendente'}); } }
-                     } else if(item.tombamentos) {
-                         item.tombamentos.forEach(t => {
-                             const st = window.itemStatus[`${item.id}-${t.tomb}`];
-                             if(st && st.status!=='pending') { count++; if(st.status==='C/A'){ ca++; itensCaa.push({nomeCompleto:`${item.nome} (${t.tomb})`, local:setor.nome, obs:st.obs, statusAdmin:'Pendente', id:item.id, tomb:t.tomb}); } }
-                         });
-                     }
-                });
-            });
+            // 2. Salva Histórico
+            let itensCaa = [], count = 0, ca = 0;
+            for(let k in window.itemStatus) {
+                if(window.itemStatus[k].status === 'C/A') { ca++; itensCaa.push({nomeCompleto:k, obs:window.itemStatus[k].obs, status:'C/A'}); }
+                if(window.itemStatus[k].status !== 'pending') count++;
+            }
 
             await db.collection('resultados_conferencias').add({
                 local: document.getElementById('local-posto-info').innerText,
@@ -313,13 +536,14 @@
                 totalCaa: ca,
                 itensCaa: itensCaa
             });
-            
-            // PDF Generation
-            const { jsPDF } = window.jspdf; const doc = new jsPDF(); let y = 20;
-            doc.text("Conferência Finalizada", 10, 10); doc.text(`Conferente: ${conferente}`, 10, 20);
-            if(itensCaa.length>0){ y=30; itensCaa.forEach(i=>{ doc.text(`C/A: ${i.nomeCompleto} - ${i.obs}`, 10, y); y+=10; }); } else { doc.text("Sem alterações.", 10, 30); }
-            doc.save(`Conferencia_${new Date().toISOString().slice(0,10)}.pdf`);
 
+            // 3. PDF
+            const { jsPDF } = window.jspdf; const doc = new jsPDF();
+            doc.text("Conferência Finalizada", 10, 10); doc.text("Conferente: " + conferente, 10, 20);
+            let y = 30;
+            if(itensCaa.length>0) itensCaa.forEach(i=>{ doc.text(`C/A: ${i.nomeCompleto} - ${i.obs}`, 10, y); y+=10; }); else doc.text("Sem alterações.", 10, 30);
+            doc.save(`Conferencia_${new Date().toISOString().slice(0,10)}.pdf`);
+            
             alert("Conferência salva com sucesso!"); location.reload();
         } catch (e) { console.error(e); alert("Erro: " + e.message); btn.disabled = false; }
     }
