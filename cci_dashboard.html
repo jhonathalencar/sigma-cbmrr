@@ -24,116 +24,54 @@
         /* CONTENT */
         .content { margin-left: 250px; flex-grow: 1; padding: 20px; box-sizing: border-box; width: calc(100% - 250px); padding-bottom: 80px; } .view-section { display: none; } .view-section.active-view { display: block; }
 
-        /* === CARDS === */
+        /* CARDS */
         .cards-grid { display: flex; flex-wrap: wrap; gap: 20px; margin-bottom: 30px; } 
         .sector-card { background-color: white; padding: 15px; border-radius: 8px; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); width: 100%; max-width: 280px; cursor: pointer; transition: transform 0.2s, box-shadow 0.2s; display: flex; flex-direction: column; justify-content: space-between; }
         .sector-card:hover { transform: translateY(-5px); box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15); background-color: #fff5f5; }
-        .sector-card.status-alert { border-left: 5px solid #d90f23; }
-        .sector-card.status-ok { border-left: 5px solid #1b8a3e; }
+        .sector-card.status-alert { border-left: 5px solid #d90f23; } .sector-card.status-ok { border-left: 5px solid #1b8a3e; }
         .sector-card.active-card { background-color: #ffecec; border: 1px solid #d90f23; border-left: 5px solid #d90f23; }
         .sector-card h3 { margin-top: 0; font-size: 1.1em; color: #333; margin-bottom: 5px; font-weight: bold; }
         .sector-card .main-stat { display: flex; align-items: center; justify-content: space-between; margin: 10px 0; }
         .sector-card .count-value { font-size: 2em; font-weight: bold; }
-        .sector-card.status-alert .count-value { color: #d90f23; }
-        .sector-card.status-ok .count-value { color: #1b8a3e; }
+        .sector-card.status-alert .count-value { color: #d90f23; } .sector-card.status-ok .count-value { color: #1b8a3e; }
         .sector-card .label-stat { font-size: 0.85em; color: #666; font-weight: bold; text-transform: uppercase; }
         .sector-card .card-footer { font-size: 0.75em; color: #777; margin-top: 10px; pt: 10px; border-top: 1px solid #eee; line-height: 1.4; }
-        .sector-card .card-footer strong { color: #333; }
 
-        /* TABLE */
-        .ca-table-container { overflow-x: auto; background-color: white; padding: 20px; border-radius: 8px; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); margin-top: 10px; border-top: 3px solid #d90f23; animation: fadeIn 0.5s; } 
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } } 
-        .ca-table { width: 100%; border-collapse: collapse; font-size: 0.9em; } 
-        .ca-table th, .ca-table td { padding: 12px 15px; text-align: left; border-bottom: 1px solid #ddd; } 
-        .ca-table th { background-color: #f8f8f8; color: #800020; font-weight: bold; text-transform: uppercase; }
-        .row-amarelo { background-color: #fffde7 !important; } .row-laranja { background-color: #fff3e0 !important; } 
-        .status-badge { padding: 4px 8px; border-radius: 4px; font-size: 0.8em; font-weight: bold; } 
-        .badge-pendente { background-color: #ffebee; color: #d32f2f; } .badge-solucao { background-color: #fff9c4; color: #fbc02d; border: 1px solid #fbc02d; } .badge-cautela { background-color: #ffe0b2; color: #f57c00; border: 1px solid #f57c00; }
+        /* LISTA DE LOCAIS */
+        .locais-list { list-style: none; padding: 0; }
+        .local-item { background: white; padding: 15px; margin-bottom: 10px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); display: flex; justify-content: space-between; align-items: center; border-left: 5px solid #800020; }
+        .local-info strong { display: block; font-size: 1.1em; color: #333; }
+        .local-info span { color: #666; font-size: 0.9em; }
+        .local-actions { display: flex; gap: 10px; }
 
-        /* ADMIN / MODAL STYLES */
-        .admin-container { background-color: #fff; padding: 20px; border-radius: 10px; box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1); width: 100%; max-width: 900px; margin: 0 auto 20px auto; box-sizing: border-box; text-align: center; } 
-        .logo-admin { display: block; margin: 0 auto 15px auto; max-width: 80px; height: auto; } 
-        h1.page-title { color: #d90f23; margin-bottom: 15px; font-size: 1.8em; border-bottom: 2px solid #e0e0e0; padding-bottom: 10px; text-align: center; } 
+        /* ESTILO PARA SEÇÃO DE NOVO LOCAL */
+        .new-local-section { background: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); margin-bottom: 20px; border-top: 3px solid #1b8a3e; }
+        .new-local-form { display: flex; gap: 10px; align-items: flex-end; flex-wrap: wrap; }
+        .form-group { flex-grow: 1; }
+        .form-group label { display: block; margin-bottom: 5px; font-weight: bold; color: #555; }
+        .form-group input, .form-group select { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; }
         
-        /* === ATUALIZAÇÃO DOS BOTÕES GLOBAIS === */
-        .global-actions { 
-            display: flex; 
-            gap: 15px; 
-            margin-bottom: 25px; 
-            justify-content: flex-start; 
-            flex-wrap: wrap; 
-            padding: 15px; 
-            background-color: #fafafa; 
-            border-radius: 8px; 
-            border: 1px solid #eee;
-        } 
-        
-        /* Estilo Base dos Botões Modernos */
-        .btn-modern-action {
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            padding: 10px 20px;
-            border: none;
-            border-radius: 6px;
-            font-size: 0.95em;
-            font-weight: bold;
-            cursor: pointer;
-            color: white;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.15);
-            transition: all 0.3s ease;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-        .btn-modern-action:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 12px rgba(0,0,0,0.2);
-        }
-        
-        /* Cores Específicas */
-        .btn-sync { 
-            background: linear-gradient(135deg, #1b8a3e 0%, #145a2d 100%); 
-        } 
-        .btn-backup { 
-            background: linear-gradient(135deg, #5d6164 0%, #343a40 100%); 
-        }
-        .btn-import { 
-            background: linear-gradient(135deg, #2c7399 0%, #02548b 100%); 
-        }
+        /* Botões Modernos */
+        .btn-modern-action { display: inline-flex; align-items: center; gap: 8px; padding: 10px 20px; border: none; border-radius: 6px; font-size: 0.95em; font-weight: bold; cursor: pointer; color: white; box-shadow: 0 2px 5px rgba(0,0,0,0.15); transition: all 0.3s ease; text-transform: uppercase; }
+        .btn-modern-action:hover { transform: translateY(-2px); box-shadow: 0 5px 12px rgba(0,0,0,0.2); }
+        .btn-sync { background: linear-gradient(135deg, #1b8a3e 0%, #145a2d 100%); } 
+        .btn-backup { background: linear-gradient(135deg, #5d6164 0%, #343a40 100%); }
+        .btn-import { background: linear-gradient(135deg, #2c7399 0%, #02548b 100%); }
+        .btn-create { background: linear-gradient(135deg, #800020 0%, #5a0017 100%); }
+        .btn-edit-list { background-color: #0277bd; color: white; border:none; padding:8px 12px; border-radius:4px; cursor:pointer; }
+        .btn-link { background-color: #f57c00; color: white; border:none; padding:8px 12px; border-radius:4px; cursor:pointer; }
 
-        /* Botões genéricos antigos (mantidos para o resto do sistema) */
-        .btn-action { padding: 6px 12px; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; color: white; font-size: 0.9em; } 
-        .btn-gerenciar { background-color: #0277bd; } 
-        .btn-add { background-color: #800020; color: white; border: none; padding: 8px 15px; border-radius: 4px; cursor: pointer; } 
-        .lista-setores { padding: 0; list-style: none; text-align: left; } 
-        .setor-item { margin-bottom: 15px; border: 1px solid #800020; border-radius: 6px; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); background: #fff; } 
-        .setor-header-admin { background-color: #800020; color: white; padding: 10px 15px; display: flex; justify-content: space-between; align-items: center; font-weight: bold; cursor: grab; } 
-        .setor-content-admin { transition: max-height 0.4s ease-out; overflow: hidden; max-height: 2000px; padding: 10px; } 
-        .setor-content-admin.collapsed { max-height: 0; padding: 0 !important; } 
-        .item-conferencia-admin { display: flex; justify-content: space-between; align-items: flex-start; padding: 10px 0; border-bottom: 1px solid #eee; cursor: move; } 
-        .add-setor-form, .add-item-form-setor { display: flex; gap: 5px; margin-bottom: 10px; } 
-        .add-setor-form input, .add-item-form-setor input, .add-item-form-setor select { flex-grow: 1; padding: 8px; border: 1px solid #ccc; border-radius: 4px; } 
-        .btn-remover { background-color: #d90f23; } .btn-edit-alt { background-color: #7f8c8d; } 
-        .item-actions-admin { display: flex; gap: 5px; } 
+        /* TABLE (C/A) & MODAIS - Mantidos */
+        .ca-table-container { overflow-x: auto; background-color: white; padding: 20px; border-radius: 8px; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); margin-top: 10px; border-top: 3px solid #d90f23; } 
+        .ca-table { width: 100%; border-collapse: collapse; font-size: 0.9em; } .ca-table th, .ca-table td { padding: 12px 15px; text-align: left; border-bottom: 1px solid #ddd; } .ca-table th { background-color: #f8f8f8; color: #800020; font-weight: bold; text-transform: uppercase; }
+        .row-amarelo { background-color: #fffde7 !important; } .row-laranja { background-color: #fff3e0 !important; } .status-badge { padding: 4px 8px; border-radius: 4px; font-size: 0.8em; font-weight: bold; } .badge-pendente { background-color: #ffebee; color: #d32f2f; } .badge-solucao { background-color: #fff9c4; color: #fbc02d; border: 1px solid #fbc02d; } .badge-cautela { background-color: #ffe0b2; color: #f57c00; border: 1px solid #f57c00; }
         
-        /* TOMBAMENTOS CSS */
-        .tombamento-container-wrapper { margin-top: 5px; padding-left: 20px; background: #f9f9f9; border-left: 3px solid #ccc; width: 100%; box-sizing: border-box; } 
-        .tombamento-list { list-style: none; padding: 0; margin: 0; }
-        .tombamento-list li { display: flex; justify-content: space-between; align-items: center; padding: 5px 0; border-bottom: 1px dotted #eee; }
-        .tombamento-section { padding: 10px; }
-        .tombamento-section h4 { margin: 0 0 10px 0; font-size: 0.9em; color: #555; border-bottom: 1px dotted #ccc; }
-        .add-tombamento-form { display: flex; gap: 5px; margin-top: 10px; padding-top: 10px; border-top: 1px dashed #e0e0e0; }
-        .add-tombamento-form input { padding: 6px; font-size: 0.9em; flex-grow: 1; border: 1px solid #ccc; border-radius: 4px; }
-
+        /* ADMIN EDITOR */
+        .admin-container { background-color: #fff; padding: 20px; border-radius: 10px; box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1); width: 100%; max-width: 900px; margin: 0 auto 20px auto; box-sizing: border-box; text-align: center; } .logo-admin { display: block; margin: 0 auto 15px auto; max-width: 80px; height: auto; } h1.page-title { color: #d90f23; margin-bottom: 15px; font-size: 1.8em; border-bottom: 2px solid #e0e0e0; padding-bottom: 10px; text-align: center; } .global-actions { display: flex; gap: 15px; margin-bottom: 25px; justify-content: flex-start; flex-wrap: wrap; padding: 15px; background-color: #fafafa; border-radius: 8px; border: 1px solid #eee; } 
+        .btn-add { background-color: #800020; color: white; border: none; padding: 8px 15px; border-radius: 4px; cursor: pointer; } .lista-setores { padding: 0; list-style: none; text-align: left; } .setor-item { margin-bottom: 15px; border: 1px solid #800020; border-radius: 6px; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); background: #fff; } .setor-header-admin { background-color: #800020; color: white; padding: 10px 15px; display: flex; justify-content: space-between; align-items: center; font-weight: bold; cursor: grab; } .setor-content-admin { transition: max-height 0.4s ease-out; overflow: hidden; max-height: 2000px; padding: 10px; } .setor-content-admin.collapsed { max-height: 0; padding: 0 !important; } .item-conferencia-admin { display: flex; justify-content: space-between; align-items: flex-start; padding: 10px 0; border-bottom: 1px solid #eee; cursor: move; } .add-setor-form, .add-item-form-setor { display: flex; gap: 5px; margin-bottom: 10px; } .add-setor-form input, .add-item-form-setor input, .add-item-form-setor select { flex-grow: 1; padding: 8px; border: 1px solid #ccc; border-radius: 4px; } .btn-remover { background-color: #d90f23; color:white; border:none; padding:5px 10px; border-radius:4px; cursor:pointer;} .btn-edit-alt { background-color: #7f8c8d; color:white; border:none; padding:5px 10px; border-radius:4px; cursor:pointer;} .item-actions-admin { display: flex; gap: 5px; } .tombamento-container-wrapper { margin-top: 5px; padding-left: 20px; background: #f9f9f9; border-left: 3px solid #ccc; width: 100%; box-sizing: border-box; } .tombamento-list { list-style: none; padding: 0; margin: 0; } .tombamento-list li { display: flex; justify-content: space-between; align-items: center; padding: 5px 0; border-bottom: 1px dotted #eee; } .tombamento-section { padding: 10px; } .tombamento-section h4 { margin: 0 0 10px 0; font-size: 0.9em; color: #555; border-bottom: 1px dotted #ccc; } .add-tombamento-form { display: flex; gap: 5px; margin-top: 10px; padding-top: 10px; border-top: 1px dashed #e0e0e0; } .add-tombamento-form input { padding: 6px; font-size: 0.9em; flex-grow: 1; border: 1px solid #ccc; border-radius: 4px; }
+        
         /* MODAIS */
-        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); display: none; align-items: center; justify-content: center; z-index: 2000; } 
-        .modal-content { background: #fff; padding: 25px; border-radius: 12px; width: 90%; max-width: 500px; position: relative; text-align: left; } 
-        .modal-content h2 { margin-top: 0; color: #800020; border-bottom: 1px solid #eee; padding-bottom: 10px; } 
-        .modal-content label { display: block; margin-top: 15px; font-weight: bold; color: #555; } 
-        .modal-content input, .modal-content select, .modal-content textarea { width: 100%; padding: 10px; margin-top: 5px; box-sizing: border-box; border: 1px solid #ccc; border-radius: 4px; } 
-        .modal-content textarea { height: 80px; resize: vertical; } 
-        .modal-buttons { display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px; } 
-        .close-btn { position: absolute; top: 10px; right: 15px; background: none; border: none; font-size: 20px; cursor: pointer; color: #d90f23; }
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); display: none; align-items: center; justify-content: center; z-index: 2000; } .modal-content { background: #fff; padding: 25px; border-radius: 12px; width: 90%; max-width: 500px; position: relative; text-align: left; } .modal-content h2 { margin-top: 0; color: #800020; border-bottom: 1px solid #eee; padding-bottom: 10px; } .modal-content label { display: block; margin-top: 15px; font-weight: bold; color: #555; } .modal-content input, .modal-content select, .modal-content textarea { width: 100%; padding: 10px; margin-top: 5px; box-sizing: border-box; border: 1px solid #ccc; border-radius: 4px; } .modal-content textarea { height: 80px; resize: vertical; } .modal-buttons { display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px; } .close-btn { position: absolute; top: 10px; right: 15px; background: none; border: none; font-size: 20px; cursor: pointer; color: #d90f23; }
 
         @media (max-width: 768px) { .sidebar { width: 100%; height: auto; position: relative; top: 0; border-right: none; border-bottom: 1px solid #ddd; } .sidebar a { display: inline-block; width: 50%; box-sizing: border-box; text-align: center; float: left; border-bottom: 3px solid transparent; } .sidebar a.active { border-left: none; border-bottom: 3px solid #d90f23; } .content { margin-left: 0; width: 100%; padding-top: 15px; } .sidebar-header, .menu-label { display: none; } }
     </style>
@@ -141,7 +79,7 @@
 <body>
 
     <header class="main-header"><img src="cbmrr.png" alt="CBM-RR" class="header-icon" onerror="this.onerror=null; this.src='https://placehold.co/40x40/ffffff/800020/fff?text=CBM'"><div class="header-title-desktop"><span class="text-white">CORPO DE BOMBEIROS MILITAR </span><span class="text-red">RORAIMA</span></div><div class="header-title-mobile"><span class="text-white">CBM</span><span class="text-red">RR</span></div></header>
-    <div class="sidebar"><div class="sidebar-header"><img src="cci.png" alt="Logo CCI" onerror="this.onerror=null; this.src='https://placehold.co/50x50/ffffff/800020/fff?text=S'"><h2>SIGMA Admin</h2></div><div class="menu-label">Principal</div><a onclick="switchView('dashboard')" id="link-dashboard" class="active"><i class="fas fa-chart-line"></i> Dashboard C/A</a><div class="menu-label">Gerenciamento</div><a onclick="switchView('permanencia')" id="link-permanencia"><i class="fas fa-clipboard-list"></i> Permanência</a></div>
+    <div class="sidebar"><div class="sidebar-header"><img src="cci.png" alt="Logo CCI" onerror="this.onerror=null; this.src='https://placehold.co/50x50/ffffff/800020/fff?text=S'"><h2>SIGMA Admin</h2></div><div class="menu-label">Principal</div><a onclick="switchView('dashboard')" id="link-dashboard" class="active"><i class="fas fa-chart-line"></i> Dashboard C/A</a><div class="menu-label">Gerenciamento</div><a onclick="switchView('locais')" id="link-locais"><i class="fas fa-map-marker-alt"></i> Locais & Listas</a></div>
 
     <div class="content">
         <div id="view-dashboard" class="view-section active-view">
@@ -159,23 +97,53 @@
             </div>
         </div>
         
-        <div id="view-permanencia" class="view-section">
+        <div id="view-locais" class="view-section">
+            <h1>Gerenciar Locais</h1>
+            
+            <div class="new-local-section">
+                <h3><i class="fas fa-plus-circle"></i> Criar Novo Local de Conferência</h3>
+                <div class="new-local-form">
+                    <div class="form-group">
+                        <label>Posto de Serviço</label>
+                        <select id="novo-local-posto">
+                            <option value="ALFA">ALFA</option>
+                            <option value="BRAVO">BRAVO</option>
+                            <option value="CHARLIE">CHARLIE</option>
+                            <option value="CARACARAÍ">CARACARAÍ</option>
+                            <option value="RORAINÓPOLIS">RORAINÓPOLIS</option>
+                            <option value="PACARAIMA">PACARAIMA</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Nome do Local (Ex: RESGATE, ABT-18)</label>
+                        <input type="text" id="novo-local-nome" placeholder="Digite o nome...">
+                    </div>
+                    <button class="btn-modern-action btn-create" onclick="criarNovoLocal()">CRIAR</button>
+                </div>
+            </div>
+
+            <h3>Locais Cadastrados</h3>
+            <p id="loading-locais">Carregando...</p>
+            <ul id="lista-locais-container" class="locais-list"></ul>
+        </div>
+
+        <div id="view-editor" class="view-section">
             <div class="admin-container">
-                <img src="logo_sigma.png" alt="Logo" class="logo-admin">
-                <h1 class="page-title">Permanência Bravo 🏢</h1>
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+                    <button onclick="voltarParaLocais()" class="btn-edit-alt">← Voltar</button>
+                    <span style="font-size:0.9em; color:#888;" id="editor-id-display">ID: ...</span>
+                </div>
+                <h1 class="page-title" id="editor-title">Editando Lista 🏢</h1>
                 <p id="loading-message-admin">Carregando...</p>
                 
                 <div id="main-admin-content" style="display: none;">
-                    
                     <div class="global-actions">
                         <button class="btn-modern-action btn-sync" onclick="salvarDados()">
                             <i class="fas fa-cloud-upload-alt"></i> Salvar e Sincronizar
                         </button>
-                        
                         <button class="btn-modern-action btn-backup" onclick="fazerBackupLocal()">
                             <i class="fas fa-download"></i> Backup
                         </button>
-                        
                         <input type="file" id="import-json" style="display: none;" onchange="importarBackupLocal(event)">
                         <button class="btn-modern-action btn-import" onclick="document.getElementById('import-json').click()">
                             <i class="fas fa-file-upload"></i> Importar
@@ -191,7 +159,6 @@
     <div class="footer-central"><strong>GOVERNO DE RORAIMA</strong><strong>CORPO DE BOMBEIROS MILITAR DE RORAIMA</strong><em>“Amazônia: patrimônio dos brasileiros”</em><br><span class="footer-autor">Elaborado por: 3º SGT QPCBM JHONATH</span></div>
 
     <div id="modal-gestao-ca" class="modal-overlay"><div class="modal-content"><button class="close-btn" onclick="fecharModalGestao()"><i class="fas fa-times"></i></button><h2>Gerenciar Alteração</h2><p style="font-size:0.9em; color:#666;">Item: <strong id="gestao-item-nome">...</strong></p><input type="hidden" id="gestao-doc-id"><input type="hidden" id="gestao-item-index"><input type="hidden" id="gestao-item-id-lista"><label for="gestao-status">Ação / Status:</label><select id="gestao-status" onchange="toggleGestaoQtd()"><option value="Solucionado">Solucionado (Finalizar)</option><option value="Em solução">Em solução (Marcar Amarelo)</option><option value="Cautelado">Cautelado (Marcar Laranja)</option><option value="Remover">Remover da Conferência (Admin)</option></select><div id="div-gestao-qtd" style="display:none;"><label for="gestao-qtd" style="color:#d90f23;">Quantidade a Remover:</label><input type="number" id="gestao-qtd" min="1" value="1"><small style="color:#888;">Isso irá subtrair do inventário oficial.</small></div><label for="gestao-obs">Descrição do que foi feito:</label><textarea id="gestao-obs" placeholder="Descreva a solução, parecer técnico ou motivo da cautela..."></textarea><div class="modal-buttons"><button class="btn-action btn-edit-alt" onclick="fecharModalGestao()">Cancelar</button><button class="btn-action btn-sync" onclick="salvarGestaoCa()">Confirmar</button></div></div></div>
-
     <div id="modal-edicao" class="modal-overlay"><div class="modal-content"><button class="close-btn" onclick="fecharModal()"><i class="fas fa-times"></i></button><h2>Editar Item</h2><input type="hidden" id="edit-setor-id"><input type="hidden" id="edit-item-original-id"><label for="edit-item-nome">Nome:</label><input type="text" id="edit-item-nome"><label for="edit-item-setor">Mover para Setor:</label><select id="edit-item-setor"></select><label for="edit-item-qtd">Quantidade:</label><input type="number" id="edit-item-qtd" min="1"><label for="edit-item-tipo">Tipo:</label><select id="edit-item-tipo" disabled style="background-color: #eee;"><option value="single">Item Único</option><option value="multi">Item com Tombamento</option></select><div class="modal-buttons"><button class="btn-action btn-remover" onclick="fecharModal()">Cancelar</button><button class="btn-action btn-sync" onclick="salvarEdicaoItem()">Salvar</button></div></div></div>
 
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script><script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script><script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
@@ -200,23 +167,177 @@
         const firebaseConfig = { apiKey: "AIzaSyCB0PH0UgghgsvH0BgPkG4AkKON6xSQ9mc", authDomain: "sigma-cbmrr.firebaseapp.com", projectId: "sigma-cbmrr", storageBucket: "sigma-cbmrr.firebasestorage.app", messagingSenderId: "378026276038", appId: "1:378026276038:web:620dd6ff57501b1a8313c7" };
         if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
         const db = firebase.firestore();
-        const COLECAO_RESULTADOS = 'resultados_conferencias', COLECAO_LISTA_MESTRA = 'lista_mestra', COLECAO_HISTORICO_ACOES = 'historico_acoes_ca', DOCUMENTO_LISTA_MESTRA_ID = 'lista_completa';
-        let dadosConferencia = [], locationsMap = {};
+        
+        // COLEÇÕES
+        const COLECAO_RESULTADOS = 'resultados_conferencias';
+        const COLECAO_LISTAS = 'listas_conferencia'; // NOVA COLEÇÃO DE LISTAS
+        const DOC_CONFIG_ROTAS = db.collection('config_geral').doc('rotas');
+        
+        let dadosConferencia = [];
+        let currentEditingId = null; // Guarda qual ID estamos editando
 
         // NAVEGAÇÃO
-        function switchView(v) { document.querySelectorAll('.view-section').forEach(e=>e.classList.remove('active-view')); document.querySelectorAll('.sidebar a').forEach(e=>e.classList.remove('active')); if(v==='dashboard'){ document.getElementById('view-dashboard').classList.add('active-view'); document.getElementById('link-dashboard').classList.add('active'); loadCaaData(); } else { document.getElementById('view-permanencia').classList.add('active-view'); document.getElementById('link-permanencia').classList.add('active'); carregarDadosGerenciador(); } }
+        function switchView(v) { 
+            document.querySelectorAll('.view-section').forEach(e=>e.classList.remove('active-view')); 
+            document.querySelectorAll('.sidebar a').forEach(e=>e.classList.remove('active')); 
+            
+            if(v==='dashboard'){ 
+                document.getElementById('view-dashboard').classList.add('active-view'); 
+                document.getElementById('link-dashboard').classList.add('active'); 
+                loadCaaData(); 
+            } else if (v === 'locais') {
+                document.getElementById('view-locais').classList.add('active-view'); 
+                document.getElementById('link-locais').classList.add('active'); 
+                carregarListaLocais();
+            } else if (v === 'editor') {
+                document.getElementById('view-editor').classList.add('active-view');
+                // Mantém o menu 'Locais' ativo visualmente pois o editor é sub-tela
+                document.getElementById('link-locais').classList.add('active');
+            }
+        }
 
         // ========================
-        // LÓGICA DASHBOARD (C/A)
+        // GESTÃO DE LOCAIS (CRUD)
+        // ========================
+        async function carregarListaLocais() {
+            const ul = document.getElementById('lista-locais-container');
+            const loading = document.getElementById('loading-locais');
+            ul.innerHTML = '';
+            loading.style.display = 'block';
+
+            try {
+                const doc = await DOC_CONFIG_ROTAS.get();
+                if (doc.exists) {
+                    const rotas = doc.data();
+                    // Itera sobre as chaves (ids) e valores (info)
+                    Object.entries(rotas).forEach(([id, info]) => {
+                        if(info.ativo === false) return; // Pula inativos se houver lógica de exclusão lógica
+                        
+                        const li = document.createElement('li');
+                        li.className = 'local-item';
+                        li.innerHTML = `
+                            <div class="local-info">
+                                <strong>${info.posto} - ${info.nome}</strong>
+                                <span>ID: ${id}</span>
+                            </div>
+                            <div class="local-actions">
+                                <button class="btn-link" onclick="copiarLink('${id}')"><i class="fas fa-link"></i> Link</button>
+                                <button class="btn-edit-list" onclick="abrirEditor('${id}', '${info.nome}')"><i class="fas fa-edit"></i> Editar Estoque</button>
+                            </div>
+                        `;
+                        ul.appendChild(li);
+                    });
+                    if(Object.keys(rotas).length === 0) ul.innerHTML = '<p>Nenhum local cadastrado.</p>';
+                } else {
+                    ul.innerHTML = '<p>Nenhuma configuração encontrada.</p>';
+                }
+            } catch (e) {
+                console.error(e);
+                ul.innerHTML = '<p style="color:red">Erro ao carregar locais.</p>';
+            } finally {
+                loading.style.display = 'none';
+            }
+        }
+
+        async function criarNovoLocal() {
+            const posto = document.getElementById('novo-local-posto').value;
+            const nome = document.getElementById('novo-local-nome').value.trim().toUpperCase();
+            if(!nome) return alert("Digite o nome do local.");
+
+            // Gera ID amigável: bravo_resgate
+            const id = `${posto.toLowerCase()}_${nome.replace(/[^a-zA-Z0-9]/g, '').toLowerCase()}`;
+
+            if(!confirm(`Criar novo local "${nome}" no posto "${posto}"?\nID gerado: ${id}`)) return;
+
+            try {
+                // 1. Verifica se já existe na config
+                const docRotas = await DOC_CONFIG_ROTAS.get();
+                if(docRotas.exists && docRotas.data()[id]) {
+                    return alert("Este local já existe! Use outro nome.");
+                }
+
+                // 2. Cria o documento vazio na coleção de listas
+                await db.collection(COLECAO_LISTAS).doc(id).set({
+                    nome_local: nome,
+                    posto: posto,
+                    list: [], // Lista vazia inicialmente
+                    updatedAt: firebase.firestore.Timestamp.now()
+                });
+
+                // 3. Atualiza o índice de rotas
+                await DOC_CONFIG_ROTAS.set({
+                    [id]: { nome: nome, posto: posto, ativo: true }
+                }, { merge: true });
+
+                alert("Local criado com sucesso!");
+                document.getElementById('novo-local-nome').value = '';
+                carregarListaLocais();
+            } catch(e) {
+                console.error(e);
+                alert("Erro ao criar: " + e.message);
+            }
+        }
+
+        function copiarLink(id) {
+            // Gera link baseado na URL atual, trocando para conferencia_app.html
+            const baseUrl = window.location.href.substring(0, window.location.href.lastIndexOf('/'));
+            const link = `${baseUrl}/conferencia_app.html?id=${id}`;
+            navigator.clipboard.writeText(link).then(() => alert("Link copiado!\n" + link));
+        }
+
+        function abrirEditor(id, nome) {
+            currentEditingId = id;
+            document.getElementById('editor-title').textContent = `Editando: ${nome}`;
+            document.getElementById('editor-id-display').textContent = `ID: ${id}`;
+            switchView('editor');
+            carregarDadosGerenciador(); // Carrega a lista específica
+        }
+
+        function voltarParaLocais() {
+            currentEditingId = null;
+            switchView('locais');
+        }
+
+        // ========================
+        // LÓGICA EDITOR (Adaptação)
+        // ========================
+        async function carregarDadosGerenciador(){ 
+            if(!currentEditingId) return;
+            const m=document.getElementById('loading-message-admin'), c=document.getElementById('main-admin-content'); 
+            m.style.display='block'; c.style.display='none'; 
+            try{
+                // AGORA LÊ DA NOVA COLEÇÃO USANDO O ID SELECIONADO
+                const d=await db.collection(COLECAO_LISTAS).doc(currentEditingId).get(); 
+                if(d.exists) dadosConferencia=d.data().list || []; else dadosConferencia=[]; 
+                m.style.display='none'; c.style.display='block'; renderizarLista();
+            }catch(e){console.error(e);m.textContent="Erro ao carregar lista.";}
+        }
+
+        async function salvarDados(a=true){ 
+            if(!currentEditingId) return;
+            try{ 
+                // SALVA NO ID SELECIONADO
+                await db.collection(COLECAO_LISTAS).doc(currentEditingId).update({
+                    list:dadosConferencia, 
+                    updatedAt:firebase.firestore.FieldValue.serverTimestamp()
+                }); 
+                if(a)alert("Salvo!"); 
+            }catch(e){alert("Erro ao salvar");} 
+        }
+
+        // ========================
+        // LÓGICA DASHBOARD C/A (Mantida)
         // ========================
         async function loadCaaData() {
             const loading=document.getElementById('loading-message-dashboard'), cards=document.getElementById('cards-container'), wrapper=document.getElementById('ca-table-wrapper');
             loading.style.display='block'; cards.innerHTML=''; wrapper.style.display='none';
             try {
-                const snap = await db.collection(COLECAO_RESULTADOS).orderBy('timestamp', 'desc').get();
+                // Busca TODOS os resultados (pode filtrar depois se quiser)
+                const snap = await db.collection(COLECAO_RESULTADOS).orderBy('timestamp', 'desc').limit(50).get();
                 locationsMap = {};
                 snap.forEach(doc => {
                     const d = doc.data();
+                    // Usa o nome do local salvo no resultado
                     const loc = d.local || 'Desconhecido';
                     if (!locationsMap[loc]) {
                         locationsMap[loc] = { docId: doc.id, local: loc, conferente: d.conferente, date: d.timestamp ? new Date(d.timestamp.toDate()).toLocaleString('pt-BR') : 'N/D', items: [] };
@@ -234,7 +355,7 @@
         function renderCards(map) {
             const container = document.getElementById('cards-container');
             const sortedKeys = Object.keys(map).sort();
-            if(sortedKeys.length === 0) { container.innerHTML = '<p style="padding:20px;">Nenhuma conferência registrada.</p>'; return; }
+            if(sortedKeys.length === 0) { container.innerHTML = '<p style="padding:20px;">Nenhuma conferência recente.</p>'; return; }
             sortedKeys.forEach(key => {
                 const data = map[key];
                 const count = data.items.length;
@@ -265,232 +386,78 @@
         }
         function fecharTabela(){ document.getElementById('ca-table-wrapper').style.display='none'; document.querySelectorAll('.sector-card').forEach(c=>c.classList.remove('active-card')); }
 
-        // MODAL GESTÃO
+        // GESTÃO C/A (Atualiza status no banco certo)
         function abrirModalGestao(i){ document.getElementById('gestao-item-nome').textContent=i.nomeCompleto; document.getElementById('gestao-doc-id').value=i.docId; document.getElementById('gestao-item-index').value=i.originalIndex; document.getElementById('gestao-item-id-lista').value=i.id; document.getElementById('gestao-status').value=i.statusAdmin||'Solucionado'; document.getElementById('gestao-obs').value=''; document.getElementById('gestao-qtd').value='1'; toggleGestaoQtd(); document.getElementById('modal-gestao-ca').style.display='flex'; }
         function fecharModalGestao(){ document.getElementById('modal-gestao-ca').style.display='none'; }
         function toggleGestaoQtd(){ document.getElementById('div-gestao-qtd').style.display=(document.getElementById('gestao-status').value==='Remover'?'block':'none'); }
+        
         async function salvarGestaoCa(){
             const docId=document.getElementById('gestao-doc-id').value, idx=parseInt(document.getElementById('gestao-item-index').value), itemId=document.getElementById('gestao-item-id-lista').value, status=document.getElementById('gestao-status').value, obs=document.getElementById('gestao-obs').value.trim(), qtd=parseInt(document.getElementById('gestao-qtd').value);
             if(!obs) return alert("Descreva o que foi feito.");
             try {
-                const ref=db.collection(COLECAO_RESULTADOS).doc(docId); const snap=await ref.get(); const items=snap.data().itensCaa; items[idx].statusAdmin=(status==='Remover'?'Solucionado':status); await ref.update({itensCaa:items});
-                // Atualiza Lista Mestra se necessário
-                const listRef = db.collection(COLECAO_LISTA_MESTRA).doc(DOCUMENTO_LISTA_MESTRA_ID); const listSnap = await listRef.get(); let lista = listSnap.data().list; let updated = false;
-                lista.forEach(s => { s.itens.forEach(i => { 
-                    const updatePendency = (target) => { if (target.pendencia) { if (status === 'Solucionado' || status === 'Remover') { delete target.pendencia; } else { target.pendencia.statusAdmin = status; target.pendencia.adminObs = obs; } updated = true; } };
-                    if(i.id === itemId && i.tipo === 'single') updatePendency(i);
-                    if(i.tipo === 'multi' && i.tombamentos) { i.tombamentos.forEach(t => { if(`${i.id}-${t.tomb}` === itemId) updatePendency(t); }); }
-                }); });
-                if(updated) await listRef.update({list:lista});
-                if(status==='Remover') await removerItemDaListaMestra(itemId, qtd);
-                await db.collection(COLECAO_HISTORICO_ACOES).add({data:firebase.firestore.FieldValue.serverTimestamp(), item:document.getElementById('gestao-item-nome').textContent, acao:status, observacao:obs, qtdRemovida:(status==='Remover'?qtd:0), usuario:'Admin'});
+                // 1. Atualiza histórico do resultado
+                const ref=db.collection(COLECAO_RESULTADOS).doc(docId); const snap=await ref.get(); const resData=snap.data(); const items=resData.itensCaa; items[idx].statusAdmin=(status==='Remover'?'Solucionado':status); await ref.update({itensCaa:items});
+                
+                // 2. Descobre qual lista alterar (baseado no ID da lista salvo no resultado ou inferido)
+                // O Conferência App agora salva 'lista_id' no resultado. Se for antigo, pode dar erro, mas vamos assumir novo.
+                const listaIdAlvo = resData.lista_id; // Importante: App de conferencia deve salvar isso
+                
+                if(listaIdAlvo) {
+                     const listRef = db.collection(COLECAO_LISTAS).doc(listaIdAlvo); 
+                     const listSnap = await listRef.get(); 
+                     if(listSnap.exists) {
+                         let lista = listSnap.data().list; let updated = false;
+                         lista.forEach(s => { s.itens.forEach(i => { 
+                             const updatePendency = (target) => { if (target.pendencia) { if (status === 'Solucionado' || status === 'Remover') { delete target.pendencia; } else { target.pendencia.statusAdmin = status; target.pendencia.adminObs = obs; } updated = true; } };
+                             if(i.id === itemId && i.tipo === 'single') updatePendency(i);
+                             if(i.tipo === 'multi' && i.tombamentos) { i.tombamentos.forEach(t => { if(`${i.id}-${t.tomb}` === itemId) updatePendency(t); }); }
+                         }); });
+                         if(updated) await listRef.update({list:lista});
+                     }
+                } else {
+                    console.warn("ID da lista não encontrado no registro de conferência. Status admin não refletido no inventário.");
+                }
+                
                 alert("Atualizado!"); fecharModalGestao(); loadCaaData();
             } catch(e){ console.error(e); alert("Erro ao salvar"); }
         }
-        async function removerItemDaListaMestra(itemId, qtd){ /* Lógica de remoção simplificada */ }
 
-        // ========================
-        // LÓGICA PERMANÊNCIA (ADMIN)
-        // ========================
-        async function carregarDadosGerenciador(){ 
-            const m=document.getElementById('loading-message-admin'), c=document.getElementById('main-admin-content'); 
-            m.style.display='block'; c.style.display='none'; 
-            try{
-                const d=await db.collection(COLECAO_LISTA_MESTRA).doc(DOCUMENTO_LISTA_MESTRA_ID).get(); 
-                if(d.exists)dadosConferencia=d.data().list; else dadosConferencia=[]; 
-                m.style.display='none'; c.style.display='block'; renderizarLista();
-            }catch(e){console.error(e);m.textContent="Erro ao carregar.";}
-        }
-
-        async function salvarDados(a=true){ 
-            try{ 
-                await db.collection(COLECAO_LISTA_MESTRA).doc(DOCUMENTO_LISTA_MESTRA_ID).set({list:dadosConferencia, updatedAt:firebase.firestore.FieldValue.serverTimestamp()}); 
-                if(a)alert("Salvo!"); 
-            }catch(e){alert("Erro ao salvar");} 
-        }
-
+        // REUTILIZAÇÃO FUNÇÕES (ADD/REMOVE)
         function gerarNovoId(){ return Date.now().toString().slice(-6)+Math.floor(Math.random()*100).toString().padStart(2,'0'); }
-
-        // === RENDERIZAÇÃO PRINCIPAL DA LISTA (CORRIGIDA PARA MOSTRAR TOMBAMENTOS) ===
         function renderizarLista() {
             const container = document.getElementById('lista-setores-container');
             container.innerHTML = '';
-
             dadosConferencia.forEach(setor => {
-                const setorLi = document.createElement('li');
-                setorLi.className = 'setor-item';
-                setorLi.setAttribute('data-id', setor.id);
-
-                // Formulário de adição do setor
+                const setorLi = document.createElement('li'); setorLi.className = 'setor-item'; setorLi.setAttribute('data-id', setor.id);
                 const addItemFormHtml = `<div class="add-item-form-setor"><input type="text" id="input-item-nome-${setor.id}" placeholder="Item"><input type="number" id="input-item-qtd-${setor.id}" value="1" style="width:50px"><select id="select-item-tipo-${setor.id}"><option value="single">Único</option><option value="multi">Tombamento</option></select><button class="btn-add" onclick="adicionarItemPorSetor('${setor.id}')">+</button></div>`;
-
                 let itensHtml = '';
                 setor.itens.forEach(item => {
                     let tombamentosHtml = '';
-                    // Lógica para gerar HTML dos Tombamentos
                     if (item.tipo === 'multi' && item.tombamentos) {
-                        const tombamentosList = item.tombamentos.map(tomb => `
-                            <li>
-                                <div style="display:flex; align-items:center; width:100%;">
-                                    <span style="margin-right:10px; font-size:0.85em; font-weight:bold; color:#555;">TB:</span>
-                                    <input type="text" value="${tomb.tomb}" onblur="editarTombamento('${item.id}', '${tomb.tomb}', this)" style="padding:4px; font-size:0.85em; border:1px solid #ddd; border-radius:4px;">
-                                </div>
-                                <button class="btn-action btn-remover" onclick="removerTombamento('${item.id}', '${tomb.tomb}')" style="padding:2px 8px; margin-left:10px;"><i class="fas fa-trash" style="font-size:0.8em;"></i></button>
-                            </li>
-                        `).join('');
-
-                        tombamentosHtml = `
-                            <div class="tombamento-container-wrapper">
-                                <div class="tombamento-section">
-                                    <h4>Tombamentos (${item.tombamentos.length})</h4>
-                                    <ul class="tombamento-list">${tombamentosList}</ul>
-                                    <div class="add-tombamento-form">
-                                        <input type="text" id="tomb-input-${item.id}" placeholder="Novo Tombamento">
-                                        <button class="btn-add" onclick="adicionarTombamento('${item.id}', document.getElementById('tomb-input-${item.id}'))"><i class="fas fa-plus"></i></button>
-                                    </div>
-                                </div>
-                            </div>`;
+                        const tombamentosList = item.tombamentos.map(tomb => `<li><div style="display:flex; align-items:center; width:100%;"><span style="margin-right:10px; font-size:0.85em; font-weight:bold; color:#555;">TB:</span><input type="text" value="${tomb.tomb}" onblur="editarTombamento('${item.id}', '${tomb.tomb}', this)" style="padding:4px; font-size:0.85em; border:1px solid #ddd; border-radius:4px;"></div><button class="btn-action btn-remover" onclick="removerTombamento('${item.id}', '${tomb.tomb}')" style="padding:2px 8px; margin-left:10px;"><i class="fas fa-trash" style="font-size:0.8em;"></i></button></li>`).join('');
+                        tombamentosHtml = `<div class="tombamento-container-wrapper"><div class="tombamento-section"><h4>Tombamentos (${item.tombamentos.length})</h4><ul class="tombamento-list">${tombamentosList}</ul><div class="add-tombamento-form"><input type="text" id="tomb-input-${item.id}" placeholder="Novo Tombamento"><button class="btn-add" onclick="adicionarTombamento('${item.id}', document.getElementById('tomb-input-${item.id}'))"><i class="fas fa-plus"></i></button></div></div></div>`;
                     }
-
-                    itensHtml += `
-                        <li class="item-conferencia-admin">
-                            <div style="width:100%">
-                                <div style="display:flex;justify-content:space-between;">
-                                    <div><strong>${item.nome}</strong><small> Qtd: ${item.quantidadeEsperada}</small></div>
-                                    <div class="item-actions-admin">
-                                        <button class="btn-action btn-edit-alt" onclick="abrirModalEdicao('${setor.id}','${item.id}')"><i class="fas fa-edit"></i></button>
-                                        <button class="btn-action btn-remover" onclick="removerItem('${setor.id}','${item.id}')"><i class="fas fa-trash"></i></button>
-                                    </div>
-                                </div>
-                                ${item.tipo === 'multi' ? tombamentosHtml : ''}
-                            </div>
-                        </li>`;
+                    itensHtml += `<li class="item-conferencia-admin"><div style="width:100%"><div style="display:flex;justify-content:space-between;"><div><strong>${item.nome}</strong><small> Qtd: ${item.quantidadeEsperada}</small></div><div class="item-actions-admin"><button class="btn-action btn-edit-alt" onclick="abrirModalEdicao('${setor.id}','${item.id}')"><i class="fas fa-edit"></i></button><button class="btn-action btn-remover" onclick="removerItem('${setor.id}','${item.id}')"><i class="fas fa-trash"></i></button></div></div>${item.tipo === 'multi' ? tombamentosHtml : ''}</div></li>`;
                 });
-
-                setorLi.innerHTML = `
-                    <div class="setor-header-admin" onclick="this.nextElementSibling.classList.toggle('collapsed')">
-                        <span>${setor.nome}</span>
-                        <button class="btn-action btn-remover" onclick="event.stopPropagation();removerSetor('${setor.id}')">X</button>
-                    </div>
-                    <div class="setor-content-admin">
-                        ${addItemFormHtml}
-                        <ul class="lista-setores item-list-admin" data-setor-id="${setor.id}">${itensHtml}</ul>
-                    </div>`;
+                setorLi.innerHTML = `<div class="setor-header-admin" onclick="this.nextElementSibling.classList.toggle('collapsed')"><span>${setor.nome}</span><button class="btn-action btn-remover" onclick="event.stopPropagation();removerSetor('${setor.id}')">X</button></div><div class="setor-content-admin">${addItemFormHtml}<ul class="lista-setores item-list-admin" data-setor-id="${setor.id}">${itensHtml}</ul></div>`;
                 container.appendChild(setorLi);
             });
-
-            // Ativar Drag and Drop
             new Sortable(container, { animation: 150, handle: '.setor-header-admin', onEnd: () => salvarDados(false) });
-            document.querySelectorAll('.item-list-admin').forEach(el => {
-                new Sortable(el, { group: 'items', animation: 150, onEnd: () => { updateOrdens(); salvarDados(false); } });
-            });
+            document.querySelectorAll('.item-list-admin').forEach(el => { new Sortable(el, { group: 'items', animation: 150, onEnd: () => { updateOrdens(); salvarDados(false); } }); });
         }
 
-        // FUNÇÕES AUXILIARES (SETOR/ITEM)
+        // RESTANTE DAS FUNÇÕES CRUD (IDÊNTICAS AO ORIGINAL, APENAS PRESERVANDO)
         function adicionarSetor(n){ n=n.trim().toUpperCase(); if(!n)return; dadosConferencia.push({id:gerarNovoId(), nome:n, itens:[]}); document.getElementById('input-setor-nome').value=''; salvarDados(false); renderizarLista(); }
         function removerSetor(id){ if(confirm("Remover?")) { dadosConferencia=dadosConferencia.filter(x=>x.id!==id); salvarDados(false); renderizarLista(); } }
-        
-        function adicionarItemPorSetor(sid){ 
-            const n=document.getElementById('input-item-nome-'+sid).value.trim().toUpperCase(); 
-            const q=parseInt(document.getElementById('input-item-qtd-'+sid).value); 
-            const t=document.getElementById('select-item-tipo-'+sid).value; 
-            if(!n||q<1)return; 
-            const s=dadosConferencia.find(x=>x.id===sid); 
-            const novo={id:sid+'-'+gerarNovoId(), nome:n, quantidadeEsperada:q, tipo:t, tombamentos:[]}; 
-            if(t==='multi')for(let i=0;i<q;i++)novo.tombamentos.push({tomb:'NOVO-'+(i+1),status:'pending',obs:''}); 
-            s.itens.push(novo); 
-            salvarDados(false); renderizarLista(); 
-            document.getElementById('input-item-nome-'+sid).value=''; 
-        }
-        
-        function removerItem(sid,iid){ 
-            if(confirm("Remover?")){ 
-                const s=dadosConferencia.find(x=>x.id===sid); 
-                s.itens=s.itens.filter(i=>i.id!==iid); 
-                salvarDados(false); renderizarLista(); 
-            } 
-        }
-
-        // === FUNÇÕES ESPECÍFICAS DE TOMBAMENTO ===
-        function encontrarItemPorId(id) {
-             for (const setor of dadosConferencia) {
-                 const item = setor.itens.find(i => i.id === id);
-                 if (item) return item;
-             }
-             return null;
-        }
-
-        function adicionarTombamento(itemId, inputElement) {
-            const tombamento = inputElement.value.trim().toUpperCase();
-            if (!tombamento) return;
-            const item = encontrarItemPorId(itemId);
-            if (item) {
-                if (item.tombamentos.some(t => t.tomb === tombamento)) return alert("Duplicado!");
-                item.tombamentos.push({ tomb: tombamento, status: "pending", obs: "" });
-                item.quantidadeEsperada = item.tombamentos.length;
-                salvarDados(false); renderizarLista();
-            }
-        }
-
-        function removerTombamento(itemId, tombamento) {
-            if (!confirm("Remover tombamento?")) return;
-            const item = encontrarItemPorId(itemId);
-            if (item) {
-                item.tombamentos = item.tombamentos.filter(t => t.tomb !== tombamento);
-                item.quantidadeEsperada = item.tombamentos.length;
-                salvarDados(false); renderizarLista();
-            }
-        }
-
-        function editarTombamento(itemId, tombamentoAtual, inputElement) {
-            const novoTombamento = inputElement.value.trim().toUpperCase();
-            if (!novoTombamento || novoTombamento === tombamentoAtual) return;
-            const item = encontrarItemPorId(itemId);
-            if (item) {
-                const tomb = item.tombamentos.find(t => t.tomb === tombamentoAtual);
-                if (tomb) {
-                     tomb.tomb = novoTombamento;
-                     salvarDados(false);
-                }
-            }
-        }
-
-        function updateOrdens() {
-            const novosDados = [];
-            document.querySelectorAll('.setor-item').forEach(sNode => {
-                const sId = sNode.getAttribute('data-id');
-                const sOriginal = dadosConferencia.find(x => x.id === sId);
-                const novosItens = [];
-                sNode.querySelectorAll('.item-conferencia-admin').forEach(iNode => {
-                    const iId = iNode.querySelector('.btn-edit-alt').getAttribute('onclick').split("'")[3]; 
-                    const itemObj = encontrarItemPorId(iId); 
-                    if(itemObj) novosItens.push(itemObj);
-                });
-                sOriginal.itens = novosItens;
-                novosDados.push(sOriginal);
-            });
-            dadosConferencia = novosDados;
-        }
-
-        // EDIÇÃO ITEM (MODAL)
-        function abrirModalEdicao(sid, iid){ 
-            const s=dadosConferencia.find(x=>x.id===sid); const i=s.itens.find(x=>x.id===iid); 
-            document.getElementById('edit-setor-id').value=sid; document.getElementById('edit-item-original-id').value=iid; 
-            document.getElementById('edit-item-nome').value=i.nome; document.getElementById('edit-item-qtd').value=i.quantidadeEsperada; 
-            document.getElementById('edit-item-qtd').disabled=(i.tipo==='multi'); document.getElementById('edit-item-tipo').value=i.tipo; 
-            const sl=document.getElementById('edit-item-setor'); sl.innerHTML=''; 
-            dadosConferencia.forEach(d=>{const o=document.createElement('option'); o.value=d.id; o.text=d.nome; if(d.id===sid)o.selected=true; sl.appendChild(o);}); 
-            document.getElementById('modal-edicao').style.display='flex'; 
-        }
-        function salvarEdicaoItem(){ 
-            const osid=document.getElementById('edit-setor-id').value; const iid=document.getElementById('edit-item-original-id').value; 
-            const n=document.getElementById('edit-item-nome').value.trim().toUpperCase(); const nsid=document.getElementById('edit-item-setor').value; 
-            const q=parseInt(document.getElementById('edit-item-qtd').value); 
-            const os=dadosConferencia.find(x=>x.id===osid); const ns=dadosConferencia.find(x=>x.id===nsid); const i=os.itens.find(x=>x.id===iid); 
-            i.nome=n; if(i.tipo==='single')i.quantidadeEsperada=q; 
-            if(osid!==nsid){ os.itens=os.itens.filter(x=>x.id!==iid); i.id=nsid+'-'+gerarNovoId(); ns.itens.push(i); } 
-            salvarDados(false); renderizarLista(); fecharModal(); 
-        }
+        function adicionarItemPorSetor(sid){ const n=document.getElementById('input-item-nome-'+sid).value.trim().toUpperCase(); const q=parseInt(document.getElementById('input-item-qtd-'+sid).value); const t=document.getElementById('select-item-tipo-'+sid).value; if(!n||q<1)return; const s=dadosConferencia.find(x=>x.id===sid); const novo={id:sid+'-'+gerarNovoId(), nome:n, quantidadeEsperada:q, tipo:t, tombamentos:[]}; if(t==='multi')for(let i=0;i<q;i++)novo.tombamentos.push({tomb:'NOVO-'+(i+1),status:'pending',obs:''}); s.itens.push(novo); salvarDados(false); renderizarLista(); document.getElementById('input-item-nome-'+sid).value=''; }
+        function removerItem(sid,iid){ if(confirm("Remover?")){ const s=dadosConferencia.find(x=>x.id===sid); s.itens=s.itens.filter(i=>i.id!==iid); salvarDados(false); renderizarLista(); } }
+        function encontrarItemPorId(id) { for (const setor of dadosConferencia) { const item = setor.itens.find(i => i.id === id); if (item) return item; } return null; }
+        function adicionarTombamento(itemId, inputElement) { const tombamento = inputElement.value.trim().toUpperCase(); if (!tombamento) return; const item = encontrarItemPorId(itemId); if (item) { if (item.tombamentos.some(t => t.tomb === tombamento)) return alert("Duplicado!"); item.tombamentos.push({ tomb: tombamento, status: "pending", obs: "" }); item.quantidadeEsperada = item.tombamentos.length; salvarDados(false); renderizarLista(); } }
+        function removerTombamento(itemId, tombamento) { if (!confirm("Remover tombamento?")) return; const item = encontrarItemPorId(itemId); if (item) { item.tombamentos = item.tombamentos.filter(t => t.tomb !== tombamento); item.quantidadeEsperada = item.tombamentos.length; salvarDados(false); renderizarLista(); } }
+        function editarTombamento(itemId, tombamentoAtual, inputElement) { const novoTombamento = inputElement.value.trim().toUpperCase(); if (!novoTombamento || novoTombamento === tombamentoAtual) return; const item = encontrarItemPorId(itemId); if (item) { const tomb = item.tombamentos.find(t => t.tomb === tombamentoAtual); if (tomb) { tomb.tomb = novoTombamento; salvarDados(false); } } }
+        function updateOrdens() { const novosDados = []; document.querySelectorAll('.setor-item').forEach(sNode => { const sId = sNode.getAttribute('data-id'); const sOriginal = dadosConferencia.find(x => x.id === sId); const novosItens = []; sNode.querySelectorAll('.item-conferencia-admin').forEach(iNode => { const iId = iNode.querySelector('.btn-edit-alt').getAttribute('onclick').split("'")[3]; const itemObj = encontrarItemPorId(iId); if(itemObj) novosItens.push(itemObj); }); sOriginal.itens = novosItens; novosDados.push(sOriginal); }); dadosConferencia = novosDados; }
+        function abrirModalEdicao(sid, iid){ const s=dadosConferencia.find(x=>x.id===sid); const i=s.itens.find(x=>x.id===iid); document.getElementById('edit-setor-id').value=sid; document.getElementById('edit-item-original-id').value=iid; document.getElementById('edit-item-nome').value=i.nome; document.getElementById('edit-item-qtd').value=i.quantidadeEsperada; document.getElementById('edit-item-qtd').disabled=(i.tipo==='multi'); document.getElementById('edit-item-tipo').value=i.tipo; const sl=document.getElementById('edit-item-setor'); sl.innerHTML=''; dadosConferencia.forEach(d=>{const o=document.createElement('option'); o.value=d.id; o.text=d.nome; if(d.id===sid)o.selected=true; sl.appendChild(o);}); document.getElementById('modal-edicao').style.display='flex'; }
+        function salvarEdicaoItem(){ const osid=document.getElementById('edit-setor-id').value; const iid=document.getElementById('edit-item-original-id').value; const n=document.getElementById('edit-item-nome').value.trim().toUpperCase(); const nsid=document.getElementById('edit-item-setor').value; const q=parseInt(document.getElementById('edit-item-qtd').value); const os=dadosConferencia.find(x=>x.id===osid); const ns=dadosConferencia.find(x=>x.id===nsid); const i=os.itens.find(x=>x.id===iid); i.nome=n; if(i.tipo==='single')i.quantidadeEsperada=q; if(osid!==nsid){ os.itens=os.itens.filter(x=>x.id!==iid); i.id=nsid+'-'+gerarNovoId(); ns.itens.push(i); } salvarDados(false); renderizarLista(); fecharModal(); }
         function fecharModal(){document.getElementById('modal-edicao').style.display='none';}
         function fazerBackupLocal(){ const b=new Blob([JSON.stringify(dadosConferencia,null,2)],{type:"application/json"}); const u=URL.createObjectURL(b); const a=document.createElement('a'); a.href=u; a.download='backup.json'; a.click(); }
         function importarBackupLocal(e){ const f=e.target.files[0]; if(!f)return; const r=new FileReader(); r.onload=function(ev){if(confirm("Substituir?")){try{dadosConferencia=JSON.parse(ev.target.result);salvarDados();renderizarLista();}catch(err){alert("Erro JSON");}}}; r.readAsText(f); }
