@@ -6,7 +6,7 @@
     <link rel="icon" type="image/png" href="logo_sigma.png" onerror="this.onerror=null; this.src='https://placehold.co/16x16/800020/ffffff?text=S'">
     <title>SIGMA - Conferência</title>
     <style>
-        /* ESTILOS MANTIDOS (Idênticos ao original) */
+        /* ESTILOS PADRÃO */
         body { font-family: Arial, sans-serif; background-color: #f4f4f9; color: #333; min-height: 100vh; margin: 0; display: flex; flex-direction: column; align-items: center; padding-bottom: 90px; padding-top: 60px; box-sizing: border-box; }
         .main-header { position: fixed; top: 0; left: 0; width: 100%; height: 50px; background-color: #800020; box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2); z-index: 100; display: flex; align-items: center; padding: 0 15px; box-sizing: border-box; }
         .header-icon { height: 40px; width: auto; vertical-align: middle; }
@@ -59,329 +59,202 @@
     </style>
 </head>
 <body>
-
-<header class="main-header">
-    <img src="cbmrr.png" alt="Ícone CBM-RR" class="header-icon" onerror="this.onerror=null; this.src='https://placehold.co/40x40/ffffff/800020/fff?text=CBM'">
-    <div class="header-title-desktop"><span class="text-white">CORPO DE BOMBEIROS MILITAR </span><span class="text-red">RORAIMA</span></div>
-    <div class="header-title-mobile"><span class="text-white">CBM</span><span class="text-red">RR</span></div>
-</header>
-<div class="container">
-    <img id="logo-sigma" src="logo_sigma.png" alt="Logo do Sistema SIGMA" class="logo" onerror="this.onerror=null; this.src='https://placehold.co/80x80/d90f23/ffffff?text=SIGMA'">
-    <h1 id="titulo-conferencia">Conferência de Materiais</h1>
-    <p class="subtitulo" id="local-posto-info">Carregando Local...</p>
-    <p id="militar-info" class="user-info-display">Carregando dados do conferente...</p>
-    <div id="loading-message" class="loading-message">Buscando lista...</div>
-    <div id="main-content" style="display: none;">
-        <button id="btn-finalizar" onclick="finalizarConferencia()" disabled>FINALIZAR CONFERÊNCIA (0/X ITENS)</button>
+    <header class="main-header"><img src="cbmrr.png" alt="CBM-RR" class="header-icon" onerror="this.onerror=null; this.src='https://placehold.co/40x40/ffffff/800020/fff?text=CBM'"><div class="header-title-desktop"><span class="text-white">CORPO DE BOMBEIROS MILITAR </span><span class="text-red">RORAIMA</span></div><div class="header-title-mobile"><span class="text-white">CBM</span><span class="text-red">RR</span></div></header>
+    <div class="container">
+        <img id="logo-sigma" src="logo_sigma.png" alt="Logo do Sistema SIGMA" class="logo" onerror="this.onerror=null; this.src='https://placehold.co/80x80/d90f23/ffffff?text=SIGMA'">
+        <h1 id="titulo-conferencia">Conferência de Materiais</h1>
+        <p class="subtitulo" id="local-posto-info">Carregando Local...</p>
+        <p id="militar-info" class="user-info-display">Carregando dados do conferente...</p>
+        <div id="loading-message" class="loading-message">Buscando lista...</div>
+        <div id="main-content" style="display: none;"><button id="btn-finalizar" onclick="finalizarConferencia()" disabled>FINALIZAR CONFERÊNCIA (0/X ITENS)</button></div>
     </div>
-</div>
-<div class="footer-central">
-    <strong>GOVERNO DE RORAIMA</strong>
-    <strong>CORPO DE BOMBEIROS MILITAR DE RORAIMA</strong>
-    <em>“Amazônia: patrimônio dos brasileiros”</em><br>
-    <span class="footer-autor">Elaborado por: 3º SGT QPCBM JHONATH</span>
-</div>
+    <div class="footer-central"><strong>GOVERNO DE RORAIMA</strong><strong>CORPO DE BOMBEIROS MILITAR DE RORAIMA</strong><em>“Amazônia: patrimônio dos brasileiros”</em><br><span class="footer-autor">Elaborado por: 3º SGT QPCBM JHONATH</span></div>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
-<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
 
-<script>
-    const firebaseConfig = { apiKey: "AIzaSyCB0PH0UgghgsvH0BgPkG4AkKON6xSQ9mc", authDomain: "sigma-cbmrr.firebaseapp.com", projectId: "sigma-cbmrr", storageBucket: "sigma-cbmrr.firebasestorage.app", messagingSenderId: "378026276038", appId: "1:378026276038:web:620dd6ff57501b1a8313c7" };
-    
-    // === NOVA LÓGICA DINÂMICA ===
-    // 1. Pega o ID da URL (ex: conferencia_app.html?id=bravo_permanencia)
-    const urlParams = new URLSearchParams(window.location.search);
-    const LISTA_ID = urlParams.get('id'); 
-
-    let db; 
-    // A coleção agora é 'listas_conferencia' e o ID vem do link
-    const COLECAO_LISTAS = 'listas_conferencia'; 
-    let dadosConferencia = []; 
-    let infoLocal = { nome: '', posto: '' };
-    window.itemStatus = {};
-
-    async function carregarDadosRemotos() {
-        if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
-        db = firebase.firestore();
-
-        if (!LISTA_ID) {
-            document.getElementById('loading-message').innerHTML = "<span style='color:red'>Erro: Nenhum local especificado no link.<br>Volte ao menu principal.</span>";
-            return;
-        }
-
-        try {
-            // 2. Busca o documento específico pelo ID da URL
-            const doc = await db.collection(COLECAO_LISTAS).doc(LISTA_ID).get();
-            
-            if (!doc.exists) throw new Error("Lista não encontrada no sistema.");
-            const data = doc.data();
-            dadosConferencia = data.list || [];
-            infoLocal = { nome: data.nome_local || "DESCONHECIDO", posto: data.posto || "Geral" };
-
-            // Atualiza Títulos na Tela
-            document.getElementById('local-posto-info').innerHTML = `<span style="color:blue;font-weight:bold">${infoLocal.posto} - ${infoLocal.nome}</span>`;
-            document.title = `Conferência - ${infoLocal.posto} ${infoLocal.nome}`;
-
-            renderizarConferencia();
-            document.getElementById('loading-message').style.display='none'; 
-            document.getElementById('main-content').style.display='block';
-        } catch (e) { 
-            document.getElementById('loading-message').innerHTML = "Erro ao carregar: " + e.message; 
-        }
-    }
-
-    // ============================================================
-    // DAQUI PARA BAIXO: LÓGICA DE RENDERIZAÇÃO MANTIDA (REUTILIZADA)
-    // ============================================================
-
-    function renderizarConferencia() {
-        const mainContent = document.getElementById('main-content');
-        let htmlSetores = '';
-        const setorIds = [];
-        dadosConferencia.forEach(s => setorIds.push(s.id));
-        window.setorIds = setorIds;
-
-        dadosConferencia.forEach(setor => {
-            let htmlItens = ''; let totalItensNoSetor = 0;
-            const isFirstSetor = setor.id === setorIds[0];
-
-            setor.itens.forEach(item => {
-                let htmlTombamento = '';
-                if (item.tipo === 'multi' && item.tombamentos) {
-                    item.tombamentos.forEach(tomb => {
-                        let pendenciaHtml = '';
-                        if (tomb.pendencia) {
-                            if (tomb.pendencia.statusAdmin) {
-                                pendenciaHtml = `<div class="pendencia-alert-box admin-reply"><span class="alert-msg">⚠️ <strong>${tomb.pendencia.statusAdmin}:</strong> ${tomb.pendencia.adminObs} (Admin)</span><br><span style="font-size:0.8em; color:#555;">Original (${tomb.pendencia.quem}): ${tomb.pendencia.obs}</span><div style="text-align:right;"><button class="btn-manter" onclick="confirmarPendencia('${item.id}-${tomb.tomb}', '${tomb.pendencia.obs.replace(/'/g, "\\'")}')">Ciente / Manter</button></div></div>`;
-                            } else {
-                                pendenciaHtml = `<div class="pendencia-alert-box"><span class="alert-msg">⚠️ <strong>Alteração Anterior:</strong> ${tomb.pendencia.obs} (${tomb.pendencia.quem})</span><div style="text-align:right;"><button class="btn-manter" onclick="confirmarPendencia('${item.id}-${tomb.tomb}', '${tomb.pendencia.obs.replace(/'/g, "\\'")}')">Manter Alteração</button></div></div>`;
-                            }
-                        }
-                        htmlTombamento += `
-                            <div class="tombamento-container" data-tomb="${tomb.tomb}" data-item-id="${item.id}">
-                                <div class="tombamento-controls"><span>Tomb.: ${tomb.tomb}</span><div class="tombamento-options"><button class="action-button sa-ok" onclick="setTombamentoStatus(this, 'ok')">S/A</button><button class="action-button ca-alert" onclick="setTombamentoStatus(this, 'alert')">C/A</button></div></div>${pendenciaHtml}<p class="tombamento-descricao-salva"></p><div class="tombamento-obs-container"><label>Alteração encontrada:</label><textarea placeholder="Detalhe a alteração."></textarea><button type="button" class="btn-salvar-alteracao" onclick="salvarTombamento(this)">SALVAR OBSERVAÇÃO</button></div>
-                            </div>`;
-                        totalItensNoSetor++;
-                        window.itemStatus[`${item.id}-${tomb.tomb}`] = { status: 'pending', obs: '' };
-                    });
-                    htmlItens += `<div class="item-conferencia item-has-tombamentos" data-type="multi" data-total-tombamentos="${item.tombamentos.length}" data-status="pending" data-id="${item.id}"><div class="item-header"><span class="status-icon"></span><span class="item-label">${item.nome}</span><span class="item-quantidade">QTD: ${item.quantidadeEsperada}</span></div>${htmlTombamento}</div>`;
-                } else {
-                    let pendenciaHtml = ''; let classExtra = '';
-                    if (item.pendencia) {
-                         if (item.pendencia.statusAdmin) {
-                            classExtra = 'status-admin-response';
-                            pendenciaHtml = `<div class="pendencia-alert-box admin-reply"><span class="alert-msg">⚠️ <strong>${item.pendencia.statusAdmin}:</strong> ${item.pendencia.adminObs} (Admin)</span><br><span style="font-size:0.8em; color:#555;">Original (${item.pendencia.quem}): ${item.pendencia.obs}</span><div style="text-align:right;"><button class="btn-manter" onclick="confirmarPendencia('${item.id}', '${item.pendencia.obs.replace(/'/g, "\\'")}')">Ciente / Manter</button></div></div>`;
-                         } else {
-                            classExtra = 'status-existing-alert';
-                            pendenciaHtml = `<div class="pendencia-alert-box"><span class="alert-msg">⚠️ <strong>Alteração Anterior:</strong> ${item.pendencia.obs} (${item.pendencia.quem})</span><div style="text-align:right;"><button class="btn-manter" onclick="confirmarPendencia('${item.id}', '${item.pendencia.obs.replace(/'/g, "\\'")}')">Manter Alteração</button></div></div>`;
-                         }
-                    }
-                    htmlItens += `<div class="item-conferencia ${classExtra}" data-type="single" data-status="pending" data-id="${item.id}"><div class="item-header"><span class="status-icon"></span><span class="item-label">${item.nome}</span><span class="item-quantidade">QTD: ${item.quantidadeEsperada}</span></div><div class="item-options"><button class="action-button sa-ok" onclick="setItemStatus(this, 'ok')">S/A</button><button class="action-button ca-alert" onclick="setItemStatus(this, 'alert')">C/A</button></div>${pendenciaHtml}<p class="descricao-salva"></p><div class="alteracao-container"><label>Alteração encontrada:</label><textarea data-id="${item.id}" placeholder="Descreva a alteração."></textarea><button type="button" class="btn-salvar-alteracao" onclick="salvarItem(this)">SALVAR</button></div></div>`;
-                    totalItensNoSetor++;
-                    window.itemStatus[item.id] = { status: 'pending', obs: '' };
-                }
-            });
-
-            htmlSetores += `<div class="setor" data-total-items="${totalItensNoSetor}" data-id="${setor.id}"><div class="setor-header" onclick="toggleSetor(this)"><div class="setor-info"><span>${setor.nome}</span><div class="setor-status" data-completed="0">0/${totalItensNoSetor}</div></div><span class="arrow">${isFirstSetor?'▼':'►'}</span></div><div class="setor-content ${isFirstSetor?'expanded':''}">${htmlItens}</div></div>`;
-        });
+    <script>
+        const firebaseConfig = { apiKey: "AIzaSyCB0PH0UgghgsvH0BgPkG4AkKON6xSQ9mc", authDomain: "sigma-cbmrr.firebaseapp.com", projectId: "sigma-cbmrr", storageBucket: "sigma-cbmrr.firebasestorage.app", messagingSenderId: "378026276038", appId: "1:378026276038:web:620dd6ff57501b1a8313c7" };
         
-        mainContent.querySelector('#btn-finalizar').insertAdjacentHTML('beforebegin', htmlSetores);
-        updateHeaderInfo(); updateOverallStatus();
-    }
+        const urlParams = new URLSearchParams(window.location.search);
+        const LISTA_ID = urlParams.get('id'); 
+        let db; const COLECAO_LISTAS = 'listas_conferencia'; 
+        let dadosConferencia = []; let infoLocal = { nome: '', posto: '' }; window.itemStatus = {};
 
-    const userInfo = { postoGraduacao: getUrlParameter('posto_grad') || "ND", quadro: getUrlParameter('quadro_mil') || "ND", nomeGuerra: getUrlParameter('nome_guerra') || "ND" };
-    function getUrlParameter(n) { return (new URLSearchParams(window.location.search)).get(n) || ''; }
-    function updateHeaderInfo() { document.getElementById('militar-info').innerHTML = `<strong>Conferente:</strong> ${userInfo.postoGraduacao} ${userInfo.quadro} ${userInfo.nomeGuerra}<br><strong>Data/Hora:</strong> ${new Date().toLocaleString()}`; }
-    function toggleSetor(header) { const content = header.nextElementSibling; const arrow = header.querySelector('.arrow'); if (content.classList.contains('expanded')) { content.classList.remove('expanded'); arrow.textContent = '►'; } else { document.querySelectorAll('.setor-content.expanded').forEach(c=>{c.classList.remove('expanded'); c.previousElementSibling.querySelector('.arrow').textContent='►'}); content.classList.add('expanded'); arrow.textContent = '▼'; } }
-    
-    function checkSetorCompletion(currentSetor, currentItemId) { const total = parseInt(currentSetor.dataset.totalItems); const comp = parseInt(currentSetor.querySelector('.setor-status').dataset.completed); if (comp === total) autoAdvanceSetor(currentSetor.dataset.id); else focusNextItem(currentItemId); }
-    function isElementInViewport(el) { const rect = el.getBoundingClientRect(); return (rect.top >= 60 && rect.left >= 0 && rect.bottom <= (window.innerHeight || document.documentElement.clientHeight) && rect.right <= (window.innerWidth || document.documentElement.clientWidth)); }
-    function focusNextItem(currentItemId) {
-        const allItems = Array.from(document.querySelectorAll('.item-conferencia'));
-        let baseId = currentItemId.split('-')[0];
-        const idx = allItems.findIndex(i => i.dataset.id === baseId);
-        for (let i = idx; i < allItems.length; i++) {
-            const item = allItems[i]; if (!item) continue;
-            const id = item.dataset.id;
-            if (item.dataset.type === 'single') {
-                const st = window.itemStatus[id];
-                if (!st || st.status === 'pending' || st.status === 'PENDING_CA') {
-                    if (!isElementInViewport(item)) item.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                    if (st && st.status === 'PENDING_CA') item.querySelector('textarea').focus();
-                    return;
-                }
-            }
-            if (item.dataset.type === 'multi') {
-                const pendingTomb = Array.from(item.querySelectorAll('.tombamento-container')).find(t => {
-                    const uid = `${id}-${t.dataset.tomb}`;
-                    const s = window.itemStatus[uid]?.status;
-                    return s === 'pending' || s === 'PENDING_CA';
-                });
-                if (pendingTomb) {
-                    if (!isElementInViewport(pendingTomb)) pendingTomb.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                    const uid = `${id}-${pendingTomb.dataset.tomb}`;
-                    if (window.itemStatus[uid]?.status === 'PENDING_CA') pendingTomb.querySelector('textarea').focus();
-                    return;
-                }
-            }
+        async function carregarDadosRemotos() {
+            if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+            db = firebase.firestore();
+            if (!LISTA_ID) { document.getElementById('loading-message').innerHTML = "<span style='color:red'>Erro: Nenhum local especificado no link.<br>Volte ao menu principal.</span>"; return; }
+            try {
+                const doc = await db.collection(COLECAO_LISTAS).doc(LISTA_ID).get();
+                if (!doc.exists) throw new Error("Lista não encontrada.");
+                const data = doc.data();
+                dadosConferencia = data.list || [];
+                infoLocal = { nome: data.nome_local || "DESCONHECIDO", posto: data.posto || "Geral" };
+                document.getElementById('local-posto-info').innerHTML = `<span style="color:blue;font-weight:bold">${infoLocal.posto} - ${infoLocal.nome}</span>`;
+                document.title = `Conferência - ${infoLocal.posto} ${infoLocal.nome}`;
+                renderizarConferencia();
+                document.getElementById('loading-message').style.display='none'; 
+                document.getElementById('main-content').style.display='block';
+            } catch (e) { document.getElementById('loading-message').innerHTML = "Erro ao carregar: " + e.message; }
         }
-    }
-    function autoAdvanceSetor(sid) { const s = document.querySelector(`.setor[data-id="${sid}"]`); if (s) toggleSetor(s.querySelector('.setor-header')); const idx = window.setorIds.indexOf(sid); const nextId = window.setorIds[idx + 1]; if (nextId) { const next = document.querySelector(`.setor[data-id="${nextId}"]`); if (next) { const h = next.querySelector('.setor-header'); const c = next.querySelector('.setor-content'); if(!c.classList.contains('expanded')) toggleSetor(h); next.scrollIntoView({ behavior: 'smooth', block: 'center' }); } } }
 
-    function confirmarPendencia(uid, obs) {
-        window.itemStatus[uid] = { status: 'C/A', obs: obs };
-        let container; const btn = event.target; const box = btn.closest('.pendencia-alert-box');
-        if(box) { container = box.closest('.tombamento-container') || box.closest('.item-conferencia'); box.style.display='none'; }
-        if(container) {
-            const btnCA = container.querySelector('.ca-alert'); const descEl = container.querySelector('.descricao-salva') || container.querySelector('.tombamento-descricao-salva');
-            if(btnCA) btnCA.classList.add('active');
-            if(descEl) { descEl.innerHTML = `<span class="obs-titulo">Mantido:</span> <span class="obs-texto">${obs}</span>`; descEl.style.display = 'block'; }
-            const item = container.classList.contains('item-conferencia') ? container : container.closest('.item-conferencia');
-            if(container.classList.contains('tombamento-container')) updateItemMainStatusDisplay(item);
-            const setor = container.closest('.setor'); updateSetorStatus(setor); updateOverallStatus(); checkSetorCompletion(setor, item.dataset.id);
-        }
-    }
+        // RENDERIZAÇÃO E UTILITÁRIOS
+        function renderizarConferencia() {
+            const mainContent = document.getElementById('main-content');
+            let htmlSetores = '';
+            const setorIds = [];
+            dadosConferencia.forEach(s => setorIds.push(s.id));
+            window.setorIds = setorIds;
 
-    function setItemStatus(button, status) {
-        const item = button.closest('.item-conferencia'); const setor = button.closest('.setor');
-        item.querySelectorAll('.item-options .action-button').forEach(b => b.classList.remove('active')); button.classList.add('active');
-        item.querySelector('.descricao-salva').style.display = 'none'; item.querySelector('.alteracao-container').style.display = 'none';
-        const pb=item.querySelector('.pendencia-alert-box'); if(pb)pb.style.display='none';
-        if (status === 'ok') { item.className = 'item-conferencia status-ok'; item.querySelector('.status-icon').className = 'status-icon ok'; window.itemStatus[item.dataset.id] = { status: 'S/A', obs: '' }; } 
-        else { item.className = 'item-conferencia status-alert'; item.querySelector('.status-icon').className = 'status-icon alert'; item.querySelector('.alteracao-container').style.display = 'block'; window.itemStatus[item.dataset.id] = { status: 'PENDING_CA', obs: '' }; item.querySelector('textarea').focus(); updateSetorStatus(setor); return; }
-        updateSetorStatus(setor); updateOverallStatus(); checkSetorCompletion(setor, item.dataset.id);
-    }
-    function setTombamentoStatus(button, status) {
-        const tombEl = button.closest('.tombamento-container'); const item = button.closest('.item-conferencia'); const setor = button.closest('.setor'); const uid = `${item.dataset.id}-${tombEl.dataset.tomb}`;
-        tombEl.querySelectorAll('.action-button').forEach(b => b.classList.remove('active')); button.classList.add('active');
-        tombEl.querySelector('.tombamento-obs-container').style.display = 'none'; tombEl.querySelector('.tombamento-descricao-salva').style.display = 'none';
-        const pb=tombEl.querySelector('.pendencia-alert-box'); if(pb)pb.style.display='none';
-        if (status === 'ok') { window.itemStatus[uid] = { status: 'S/A', obs: '' }; updateItemMainStatusDisplay(item); } 
-        else { tombEl.querySelector('.tombamento-obs-container').style.display = 'block'; window.itemStatus[uid] = { status: 'PENDING_CA', obs: '' }; tombEl.querySelector('textarea').focus(); updateItemMainStatusDisplay(item); return; }
-        updateSetorStatus(setor); updateOverallStatus(); checkSetorCompletion(setor, item.dataset.id);
-    }
-    function salvarItem(button) {
-        const item = button.closest('.item-conferencia'); const obs = item.querySelector('textarea').value.trim();
-        if (obs.length < 3) return alert("Descreva a alteração.");
-        window.itemStatus[item.dataset.id] = { status: 'C/A', obs: obs };
-        item.querySelector('.alteracao-container').style.display = 'none'; const d = item.querySelector('.descricao-salva'); d.innerHTML = `<span class="obs-titulo">Alteração:</span> <span class="obs-texto">${obs}</span>`; d.style.display = 'block';
-        updateSetorStatus(button.closest('.setor')); updateOverallStatus(); checkSetorCompletion(button.closest('.setor'), item.dataset.id);
-    }
-    function salvarTombamento(button) {
-        const tombEl = button.closest('.tombamento-container'); const item = button.closest('.item-conferencia'); const obs = tombEl.querySelector('textarea').value.trim();
-        if (obs.length < 3) return alert("Descreva a alteração.");
-        window.itemStatus[`${item.dataset.id}-${tombEl.dataset.tomb}`] = { status: 'C/A', obs: obs };
-        tombEl.querySelector('.tombamento-obs-container').style.display = 'none'; const d = tombEl.querySelector('.tombamento-descricao-salva'); d.innerHTML = `<span class="obs-titulo">Alteração:</span> <span class="obs-texto">${obs}</span>`; d.style.display = 'block';
-        updateItemMainStatusDisplay(item); updateSetorStatus(button.closest('.setor')); updateOverallStatus(); checkSetorCompletion(button.closest('.setor'), item.dataset.id);
-    }
-    function updateItemMainStatusDisplay(item) { if (item.dataset.type === 'single') return; const tombs = item.querySelectorAll('.tombamento-container'); let conf = 0, alt = 0; tombs.forEach(t => { const s = window.itemStatus[`${item.dataset.id}-${t.dataset.tomb}`]?.status; if (s === 'S/A' || s === 'C/A') { conf++; if (s === 'C/A') alt++; } }); const icon = item.querySelector('.status-icon'); item.className = 'item-conferencia item-has-tombamentos'; icon.className = 'status-icon'; if (conf === tombs.length) { if (alt > 0) { icon.classList.add('alert'); item.classList.add('status-alert'); } else { icon.classList.add('ok'); item.classList.add('status-ok'); } } }
-    function updateSetorStatus(setor) { const items = setor.querySelectorAll('.item-conferencia'); let completed = 0, altered = 0, total = 0; items.forEach(item => { if (item.dataset.type === 'single') { total++; const s = window.itemStatus[item.dataset.id]?.status; if (s === 'S/A') completed++; else if (s === 'C/A') { completed++; altered++; } } else { const tombs = item.querySelectorAll('.tombamento-container'); tombs.forEach(t => { total++; const s = window.itemStatus[`${item.dataset.id}-${t.dataset.tomb}`]?.status; if (s === 'S/A') completed++; else if (s === 'C/A') { completed++; altered++; } }); } }); setor.dataset.totalItems = total; const st = setor.querySelector('.setor-status'); st.dataset.completed = completed; if (completed === total && altered === 0) { st.textContent = 'S/A'; st.classList.add('ok'); } else if (altered > 0) { st.textContent = `${altered} C/A`; st.classList.remove('ok'); } else { st.textContent = `${completed}/${total}`; st.classList.remove('ok'); } }
-    function updateOverallStatus() { let total = 0, completed = 0; document.querySelectorAll('.setor').forEach(s => { total += parseInt(s.dataset.totalItems); completed += parseInt(s.querySelector('.setor-status').dataset.completed); }); const btn = document.getElementById('btn-finalizar'); btn.textContent = `FINALIZAR CONFERÊNCIA (${completed}/${total} ITENS)`; btn.disabled = (completed !== total); }
-
-    async function finalizarConferencia() {
-        const btn = document.getElementById('btn-finalizar'); if (btn.disabled) return;
-        btn.textContent = "Salvando..."; btn.disabled = true;
-        try {
-            const p = userInfo; const conferente = `${p.postoGraduacao} ${p.quadro} ${p.nomeGuerra}`;
-            const localNome = infoLocal.nome;
-            const dataHora = new Date();
-
-            // 1. PERSISTÊNCIA ATUALIZADA (Salva na coleção listas_conferencia -> DOC LISTA_ID)
-            let updated = false;
             dadosConferencia.forEach(setor => {
+                let htmlItens = ''; let totalItensNoSetor = 0;
+                const isFirstSetor = setor.id === setorIds[0];
                 setor.itens.forEach(item => {
-                    if(item.tipo === 'single') {
-                        const s = window.itemStatus[item.id];
-                        if(s.status === 'C/A') { 
-                            let old = item.pendencia || {};
-                            item.pendencia = { obs: s.obs, quem: conferente, data: firebase.firestore.Timestamp.now(), statusAdmin: old.statusAdmin, adminObs: old.adminObs }; 
-                            updated=true; 
-                        } else if(s.status === 'S/A' && item.pendencia) { delete item.pendencia; updated=true; }
-                    } else if(item.tombamentos) {
-                        item.tombamentos.forEach(t => {
-                            const uid = `${item.id}-${t.tomb}`; const s = window.itemStatus[uid];
-                            if(s.status === 'C/A') { 
-                                let old = t.pendencia || {};
-                                t.pendencia = { obs: s.obs, quem: conferente, data: firebase.firestore.Timestamp.now(), statusAdmin: old.statusAdmin, adminObs: old.adminObs }; 
-                                updated=true; 
-                            } else if(s.status === 'S/A' && t.pendencia) { delete t.pendencia; updated=true; }
+                    let htmlTombamento = '';
+                    if (item.tipo === 'multi' && item.tombamentos) {
+                        item.tombamentos.forEach(tomb => {
+                            let pendenciaHtml = '';
+                            if (tomb.pendencia) {
+                                const obs = tomb.pendencia.obs ? tomb.pendencia.obs.replace(/'/g, "\\'") : '';
+                                const quem = tomb.pendencia.quem || 'Anônimo';
+                                if (tomb.pendencia.statusAdmin) {
+                                    pendenciaHtml = `<div class="pendencia-alert-box admin-reply"><span class="alert-msg">⚠️ <strong>${tomb.pendencia.statusAdmin}:</strong> ${tomb.pendencia.adminObs || ''} (Admin)</span><br><span style="font-size:0.8em; color:#555;">Original (${quem}): ${obs}</span><div style="text-align:right;"><button class="btn-manter" onclick="confirmarPendencia('${item.id}-${tomb.tomb}', '${obs}')">Ciente / Manter</button></div></div>`;
+                                } else {
+                                    pendenciaHtml = `<div class="pendencia-alert-box"><span class="alert-msg">⚠️ <strong>Alteração Anterior:</strong> ${obs} (${quem})</span><div style="text-align:right;"><button class="btn-manter" onclick="confirmarPendencia('${item.id}-${tomb.tomb}', '${obs}')">Manter Alteração</button></div></div>`;
+                                }
+                            }
+                            htmlTombamento += `<div class="tombamento-container" data-tomb="${tomb.tomb}" data-item-id="${item.id}"><div class="tombamento-controls"><span>Tomb.: ${tomb.tomb}</span><div class="tombamento-options"><button class="action-button sa-ok" onclick="setTombamentoStatus(this, 'ok')">S/A</button><button class="action-button ca-alert" onclick="setTombamentoStatus(this, 'alert')">C/A</button></div></div>${pendenciaHtml}<p class="tombamento-descricao-salva"></p><div class="tombamento-obs-container"><label>Alteração encontrada:</label><textarea placeholder="Detalhe a alteração."></textarea><button type="button" class="btn-salvar-alteracao" onclick="salvarTombamento(this)">SALVAR OBSERVAÇÃO</button></div></div>`;
+                            totalItensNoSetor++;
+                            window.itemStatus[`${item.id}-${tomb.tomb}`] = { status: 'pending', obs: '' };
                         });
+                        htmlItens += `<div class="item-conferencia item-has-tombamentos" data-type="multi" data-total-tombamentos="${item.tombamentos.length}" data-status="pending" data-id="${item.id}"><div class="item-header"><span class="status-icon"></span><span class="item-label">${item.nome}</span><span class="item-quantidade">QTD: ${item.quantidadeEsperada}</span></div>${htmlTombamento}</div>`;
+                    } else {
+                        let pendenciaHtml = ''; let classExtra = '';
+                        if (item.pendencia) {
+                             const obs = item.pendencia.obs ? item.pendencia.obs.replace(/'/g, "\\'") : '';
+                             const quem = item.pendencia.quem || 'Anônimo';
+                             if (item.pendencia.statusAdmin) {
+                                classExtra = 'status-admin-response';
+                                pendenciaHtml = `<div class="pendencia-alert-box admin-reply"><span class="alert-msg">⚠️ <strong>${item.pendencia.statusAdmin}:</strong> ${item.pendencia.adminObs || ''} (Admin)</span><br><span style="font-size:0.8em; color:#555;">Original (${quem}): ${obs}</span><div style="text-align:right;"><button class="btn-manter" onclick="confirmarPendencia('${item.id}', '${obs}')">Ciente / Manter</button></div></div>`;
+                             } else {
+                                classExtra = 'status-existing-alert';
+                                pendenciaHtml = `<div class="pendencia-alert-box"><span class="alert-msg">⚠️ <strong>Alteração Anterior:</strong> ${obs} (${quem})</span><div style="text-align:right;"><button class="btn-manter" onclick="confirmarPendencia('${item.id}', '${obs}')">Manter Alteração</button></div></div>`;
+                             }
+                        }
+                        htmlItens += `<div class="item-conferencia ${classExtra}" data-type="single" data-status="pending" data-id="${item.id}"><div class="item-header"><span class="status-icon"></span><span class="item-label">${item.nome}</span><span class="item-quantidade">QTD: ${item.quantidadeEsperada}</span></div><div class="item-options"><button class="action-button sa-ok" onclick="setItemStatus(this, 'ok')">S/A</button><button class="action-button ca-alert" onclick="setItemStatus(this, 'alert')">C/A</button></div>${pendenciaHtml}<p class="descricao-salva"></p><div class="alteracao-container"><label>Alteração encontrada:</label><textarea data-id="${item.id}" placeholder="Descreva a alteração."></textarea><button type="button" class="btn-salvar-alteracao" onclick="salvarItem(this)">SALVAR</button></div></div>`;
+                        totalItensNoSetor++;
+                        window.itemStatus[item.id] = { status: 'pending', obs: '' };
                     }
                 });
+                htmlSetores += `<div class="setor" data-total-items="${totalItensNoSetor}" data-id="${setor.id}"><div class="setor-header" onclick="toggleSetor(this)"><div class="setor-info"><span>${setor.nome}</span><div class="setor-status" data-completed="0">0/${totalItensNoSetor}</div></div><span class="arrow">${isFirstSetor?'▼':'►'}</span></div><div class="setor-content ${isFirstSetor?'expanded':''}">${htmlItens}</div></div>`;
             });
-            
-            let itensCaa = []; let itemsCount = 0; let cA_count = 0; let tableData = [];
-            const RED='#D90F23', GREEN='#1B8A3E';
-            
-            dadosConferencia.forEach(setor => {
-                tableData.push([{ content: setor.nome.toUpperCase(), colSpan: 4, styles: { fillColor: [128, 0, 32], textColor: 255, fontStyle: 'bold' } }]);
-                setor.itens.forEach(item => {
-                    let itemsToProcess = [];
-                    if (item.tipo === 'multi' && item.tombamentos) {
-                        item.tombamentos.forEach(t => {
-                            const s = window.itemStatus[`${item.id}-${t.tomb}`];
-                            if (s && s.status !== 'pending') {
-                                itemsToProcess.push({ 
-                                    nomeCompleto: `${item.nome} (${t.tomb})`, 
-                                    status: s.status, 
-                                    obs: s.obs, 
-                                    quantidade: 1,
-                                    id: `${item.id}-${t.tomb}`, 
-                                    statusAdmin: t.pendencia?.statusAdmin
-                                });
-                            }
-                        });
-                    } else {
-                        const s = window.itemStatus[item.id];
-                        if (s && s.status !== 'pending') {
-                            itemsToProcess.push({ 
-                                nomeCompleto: item.nome, 
-                                status: s.status, 
-                                obs: s.obs, 
-                                quantidade: item.quantidadeEsperada,
-                                id: item.id, 
-                                statusAdmin: item.pendencia?.statusAdmin
+            mainContent.querySelector('#btn-finalizar').insertAdjacentHTML('beforebegin', htmlSetores);
+            updateHeaderInfo(); updateOverallStatus();
+        }
+
+        const userInfo = { postoGraduacao: getUrlParameter('posto_grad') || "ND", quadro: getUrlParameter('quadro_mil') || "ND", nomeGuerra: getUrlParameter('nome_guerra') || "ND" };
+        function getUrlParameter(n) { return (new URLSearchParams(window.location.search)).get(n) || ''; }
+        function updateHeaderInfo() { document.getElementById('militar-info').innerHTML = `<strong>Conferente:</strong> ${userInfo.postoGraduacao} ${userInfo.quadro} ${userInfo.nomeGuerra}<br><strong>Data/Hora:</strong> ${new Date().toLocaleString()}`; }
+        function toggleSetor(header) { const content = header.nextElementSibling; const arrow = header.querySelector('.arrow'); if (content.classList.contains('expanded')) { content.classList.remove('expanded'); arrow.textContent = '►'; } else { document.querySelectorAll('.setor-content.expanded').forEach(c=>{c.classList.remove('expanded'); c.previousElementSibling.querySelector('.arrow').textContent='►'}); content.classList.add('expanded'); arrow.textContent = '▼'; } }
+        function checkSetorCompletion(currentSetor, currentItemId) { const total = parseInt(currentSetor.dataset.totalItems); const comp = parseInt(currentSetor.querySelector('.setor-status').dataset.completed); if (comp === total) autoAdvanceSetor(currentSetor.dataset.id); else focusNextItem(currentItemId); }
+        function isElementInViewport(el) { const rect = el.getBoundingClientRect(); return (rect.top >= 60 && rect.left >= 0 && rect.bottom <= (window.innerHeight || document.documentElement.clientHeight) && rect.right <= (window.innerWidth || document.documentElement.clientWidth)); }
+        function focusNextItem(currentItemId) { const allItems = Array.from(document.querySelectorAll('.item-conferencia')); let baseId = currentItemId.split('-')[0]; const idx = allItems.findIndex(i => i.dataset.id === baseId); for (let i = idx; i < allItems.length; i++) { const item = allItems[i]; if (!item) continue; const id = item.dataset.id; if (item.dataset.type === 'single') { const st = window.itemStatus[id]; if (!st || st.status === 'pending' || st.status === 'PENDING_CA') { if (!isElementInViewport(item)) item.scrollIntoView({ behavior: 'smooth', block: 'center' }); if (st && st.status === 'PENDING_CA') item.querySelector('textarea').focus(); return; } } if (item.dataset.type === 'multi') { const pendingTomb = Array.from(item.querySelectorAll('.tombamento-container')).find(t => { const uid = `${id}-${t.dataset.tomb}`; const s = window.itemStatus[uid]?.status; return s === 'pending' || s === 'PENDING_CA'; }); if (pendingTomb) { if (!isElementInViewport(pendingTomb)) pendingTomb.scrollIntoView({ behavior: 'smooth', block: 'center' }); const uid = `${id}-${pendingTomb.dataset.tomb}`; if (window.itemStatus[uid]?.status === 'PENDING_CA') pendingTomb.querySelector('textarea').focus(); return; } } } }
+        function autoAdvanceSetor(sid) { const s = document.querySelector(`.setor[data-id="${sid}"]`); if (s) toggleSetor(s.querySelector('.setor-header')); const idx = window.setorIds.indexOf(sid); const nextId = window.setorIds[idx + 1]; if (nextId) { const next = document.querySelector(`.setor[data-id="${nextId}"]`); if (next) { const h = next.querySelector('.setor-header'); const c = next.querySelector('.setor-content'); if(!c.classList.contains('expanded')) toggleSetor(h); next.scrollIntoView({ behavior: 'smooth', block: 'center' }); } } }
+        function confirmarPendencia(uid, obs) { window.itemStatus[uid] = { status: 'C/A', obs: obs }; let container; const btn = event.target; const box = btn.closest('.pendencia-alert-box'); if(box) { container = box.closest('.tombamento-container') || box.closest('.item-conferencia'); box.style.display='none'; } if(container) { const btnCA = container.querySelector('.ca-alert'); const descEl = container.querySelector('.descricao-salva') || container.querySelector('.tombamento-descricao-salva'); if(btnCA) btnCA.classList.add('active'); if(descEl) { descEl.innerHTML = `<span class="obs-titulo">Mantido:</span> <span class="obs-texto">${obs}</span>`; descEl.style.display = 'block'; } const item = container.classList.contains('item-conferencia') ? container : container.closest('.item-conferencia'); if(container.classList.contains('tombamento-container')) updateItemMainStatusDisplay(item); const setor = container.closest('.setor'); updateSetorStatus(setor); updateOverallStatus(); checkSetorCompletion(setor, item.dataset.id); } }
+        function setItemStatus(button, status) { const item = button.closest('.item-conferencia'); const setor = button.closest('.setor'); item.querySelectorAll('.item-options .action-button').forEach(b => b.classList.remove('active')); button.classList.add('active'); item.querySelector('.descricao-salva').style.display = 'none'; item.querySelector('.alteracao-container').style.display = 'none'; const pb=item.querySelector('.pendencia-alert-box'); if(pb)pb.style.display='none'; if (status === 'ok') { item.className = 'item-conferencia status-ok'; item.querySelector('.status-icon').className = 'status-icon ok'; window.itemStatus[item.dataset.id] = { status: 'S/A', obs: '' }; } else { item.className = 'item-conferencia status-alert'; item.querySelector('.status-icon').className = 'status-icon alert'; item.querySelector('.alteracao-container').style.display = 'block'; window.itemStatus[item.dataset.id] = { status: 'PENDING_CA', obs: '' }; item.querySelector('textarea').focus(); updateSetorStatus(setor); return; } updateSetorStatus(setor); updateOverallStatus(); checkSetorCompletion(setor, item.dataset.id); }
+        function setTombamentoStatus(button, status) { const tombEl = button.closest('.tombamento-container'); const item = button.closest('.item-conferencia'); const setor = button.closest('.setor'); const uid = `${item.dataset.id}-${tombEl.dataset.tomb}`; tombEl.querySelectorAll('.action-button').forEach(b => b.classList.remove('active')); button.classList.add('active'); tombEl.querySelector('.tombamento-obs-container').style.display = 'none'; tombEl.querySelector('.tombamento-descricao-salva').style.display = 'none'; const pb=tombEl.querySelector('.pendencia-alert-box'); if(pb)pb.style.display='none'; if (status === 'ok') { window.itemStatus[uid] = { status: 'S/A', obs: '' }; updateItemMainStatusDisplay(item); } else { tombEl.querySelector('.tombamento-obs-container').style.display = 'block'; window.itemStatus[uid] = { status: 'PENDING_CA', obs: '' }; tombEl.querySelector('textarea').focus(); updateItemMainStatusDisplay(item); return; } updateSetorStatus(setor); updateOverallStatus(); checkSetorCompletion(setor, item.dataset.id); }
+        function salvarItem(button) { const item = button.closest('.item-conferencia'); const obs = item.querySelector('textarea').value.trim(); if (obs.length < 3) return alert("Descreva a alteração."); window.itemStatus[item.dataset.id] = { status: 'C/A', obs: obs }; item.querySelector('.alteracao-container').style.display = 'none'; const d = item.querySelector('.descricao-salva'); d.innerHTML = `<span class="obs-titulo">Alteração:</span> <span class="obs-texto">${obs}</span>`; d.style.display = 'block'; updateSetorStatus(button.closest('.setor')); updateOverallStatus(); checkSetorCompletion(button.closest('.setor'), item.dataset.id); }
+        function salvarTombamento(button) { const tombEl = button.closest('.tombamento-container'); const item = button.closest('.item-conferencia'); const obs = tombEl.querySelector('textarea').value.trim(); if (obs.length < 3) return alert("Descreva a alteração."); window.itemStatus[`${item.dataset.id}-${tombEl.dataset.tomb}`] = { status: 'C/A', obs: obs }; tombEl.querySelector('.tombamento-obs-container').style.display = 'none'; const d = tombEl.querySelector('.tombamento-descricao-salva'); d.innerHTML = `<span class="obs-titulo">Alteração:</span> <span class="obs-texto">${obs}</span>`; d.style.display = 'block'; updateItemMainStatusDisplay(item); updateSetorStatus(button.closest('.setor')); updateOverallStatus(); checkSetorCompletion(button.closest('.setor'), item.dataset.id); }
+        function updateItemMainStatusDisplay(item) { if (item.dataset.type === 'single') return; const tombs = item.querySelectorAll('.tombamento-container'); let conf = 0, alt = 0; tombs.forEach(t => { const s = window.itemStatus[`${item.dataset.id}-${t.dataset.tomb}`]?.status; if (s === 'S/A' || s === 'C/A') { conf++; if (s === 'C/A') alt++; } }); const icon = item.querySelector('.status-icon'); item.className = 'item-conferencia item-has-tombamentos'; icon.className = 'status-icon'; if (conf === tombs.length) { if (alt > 0) { icon.classList.add('alert'); item.classList.add('status-alert'); } else { icon.classList.add('ok'); item.classList.add('status-ok'); } } }
+        function updateSetorStatus(setor) { const items = setor.querySelectorAll('.item-conferencia'); let completed = 0, altered = 0, total = 0; items.forEach(item => { if (item.dataset.type === 'single') { total++; const s = window.itemStatus[item.dataset.id]?.status; if (s === 'S/A') completed++; else if (s === 'C/A') { completed++; altered++; } } else { const tombs = item.querySelectorAll('.tombamento-container'); tombs.forEach(t => { total++; const s = window.itemStatus[`${item.dataset.id}-${t.dataset.tomb}`]?.status; if (s === 'S/A') completed++; else if (s === 'C/A') { completed++; altered++; } }); } }); setor.dataset.totalItems = total; const st = setor.querySelector('.setor-status'); st.dataset.completed = completed; if (completed === total && altered === 0) { st.textContent = 'S/A'; st.classList.add('ok'); } else if (altered > 0) { st.textContent = `${altered} C/A`; st.classList.remove('ok'); } else { st.textContent = `${completed}/${total}`; st.classList.remove('ok'); } }
+        function updateOverallStatus() { let total = 0, completed = 0; document.querySelectorAll('.setor').forEach(s => { total += parseInt(s.dataset.totalItems); completed += parseInt(s.querySelector('.setor-status').dataset.completed); }); const btn = document.getElementById('btn-finalizar'); btn.textContent = `FINALIZAR CONFERÊNCIA (${completed}/${total} ITENS)`; btn.disabled = (completed !== total); }
+
+        // SANITIZAÇÃO E FINALIZAÇÃO
+        async function finalizarConferencia() {
+            const btn = document.getElementById('btn-finalizar'); if (btn.disabled) return;
+            btn.textContent = "Salvando..."; btn.disabled = true;
+            try {
+                const p = userInfo; const conferente = `${p.postoGraduacao} ${p.quadro} ${p.nomeGuerra}`;
+                const localNome = infoLocal.nome; const dataHora = new Date();
+                
+                // Função auxiliar para evitar 'undefined'
+                const clean = (val) => val === undefined ? null : val;
+
+                let updated = false;
+                dadosConferencia.forEach(setor => {
+                    setor.itens.forEach(item => {
+                        if(item.tipo === 'single') {
+                            const s = window.itemStatus[item.id];
+                            if(s.status === 'C/A') { 
+                                let old = item.pendencia || {};
+                                // CORREÇÃO APLICADA AQUI: clean()
+                                item.pendencia = { obs: s.obs, quem: conferente, data: firebase.firestore.Timestamp.now(), statusAdmin: clean(old.statusAdmin), adminObs: clean(old.adminObs) }; 
+                                updated=true; 
+                            } else if(s.status === 'S/A' && item.pendencia) { delete item.pendencia; updated=true; }
+                        } else if(item.tombamentos) {
+                            item.tombamentos.forEach(t => {
+                                const uid = `${item.id}-${t.tomb}`; const s = window.itemStatus[uid];
+                                if(s.status === 'C/A') { 
+                                    let old = t.pendencia || {};
+                                    // CORREÇÃO APLICADA AQUI: clean()
+                                    t.pendencia = { obs: s.obs, quem: conferente, data: firebase.firestore.Timestamp.now(), statusAdmin: clean(old.statusAdmin), adminObs: clean(old.adminObs) }; 
+                                    updated=true; 
+                                } else if(s.status === 'S/A' && t.pendencia) { delete t.pendencia; updated=true; }
                             });
                         }
-                    }
-                    itemsToProcess.forEach(d => {
-                        itemsCount++;
-                        if (d.status === 'C/A') { cA_count++; itensCaa.push({...d, local: setor.nome}); }
-                        tableData.push([ d.nomeCompleto, `QTD: ${d.quantidade}`, { content: d.status, styles: { fillColor: (d.status==='S/A'?GREEN:RED), textColor: 255 } }, d.obs||'-' ]);
                     });
                 });
-            });
+                
+                let itensCaa = []; let itemsCount = 0; let cA_count = 0; let tableData = [];
+                const RED='#D90F23', GREEN='#1B8A3E';
+                
+                dadosConferencia.forEach(setor => {
+                    tableData.push([{ content: setor.nome.toUpperCase(), colSpan: 4, styles: { fillColor: [128, 0, 32], textColor: 255, fontStyle: 'bold' } }]);
+                    setor.itens.forEach(item => {
+                        let itemsToProcess = [];
+                        if (item.tipo === 'multi' && item.tombamentos) {
+                            item.tombamentos.forEach(t => {
+                                const s = window.itemStatus[`${item.id}-${t.tomb}`];
+                                if (s && s.status !== 'pending') {
+                                    itemsToProcess.push({ nomeCompleto: `${item.nome} (${t.tomb})`, status: s.status, obs: s.obs, quantidade: 1, id: `${item.id}-${t.tomb}`, statusAdmin: clean(t.pendencia?.statusAdmin) });
+                                }
+                            });
+                        } else {
+                            const s = window.itemStatus[item.id];
+                            if (s && s.status !== 'pending') {
+                                itemsToProcess.push({ nomeCompleto: item.nome, status: s.status, obs: s.obs, quantidade: item.quantidadeEsperada, id: item.id, statusAdmin: clean(item.pendencia?.statusAdmin) });
+                            }
+                        }
+                        itemsToProcess.forEach(d => {
+                            itemsCount++;
+                            if (d.status === 'C/A') { cA_count++; itensCaa.push({...d, local: setor.nome}); }
+                            tableData.push([ d.nomeCompleto, `QTD: ${d.quantidade}`, { content: d.status, styles: { fillColor: (d.status==='S/A'?GREEN:RED), textColor: 255 } }, d.obs||'-' ]);
+                        });
+                    });
+                });
 
-            // ATUALIZAÇÃO NO BANCO DINÂMICO
-            if(updated) await db.collection(COLECAO_LISTAS).doc(LISTA_ID).update({ list: dadosConferencia });
-            
-            await db.collection('resultados_conferencias').add({ 
-                local: localNome, // Nome legível para o Dashboard
-                lista_id: LISTA_ID, // Referência técnica
-                conferente, 
-                timestamp: firebase.firestore.Timestamp.now(), 
-                totalItensConferidos: itemsCount, 
-                totalCaa: cA_count, 
-                itensCaa 
-            });
+                if(updated) await db.collection(COLECAO_LISTAS).doc(LISTA_ID).update({ list: dadosConferencia });
+                
+                await db.collection('resultados_conferencias').add({ local: localNome, lista_id: LISTA_ID, conferente, timestamp: firebase.firestore.Timestamp.now(), totalItensConferidos: itemsCount, totalCaa: cA_count, itensCaa });
 
-            const { jsPDF } = window.jspdf; const doc = new jsPDF('p', 'mm', 'a4');
-            const MARGIN=14, PG_W=210, LOGO_S=15; 
-            const logoDraw = (id, x) => { const el = document.getElementById(id) || document.querySelector(`img[src*="${id}"]`); if(el && el.src) { try { const c = document.createElement('canvas'); c.width=160; c.height=160; c.getContext('2d').drawImage(el,0,0,160,160); doc.addImage(c.toDataURL('image/png'), 'PNG', x, 10, LOGO_S, LOGO_S); } catch(e){} } };
-            logoDraw('cbmrr', MARGIN); logoDraw('logo-sigma', PG_W-MARGIN-LOGO_S);
+                const { jsPDF } = window.jspdf; const doc = new jsPDF('p', 'mm', 'a4');
+                const MARGIN=14, PG_W=210, LOGO_S=15; 
+                const logoDraw = (id, x) => { const el = document.getElementById(id) || document.querySelector(`img[src*="${id}"]`); if(el && el.src) { try { const c = document.createElement('canvas'); c.width=160; c.height=160; c.getContext('2d').drawImage(el,0,0,160,160); doc.addImage(c.toDataURL('image/png'), 'PNG', x, 10, LOGO_S, LOGO_S); } catch(e){} } };
+                logoDraw('cbmrr', MARGIN); logoDraw('logo-sigma', PG_W-MARGIN-LOGO_S);
 
-            doc.setFontSize(10); doc.setTextColor(51); doc.setFont('helvetica','bold'); doc.text('GOVERNO DE RORAIMA', PG_W/2, 15, {align:'center'}); doc.setTextColor(217,15,35); doc.text('CORPO DE BOMBEIROS MILITAR DE RORAIMA', PG_W/2, 20, {align:'center'}); doc.setTextColor(51); doc.setFont('helvetica','italic'); doc.text('"Amazônia: patrimônio dos brasileiros"', PG_W/2, 25, {align:'center'});
-            let y = 40; const VAL_X = MARGIN + 45; doc.setFont('helvetica','bold'); doc.text('Local:', MARGIN, y); doc.setFont('helvetica','normal'); doc.text(localNome, VAL_X, y); y+=5; doc.setFont('helvetica','bold'); doc.text('Conferente:', MARGIN, y); doc.setFont('helvetica','normal'); doc.text(conferente, VAL_X, y); y+=5; doc.setFont('helvetica','bold'); doc.text('Data/Hora:', MARGIN, y); doc.setFont('helvetica','normal'); doc.text(dataHora.toLocaleString(), VAL_X, y); y+=10; doc.setFont('helvetica','bold'); doc.text(`TOTAL: ${itemsCount} | C/A: ${cA_count}`, MARGIN, y); y+=5;
-            doc.autoTable({ startY: y, head: [['Material', 'QTD', 'Status', 'Obs']], body: tableData, theme: 'striped', styles: { fontSize: 8, halign: 'left', textColor: 51, cellPadding: 1.5 }, headStyles: { fillColor: [128, 0, 32], textColor: 255, fontStyle: 'bold' }, columnStyles: { 0:{cellWidth:70}, 1:{cellWidth:20,halign:'center'}, 2:{cellWidth:20,halign:'center'} }, didDrawPage: (d) => { doc.setFontSize(8); doc.setTextColor(150); doc.text('SIGMA - Sistema Integrado', MARGIN, doc.internal.pageSize.height-10); doc.text(`Pág ${d.pageNumber}`, PG_W-MARGIN, doc.internal.pageSize.height-10, {align:'right'}); } });
-            
-            doc.save(`Conferencia_${localNome.replace(/[^a-zA-Z0-9]/g,'')}_${new Date().toISOString().split('T')[0]}.pdf`);
-            alert("Salvo com sucesso!"); location.reload();
-        } catch (e) { console.error(e); alert("Erro: " + e.message); btn.disabled = false; }
-    }
-    window.onload = carregarDadosRemotos;
-</script>
+                doc.setFontSize(10); doc.setTextColor(51); doc.setFont('helvetica','bold'); doc.text('GOVERNO DE RORAIMA', PG_W/2, 15, {align:'center'}); doc.setTextColor(217,15,35); doc.text('CORPO DE BOMBEIROS MILITAR DE RORAIMA', PG_W/2, 20, {align:'center'}); doc.setTextColor(51); doc.setFont('helvetica','italic'); doc.text('"Amazônia: patrimônio dos brasileiros"', PG_W/2, 25, {align:'center'});
+                let y = 40; const VAL_X = MARGIN + 45; doc.setFont('helvetica','bold'); doc.text('Local:', MARGIN, y); doc.setFont('helvetica','normal'); doc.text(localNome, VAL_X, y); y+=5; doc.setFont('helvetica','bold'); doc.text('Conferente:', MARGIN, y); doc.setFont('helvetica','normal'); doc.text(conferente, VAL_X, y); y+=5; doc.setFont('helvetica','bold'); doc.text('Data/Hora:', MARGIN, y); doc.setFont('helvetica','normal'); doc.text(dataHora.toLocaleString(), VAL_X, y); y+=10; doc.setFont('helvetica','bold'); doc.text(`TOTAL: ${itemsCount} | C/A: ${cA_count}`, MARGIN, y); y+=5;
+                doc.autoTable({ startY: y, head: [['Material', 'QTD', 'Status', 'Obs']], body: tableData, theme: 'striped', styles: { fontSize: 8, halign: 'left', textColor: 51, cellPadding: 1.5 }, headStyles: { fillColor: [128, 0, 32], textColor: 255, fontStyle: 'bold' }, columnStyles: { 0:{cellWidth:70}, 1:{cellWidth:20,halign:'center'}, 2:{cellWidth:20,halign:'center'} }, didDrawPage: (d) => { doc.setFontSize(8); doc.setTextColor(150); doc.text('SIGMA - Sistema Integrado', MARGIN, doc.internal.pageSize.height-10); doc.text(`Pág ${d.pageNumber}`, PG_W-MARGIN, doc.internal.pageSize.height-10, {align:'right'}); } });
+                
+                doc.save(`Conferencia_${localNome.replace(/[^a-zA-Z0-9]/g,'')}_${new Date().toISOString().split('T')[0]}.pdf`);
+                alert("Salvo com sucesso!"); location.reload();
+            } catch (e) { console.error(e); alert("Erro: " + e.message); btn.disabled = false; }
+        }
+        window.onload = carregarDadosRemotos;
+    </script>
 </body>
 </html>
