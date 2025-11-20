@@ -15,7 +15,6 @@
         .main-header { position: fixed; top: 0; left: 0; width: 100%; height: 50px; background-color: #800020; box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2); z-index: 100; display: flex; align-items: center; padding: 0 15px; box-sizing: border-box; gap: 10px; }
         .header-icon { height: 40px; width: auto; } .header-title-desktop, .header-title-mobile { font-weight: bold; font-size: 1.1em; line-height: 1.2; } .text-white { color: white; } .text-red { color: #FF3B3B; } .header-title-desktop { display: none; } .header-title-mobile { display: block; } 
         
-        /* Botão Menu Mobile */
         #menu-btn { display: none; background: none; border: none; color: white; font-size: 1.5em; cursor: pointer; padding: 0 5px; }
 
         @media (min-width: 768px) { .header-title-desktop { display: block; font-size: 1.2em; } .header-title-mobile { display: none; } #menu-btn { display: none; } }
@@ -88,12 +87,10 @@
         /* MODAIS */
         .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); display: none; align-items: center; justify-content: center; z-index: 2000; } .modal-content { background: #fff; padding: 25px; border-radius: 12px; width: 90%; max-width: 500px; position: relative; text-align: left; } .modal-content h2 { margin-top: 0; color: #800020; border-bottom: 1px solid #eee; padding-bottom: 10px; } .modal-content label { display: block; margin-top: 15px; font-weight: bold; color: #555; } .modal-content input, .modal-content select, .modal-content textarea { width: 100%; padding: 10px; margin-top: 5px; box-sizing: border-box; border: 1px solid #ccc; border-radius: 4px; } .modal-content textarea { height: 80px; resize: vertical; } .modal-buttons { display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px; } .close-btn { position: absolute; top: 10px; right: 15px; background: none; border: none; font-size: 20px; cursor: pointer; color: #d90f23; }
 
-        /* MOBILE RESPONSIVE MENU - AJUSTADO */
+        /* MOBILE RESPONSIVE MENU */
         @media (max-width: 768px) { 
             #menu-btn { display: block; }
-            /* Menu começa totalmente retraído à esquerda */
-            .sidebar { left: -260px; width: 260px; border-right: 1px solid #ddd; transition: left 0.3s ease; } 
-            /* Classe para abrir o menu */
+            .sidebar { left: -260px; width: 260px; border-right: 1px solid #ddd; } 
             .sidebar.mobile-active { left: 0; } 
             .sidebar a { display: block; width: 100%; text-align: left; float: none; border-bottom: 1px solid #eee; } 
             .sidebar-header, .menu-label { display: block; }
@@ -209,6 +206,7 @@
             <input type="hidden" id="gestao-doc-id">
             <input type="hidden" id="gestao-item-index">
             <input type="hidden" id="gestao-item-id-lista">
+            <input type="hidden" id="gestao-item-max-qtd">
             
             <label for="gestao-status">Ação / Status:</label>
             <select id="gestao-status" onchange="toggleGestaoQtd()">
@@ -221,7 +219,10 @@
             <div id="div-gestao-qtd" style="display:none;">
                 <label for="gestao-qtd" style="color:#d90f23;">Quantidade a Remover:</label>
                 <input type="number" id="gestao-qtd" min="1" value="1">
-                <small style="color:#888;">Isso irá subtrair do inventário oficial.</small>
+                <small style="color:#888; display:block; margin-top:2px;">
+                    Estoque Atual: <strong id="gestao-qtd-max-display"></strong>
+                    <br>Nota: Se a quantidade zerar, o item será excluído da lista.
+                </small>
             </div>
             
             <label for="gestao-obs">Descrição do que foi feito:</label>
@@ -287,7 +288,7 @@
             }
         }
 
-        // [FUNÇÕES DE POSTO E CRUD LOCAIS MANTIDAS IGUAIS AO ANTERIOR]
+        // [FUNÇÕES DE POSTO E CRUD LOCAIS MANTIDAS]
         async function carregarPostos() {
             const select = document.getElementById('novo-local-posto');
             try {
@@ -355,10 +356,7 @@
                 snap.forEach(doc => {
                     const d = doc.data();
                     const loc = d.local || 'Desconhecido';
-                    
-                    // FILTRO DE CARDS OBSOLETOS
-                    if (loc === 'ABT-17' || loc === 'ABT-18') return; 
-                    
+                    if (loc === 'ABT-17' || loc === 'ABT-18') return; // Filtro
                     if (!map[loc]) {
                         map[loc] = { docId: doc.id, local: loc, conferente: d.conferente, date: d.timestamp ? new Date(d.timestamp.toDate()).toLocaleString('pt-BR') : 'N/D', items: [] };
                         if (Array.isArray(d.itensCaa)) {
@@ -382,47 +380,25 @@
             });
         }
 
-        // =================================================
-        // FUNÇÃO DE FORMATAÇÃO CORRIGIDA (REGEX & QUEBRA DE LINHA)
-        // =================================================
-        const formatarTextoDashboard = (textoBruto) => {
+        // FORMATAÇÃO DE TEXTO
+        const formatarTextoDashboard = (textoBruto, autorPrincipal, dataPrincipal) => {
             let html = '<ul class="obs-list">';
-            
-            // Separa por " | + NOVA: " (nosso separador padrão) OU por "•" (caso venha do PDF)
-            let partes = [];
-            if (textoBruto.includes(' | + NOVA: ')) {
-                partes = textoBruto.split(' | + NOVA: ');
-            } else if (textoBruto.includes('•')) {
-                partes = textoBruto.split('•').map(s => s.trim()).filter(s => s.length > 0);
+            const separator = ' | + NOVA: ';
+            if (textoBruto && textoBruto.includes(separator)) {
+                const partes = textoBruto.split(separator);
+                partes.forEach(parte => {
+                    parte = parte.trim();
+                    const regex = /^"(.*)" \(Por: (.*) em (.*)\)$/;
+                    const match = parte.match(regex);
+                    if (match) html += `<li class="texto-hist">Por: ${match[2]} em ${match[3]}: "${match[1]}"</li>`;
+                    else html += `<li class="texto-atual">Por: ${autorPrincipal} em ${dataPrincipal}: "${parte}"</li>`;
+                });
             } else {
-                partes = [textoBruto];
+                const regex = /^"(.*)" \(Por: (.*) em (.*)\)$/;
+                const match = textoBruto.match(regex);
+                if (match) html += `<li class="texto-atual">Por: ${match[2]} em ${match[3]}: "${match[1]}"</li>`;
+                else html += `<li class="texto-atual">Por: ${autorPrincipal} em ${dataPrincipal}: "${textoBruto}"</li>`;
             }
-
-            partes.forEach(parte => {
-                parte = parte.trim();
-                
-                // Tenta detectar se já tem assinatura: Por: NOME ... : "TEXTO"
-                // Regex flexível para capturar formato "Por: ... :"
-                const regexComAssinatura = /^Por: (.*?) em (.*?): "(.*?)"$/i;
-                const matchAssinatura = parte.match(regexComAssinatura);
-
-                // Tenta detectar formato antigo: "TEXTO" (Por: ...)
-                const regexAntigo = /^"(.*)" \(Por: (.*) em (.*)\)$/i;
-                const matchAntigo = parte.match(regexAntigo);
-
-                if (matchAssinatura) {
-                    // Já está formatado certinho, só exibe
-                    html += `<li class="texto-hist">Por: ${matchAssinatura[1]} em ${matchAssinatura[2]}: "${matchAssinatura[3]}"</li>`;
-                } else if (matchAntigo) {
-                    // Converte do antigo para o novo
-                    html += `<li class="texto-hist">Por: ${matchAntigo[2]} em ${matchAntigo[3]}: "${matchAntigo[1]}"</li>`;
-                } else {
-                    // Texto sem assinatura clara (apenas exibe o texto, sem inventar autor)
-                    // Isso evita duplicar "Por: Admin" em cima de "Por: Fulano"
-                    html += `<li class="texto-atual">${parte}</li>`;
-                }
-            });
-
             html += '</ul>';
             return html;
         };
@@ -437,19 +413,26 @@
                     const tr = tbody.insertRow();
                     if(i.statusAdmin==='Em solução') tr.classList.add('row-amarelo');
                     if(i.statusAdmin==='Cautelado') tr.classList.add('row-laranja');
+                    const obsFormatada = formatarTextoDashboard(i.obs || '-', data.conferente, data.date);
                     
-                    // AQUI: Não passamos mais autor/data extras para não sobrescrever
-                    const obsFormatada = formatarTextoDashboard(i.obs || '-');
-                    
-                    tr.innerHTML = `<td><strong>${i.nomeCompleto}</strong></td><td><span class="status-badge">${i.statusAdmin||'Pendente'}</span></td><td>${obsFormatada}</td><td><small>${data.conferente}<br>${data.date}</small></td>`;
-                    const td = tr.insertCell(); td.innerHTML = `<button class="btn-action btn-edit-list" onclick='abrirModalGestao(${JSON.stringify(i)})'><i class="fas fa-cog"></i> Gerenciar</button>`;
+                    let adminHtml = '';
+                    if(i.statusAdmin && i.statusAdmin !== 'Pendente' && i.statusAdmin !== 'Solucionado') {
+                         const corFundo = i.statusAdmin === 'Em solução' ? '#fff9c4' : '#ffe0b2'; 
+                         const corBorda = i.statusAdmin === 'Em solução' ? '#fbc02d' : '#f57c00';
+                         adminHtml = `<div style="margin-bottom:5px; padding:6px; background-color:${corFundo}; border-left:4px solid ${corBorda}; border-radius:4px; font-size:0.85em; color:#444;"><strong>⚠️ ${i.statusAdmin} (Admin):</strong> ${i.adminObs || ''}</div>`;
+                    }
+
+                    tr.innerHTML = `<td><strong>${i.nomeCompleto}</strong></td><td><span class="status-badge">${i.statusAdmin||'Pendente'}</span></td><td>${adminHtml}${obsFormatada}</td><td><small>${data.conferente}<br>${data.date}</small></td>`;
+                    const td = tr.insertCell(); td.innerHTML = `<button class="btn-modern-action btn-edit-list" onclick='abrirModalGestao(${JSON.stringify(i)})' style="font-size:0.8em; padding:5px 10px;"><i class="fas fa-cog"></i> Gerenciar</button>`;
                 });
             }
             wrapper.style.display = 'block'; wrapper.scrollIntoView({behavior:'smooth', block:'start'});
         }
         function fecharTabela(){ document.getElementById('ca-table-wrapper').style.display='none'; document.querySelectorAll('.sector-card').forEach(c=>c.classList.remove('active-card')); }
 
-        // GESTÃO DE STATUS E REMOÇÃO
+        // =============================================
+        // GESTÃO DE STATUS E REMOÇÃO (LÓGICA ATUALIZADA)
+        // =============================================
         function abrirModalGestao(i){ 
             document.getElementById('gestao-item-nome').textContent=i.nomeCompleto; 
             document.getElementById('gestao-doc-id').value=i.docId; 
@@ -458,6 +441,15 @@
             document.getElementById('gestao-status').value=i.statusAdmin||'Solucionado'; 
             document.getElementById('gestao-obs').value=''; 
             document.getElementById('gestao-qtd').value='1'; 
+            
+            // Lógica para definir quantidade máxima permitida
+            // Se for item com tombamento (multi), a quantidade é sempre 1 (remove aquele tombamento específico)
+            // Se for item único, usamos a quantidade que vem do objeto 'i' (que é a quantidadeEsperada)
+            const maxQtd = (i.quantidade !== undefined) ? i.quantidade : 1; 
+            document.getElementById('gestao-item-max-qtd').value = maxQtd;
+            document.getElementById('gestao-qtd-max-display').textContent = maxQtd;
+            document.getElementById('gestao-qtd').max = maxQtd;
+
             toggleGestaoQtd(); 
             document.getElementById('modal-gestao-ca').style.display='flex'; 
         }
@@ -466,11 +458,22 @@
         
         async function salvarGestaoCa(){
             const docId=document.getElementById('gestao-doc-id').value, idx=parseInt(document.getElementById('gestao-item-index').value), itemId=document.getElementById('gestao-item-id-lista').value, status=document.getElementById('gestao-status').value, obs=document.getElementById('gestao-obs').value.trim(), qtd=parseInt(document.getElementById('gestao-qtd').value);
+            const maxQtd = parseInt(document.getElementById('gestao-item-max-qtd').value);
+
             if(!obs) return alert("Descreva a ação.");
+            
+            // VALIDAÇÃO DE QUANTIDADE
+            if(status === 'Remover') {
+                if(qtd > maxQtd) {
+                    return alert(`Erro: A quantidade a remover (${qtd}) é maior que o estoque atual (${maxQtd}).`);
+                }
+                if(qtd <= 0) return alert("A quantidade deve ser maior que zero.");
+            }
             
             try {
                 const ref=db.collection(COLECAO_RESULTADOS).doc(docId); const snap=await ref.get(); const resData=snap.data(); const items=resData.itensCaa;
                 items[idx].statusAdmin=(status==='Remover'?'Solucionado':status); 
+                items[idx].adminObs = obs; 
                 await ref.update({itensCaa:items});
 
                 const listaIdAlvo = resData.lista_id;
@@ -479,23 +482,62 @@
                     const listSnap = await listRef.get();
                     if(listSnap.exists) {
                         let lista = listSnap.data().list; let updated = false;
-                        lista.forEach(s => { s.itens.forEach(i => { 
-                            if(i.id === itemId && i.tipo === 'single') {
-                                if(status==='Remover') { i.quantidadeEsperada = Math.max(0, i.quantidadeEsperada - qtd); delete i.pendencia; }
-                                else if(status==='Solucionado') { delete i.pendencia; }
-                                else { if(!i.pendencia)i.pendencia={}; i.pendencia.statusAdmin=status; i.pendencia.adminObs=obs; }
-                                updated=true;
-                            }
-                            if(i.tipo==='multi' && i.tombamentos) {
-                                const tIdx = i.tombamentos.findIndex(t => `${i.id}-${t.tomb}` === itemId);
-                                if(tIdx > -1) {
-                                    if(status==='Remover') { i.tombamentos.splice(tIdx, 1); i.quantidadeEsperada=i.tombamentos.length; }
-                                    else if(status==='Solucionado') { delete i.tombamentos[tIdx].pendencia; }
-                                    else { if(!i.tombamentos[tIdx].pendencia)i.tombamentos[tIdx].pendencia={}; i.tombamentos[tIdx].pendencia.statusAdmin=status; i.tombamentos[tIdx].pendencia.adminObs=obs; }
+                        
+                        // Percorre a estrutura: Setor -> Itens
+                        for (let sIndex = 0; sIndex < lista.length; sIndex++) {
+                            const s = lista[sIndex];
+                            // Usamos um loop for reverso ou filter para poder remover itens com segurança
+                            for (let iIndex = s.itens.length - 1; iIndex >= 0; iIndex--) {
+                                const i = s.itens[iIndex];
+
+                                // CASO 1: ITEM ÚNICO (Single)
+                                if(i.id === itemId && i.tipo === 'single') {
+                                    if(status === 'Remover') {
+                                        if (qtd === i.quantidadeEsperada) {
+                                            // Se remover tudo, EXCLUI da lista
+                                            s.itens.splice(iIndex, 1);
+                                        } else {
+                                            // Se sobrar, apenas subtrai
+                                            i.quantidadeEsperada -= qtd;
+                                            delete i.pendencia;
+                                        }
+                                    } else if(status === 'Solucionado') { 
+                                        delete i.pendencia; 
+                                    } else { 
+                                        if(!i.pendencia) i.pendencia={}; 
+                                        i.pendencia.statusAdmin=status; 
+                                        i.pendencia.adminObs=obs; 
+                                    }
                                     updated=true;
                                 }
+
+                                // CASO 2: ITEM COM TOMBAMENTO (Multi)
+                                if(i.tipo === 'multi' && i.tombamentos) {
+                                    // Procura o tombamento específico
+                                    const tIdx = i.tombamentos.findIndex(t => `${i.id}-${t.tomb}` === itemId);
+                                    if(tIdx > -1) {
+                                        if(status === 'Remover') {
+                                            // Remove o tombamento específico
+                                            i.tombamentos.splice(tIdx, 1);
+                                            i.quantidadeEsperada = i.tombamentos.length;
+                                            
+                                            // SE NÃO SOBRAR NENHUM TOMBAMENTO, REMOVE O ITEM PAI
+                                            if (i.tombamentos.length === 0) {
+                                                s.itens.splice(iIndex, 1);
+                                            }
+                                        } else if(status === 'Solucionado') { 
+                                            delete i.tombamentos[tIdx].pendencia; 
+                                        } else { 
+                                            if(!i.tombamentos[tIdx].pendencia) i.tombamentos[tIdx].pendencia={}; 
+                                            i.tombamentos[tIdx].pendencia.statusAdmin=status; 
+                                            i.tombamentos[tIdx].pendencia.adminObs=obs; 
+                                        }
+                                        updated=true;
+                                    }
+                                }
                             }
-                        }); });
+                        }
+                        
                         if(updated) await listRef.update({list:lista});
                     }
                 }
@@ -503,9 +545,9 @@
             } catch(e){ console.error(e); alert("Erro ao salvar."); }
         }
 
-        // [FUNÇÕES DE SUPORTE DO EDITOR (ADD/REMOVE/BACKUP) MANTIDAS]
+        // [FUNÇÕES DE SUPORTE DO EDITOR MANTIDAS]
         function gerarNovoId(){ return Date.now().toString().slice(-6)+Math.floor(Math.random()*100).toString().padStart(2,'0'); }
-        function renderizarLista() { /* Mesma função do código anterior */ 
+        function renderizarLista() { 
             const container = document.getElementById('lista-setores-container'); container.innerHTML = '';
             dadosConferencia.forEach(setor => {
                 const setorLi = document.createElement('li'); setorLi.className = 'setor-item'; setorLi.setAttribute('data-id', setor.id);
