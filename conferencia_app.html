@@ -6,7 +6,7 @@
     <link rel="icon" type="image/png" href="logo_sigma.png" onerror="this.onerror=null; this.src='https://placehold.co/16x16/800020/ffffff?text=S'">
     <title>SIGMA - Conferência</title>
     <style>
-        /* ESTILOS PADRÃO (MANTIDOS) */
+        /* ESTILOS PADRÃO */
         body { font-family: Arial, sans-serif; background-color: #f4f4f9; color: #333; min-height: 100vh; margin: 0; display: flex; flex-direction: column; align-items: center; padding-bottom: 90px; padding-top: 60px; box-sizing: border-box; }
         .main-header { position: fixed; top: 0; left: 0; width: 100%; height: 50px; background-color: #800020; box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2); z-index: 100; display: flex; align-items: center; padding: 0 15px; box-sizing: border-box; }
         .header-icon { height: 40px; width: auto; vertical-align: middle; }
@@ -44,14 +44,21 @@
         .action-button { padding: 8px 15px; border: 1px solid #ccc; border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 0.9em; transition: background-color 0.2s, color 0.2s, border-color 0.2s; background-color: #f0f0f0; color: #333; }
         .action-button.active.sa-ok { background-color: #1b8a3e; color: white; border-color: #1b8a3e; } .action-button.active.ca-alert { background-color: #d90f23; color: white; border-color: #d90f23; }
         
-        .pendencia-alert-box { font-size: 0.85em; color: #d90f23; margin-top: 5px; display: block; text-align: left; border-left: 3px solid #d90f23; padding-left: 8px; background-color: #fff0f0; padding: 5px; }
-        .pendencia-alert-box.admin-reply { color: #0d47a1; border-left-color: #2196F3; background-color: #e3f2fd; }
+        /* ESTILOS NOVOS PARA LISTA DE PENDÊNCIAS */
+        .pendencia-alert-box { font-size: 0.85em; margin-top: 5px; display: block; text-align: left; border-left: 3px solid #d90f23; padding-left: 8px; background-color: #fff0f0; padding: 5px; }
+        .pendencia-alert-box.admin-reply { border-left-color: #2196F3; background-color: #e3f2fd; }
         
-        .pendencia-actions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 5px; }
+        .lista-pendencias { list-style: none; padding: 0; margin: 5px 0; }
+        .lista-pendencias li { margin-bottom: 6px; display: block; padding-left: 5px; text-align: left; line-height: 1.3; }
+        .texto-admin { font-weight: bold; color: #0d47a1; }
+        .texto-hist { color: #555; font-style: italic; }
+        .texto-atual { color: #d90f23; font-weight: bold; }
+
+        .pendencia-actions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 10px; border-top: 1px dotted #ccc; padding-top: 5px; }
         .btn-manter { background-color: #e0e0e0; border: 1px solid #ccc; color: #333; font-size: 0.8em; padding: 5px 10px; cursor: pointer; border-radius: 4px; } .btn-manter:hover { background-color: #1b8a3e; color: white; }
         .btn-acrescentar { background-color: #e0e0e0; border: 1px solid #ccc; color: #333; font-size: 0.8em; padding: 5px 10px; cursor: pointer; border-radius: 4px; } .btn-acrescentar:hover { background-color: #d90f23; color: white; }
 
-        /* NOVO: ÁREA DE HISTÓRICO TRAVADA */
+        /* ÁREA DE HISTÓRICO TRAVADA */
         .historico-fixo { background-color: #eeeeee; border: 1px solid #ccc; color: #555; padding: 8px; border-radius: 4px; font-size: 0.85em; margin-bottom: 5px; font-style: italic; display: none; }
         .historico-fixo::before { content: "Histórico (Não editável): "; font-weight: bold; color: #888; display: block; font-size: 0.8em; }
 
@@ -124,7 +131,7 @@
             return date.toLocaleDateString('pt-BR'); 
         }
 
-        // RENDERIZAÇÃO
+        // RENDERIZAÇÃO ATUALIZADA
         function renderizarConferencia() {
             const mainContent = document.getElementById('main-content');
             let htmlSetores = '';
@@ -132,79 +139,94 @@
             dadosConferencia.forEach(s => setorIds.push(s.id));
             window.setorIds = setorIds;
 
+            // Função auxiliar para formatar o texto na tela (Web)
+            const formatarLinhaWeb = (textoBruto, autorAtual, dataAtual, adminStatus, adminObs) => {
+                let html = '<ul class="lista-pendencias">';
+
+                // 1. Linha do Admin
+                if (adminStatus) {
+                    html += `<li><span class="texto-admin">⚠️ ${adminStatus} (Admin):</span> Resp: ${adminObs}</li>`;
+                }
+
+                // 2. Separação de Histórico (Separador: | + NOVA:)
+                if (textoBruto.includes('| + NOVA:')) {
+                    let partes = textoBruto.split('| + NOVA:');
+                    let historicoAntigo = partes[0].trim(); // Ex: "Texto" (Por: Fulano em Data)
+                    let textoNovo = partes[1].trim();
+
+                    // Tenta formatar a linha antiga para o padrão novo: Por: Fulano em Data: "Texto"
+                    const regexAntigo = /^"(.*)" \(Por: (.*) em (.*)\)$/;
+                    const match = historicoAntigo.match(regexAntigo);
+
+                    if (match) {
+                        // match[1]=texto, match[2]=autor, match[3]=data
+                        html += `<li><span class="texto-hist">• Por: ${match[2]} em ${match[3]}: "${match[1]}"</span></li>`;
+                    } else {
+                        // Caso não case com o regex, exibe como está, mas limpo
+                        html += `<li><span class="texto-hist">• ${historicoAntigo}</span></li>`;
+                    }
+
+                    // Linha Atual
+                    html += `<li><span class="texto-atual">• Por ${autorAtual} (${dataAtual}): "${textoNovo}"</span></li>`;
+
+                } else {
+                    // Caso não tenha histórico concatenado (apenas 1 mensagem)
+                    html += `<li><span class="texto-atual">• Por ${autorAtual} (${dataAtual}): "${textoBruto}"</span></li>`;
+                }
+
+                html += '</ul>';
+                return html;
+            };
+
             dadosConferencia.forEach(setor => {
                 let htmlItens = ''; let totalItensNoSetor = 0;
                 const isFirstSetor = setor.id === setorIds[0];
+                
                 setor.itens.forEach(item => {
-                    let htmlTombamento = '';
+                    // Lógica Comum de Renderização de Pendência
+                    const montarPendenciaHtml = (uid, pendenciaObj) => {
+                        if (!pendenciaObj) return '';
+                        
+                        const obs = pendenciaObj.obs ? pendenciaObj.obs.replace(/'/g, "\\'") : '';
+                        const quem = pendenciaObj.quem || 'Anônimo';
+                        const dataPend = formatarDataSimples(pendenciaObj.data);
+                        
+                        // Texto cru para passar para a função de edição (mantém formato original para lógica funcionar)
+                        const historicoTxtParaEdicao = `"${obs}" (Por: ${quem} em ${dataPend})`;
+                        
+                        const htmlFormatado = formatarLinhaWeb(obs, quem, dataPend, pendenciaObj.statusAdmin, pendenciaObj.adminObs);
+                        
+                        let classAdmin = pendenciaObj.statusAdmin ? "admin-reply" : "";
+
+                        return `
+                        <div class="pendencia-alert-box ${classAdmin}">
+                            ${htmlFormatado}
+                            <div class="pendencia-actions">
+                                <button class="btn-manter" onclick="manterPendencia('${uid}')">✅ Concordo (Manter)</button>
+                                <button class="btn-acrescentar" onclick="acrescentarPendencia('${uid}', '${historicoTxtParaEdicao.replace(/'/g, "\\'")}')">➕ Acrescentar</button>
+                            </div>
+                        </div>`;
+                    };
+
                     if (item.tipo === 'multi' && item.tombamentos) {
+                        let htmlTombamentos = '';
                         item.tombamentos.forEach(tomb => {
-                            let pendenciaHtml = '';
-                            if (tomb.pendencia) {
-                                const obs = tomb.pendencia.obs ? tomb.pendencia.obs.replace(/'/g, "\\'") : '';
-                                const quem = tomb.pendencia.quem || 'Anônimo';
-                                const dataPend = formatarDataSimples(tomb.pendencia.data);
-                                // FORMATO HISTÓRICO (Sem assinatura, pois a assinatura vai no rótulo)
-                                const historicoTxt = `"${obs}" (Por: ${quem} em ${dataPend})`;
-                                
-                                let tituloAlert = "Alteração Anterior";
-                                let classAdmin = "";
-                                let textoAdmin = "";
-
-                                if (tomb.pendencia.statusAdmin) {
-                                    tituloAlert = `${tomb.pendencia.statusAdmin} (Admin)`;
-                                    classAdmin = "admin-reply";
-                                    textoAdmin = `<div><strong>Resp:</strong> ${tomb.pendencia.adminObs}</div>`;
-                                }
-
-                                pendenciaHtml = `
-                                <div class="pendencia-alert-box ${classAdmin}">
-                                    <span class="alert-msg">⚠️ <strong>${tituloAlert}:</strong></span>
-                                    ${textoAdmin}
-                                    <div style="margin-top:4px; font-style:italic;">"${obs}" <br><small>- ${quem} (${dataPend})</small></div>
-                                    <div class="pendencia-actions">
-                                        <button class="btn-manter" onclick="manterPendencia('${item.id}-${tomb.tomb}')">✅ Concordo (Manter)</button>
-                                        <button class="btn-acrescentar" onclick="acrescentarPendencia('${item.id}-${tomb.tomb}', '${historicoTxt.replace(/'/g, "\\'")}')">➕ Acrescentar / Editar</button>
-                                    </div>
-                                </div>`;
-                            }
-                            htmlTombamento += `<div class="tombamento-container" data-tomb="${tomb.tomb}" data-item-id="${item.id}"><div class="tombamento-controls"><span>Tomb.: ${tomb.tomb}</span><div class="tombamento-options"><button class="action-button sa-ok" onclick="setTombamentoStatus(this, 'ok')">S/A</button><button class="action-button ca-alert" onclick="setTombamentoStatus(this, 'alert')">C/A</button></div></div>${pendenciaHtml}<p class="tombamento-descricao-salva"></p><div class="tombamento-obs-container"><div class="historico-fixo"></div><label>Descreva a alteração:</label><textarea placeholder="Detalhe a alteração."></textarea><button type="button" class="btn-salvar-alteracao" onclick="salvarTombamento(this)">SALVAR OBSERVAÇÃO</button></div></div>`;
+                            const uid = `${item.id}-${tomb.tomb}`;
+                            const pendenciaHtml = montarPendenciaHtml(uid, tomb.pendencia);
+                            
+                            htmlTombamentos += `<div class="tombamento-container" data-tomb="${tomb.tomb}" data-item-id="${item.id}"><div class="tombamento-controls"><span>Tomb.: ${tomb.tomb}</span><div class="tombamento-options"><button class="action-button sa-ok" onclick="setTombamentoStatus(this, 'ok')">S/A</button><button class="action-button ca-alert" onclick="setTombamentoStatus(this, 'alert')">C/A</button></div></div>${pendenciaHtml}<p class="tombamento-descricao-salva"></p><div class="tombamento-obs-container"><div class="historico-fixo"></div><label>Descreva a alteração:</label><textarea placeholder="Detalhe a alteração."></textarea><button type="button" class="btn-salvar-alteracao" onclick="salvarTombamento(this)">SALVAR OBSERVAÇÃO</button></div></div>`;
                             totalItensNoSetor++;
-                            window.itemStatus[`${item.id}-${tomb.tomb}`] = { status: 'pending', obs: '' };
+                            window.itemStatus[uid] = { status: 'pending', obs: '' };
                         });
-                        htmlItens += `<div class="item-conferencia item-has-tombamentos" data-type="multi" data-total-tombamentos="${item.tombamentos.length}" data-status="pending" data-id="${item.id}"><div class="item-header"><span class="status-icon"></span><span class="item-label">${item.nome}</span><span class="item-quantidade">QTD: ${item.quantidadeEsperada}</span></div>${htmlTombamento}</div>`;
+                        htmlItens += `<div class="item-conferencia item-has-tombamentos" data-type="multi" data-total-tombamentos="${item.tombamentos.length}" data-status="pending" data-id="${item.id}"><div class="item-header"><span class="status-icon"></span><span class="item-label">${item.nome}</span><span class="item-quantidade">QTD: ${item.quantidadeEsperada}</span></div>${htmlTombamentos}</div>`;
                     } else {
-                        let pendenciaHtml = ''; let classExtra = '';
+                        let classExtra = '';
                         if (item.pendencia) {
-                             const obs = item.pendencia.obs ? item.pendencia.obs.replace(/'/g, "\\'") : '';
-                             const quem = item.pendencia.quem || 'Anônimo';
-                             const dataPend = formatarDataSimples(item.pendencia.data);
-                             const historicoTxt = `"${obs}" (Por: ${quem} em ${dataPend})`;
-
-                             let tituloAlert = "Alteração Anterior";
-                             let classAdmin = "";
-                             let textoAdmin = "";
-
-                             if (item.pendencia.statusAdmin) {
-                                classExtra = 'status-admin-response';
-                                tituloAlert = `${item.pendencia.statusAdmin} (Admin)`;
-                                classAdmin = "admin-reply";
-                                textoAdmin = `<div><strong>Resp:</strong> ${item.pendencia.adminObs}</div>`;
-                             } else {
-                                classExtra = 'status-existing-alert';
-                             }
-
-                             pendenciaHtml = `
-                             <div class="pendencia-alert-box ${classAdmin}">
-                                <span class="alert-msg">⚠️ <strong>${tituloAlert}:</strong></span>
-                                ${textoAdmin}
-                                <div style="margin-top:4px; font-style:italic;">"${obs}" <br><small>- ${quem} (${dataPend})</small></div>
-                                <div class="pendencia-actions">
-                                    <button class="btn-manter" onclick="manterPendencia('${item.id}')">✅ Concordo (Manter)</button>
-                                    <button class="btn-acrescentar" onclick="acrescentarPendencia('${item.id}', '${historicoTxt.replace(/'/g, "\\'")}')">➕ Acrescentar / Editar</button>
-                                </div>
-                             </div>`;
+                             if (item.pendencia.statusAdmin) classExtra = 'status-admin-response';
+                             else classExtra = 'status-existing-alert';
                         }
+                        const pendenciaHtml = montarPendenciaHtml(item.id, item.pendencia);
+
                         htmlItens += `<div class="item-conferencia ${classExtra}" data-type="single" data-status="pending" data-id="${item.id}"><div class="item-header"><span class="status-icon"></span><span class="item-label">${item.nome}</span><span class="item-quantidade">QTD: ${item.quantidadeEsperada}</span></div><div class="item-options"><button class="action-button sa-ok" onclick="setItemStatus(this, 'ok')">S/A</button><button class="action-button ca-alert" onclick="setItemStatus(this, 'alert')">C/A</button></div>${pendenciaHtml}<p class="descricao-salva"></p><div class="alteracao-container"><div class="historico-fixo"></div><label>Descreva a alteração:</label><textarea data-id="${item.id}" placeholder="Descreva a alteração."></textarea><button type="button" class="btn-salvar-alteracao" onclick="salvarItem(this)">SALVAR</button></div></div>`;
                         totalItensNoSetor++;
                         window.itemStatus[item.id] = { status: 'pending', obs: '' };
@@ -234,7 +256,7 @@
 
         function acrescentarPendencia(uid, textoHistorico) {
             let container; 
-            // Busca pelo botão clicado para achar contexto correto (mais seguro)
+            // Busca pelo botão clicado para achar contexto correto
             if(event && event.target) {
                 const alertBox = event.target.closest('.pendencia-alert-box');
                 if(alertBox) {
@@ -299,11 +321,10 @@
             }
         }
 
-        // RESTO DAS FUNÇÕES
         function setItemStatus(button, status) { const item = button.closest('.item-conferencia'); const setor = button.closest('.setor'); item.querySelectorAll('.item-options .action-button').forEach(b => b.classList.remove('active')); button.classList.add('active'); item.querySelector('.descricao-salva').style.display = 'none'; item.querySelector('.alteracao-container').style.display = 'none'; const pb=item.querySelector('.pendencia-alert-box'); if(pb)pb.style.display='none'; if (status === 'ok') { item.className = 'item-conferencia status-ok'; item.querySelector('.status-icon').className = 'status-icon ok'; window.itemStatus[item.dataset.id] = { status: 'S/A', obs: '' }; } else { item.className = 'item-conferencia status-alert'; item.querySelector('.status-icon').className = 'status-icon alert'; item.querySelector('.alteracao-container').style.display = 'block'; window.itemStatus[item.dataset.id] = { status: 'PENDING_CA', obs: '' }; item.querySelector('textarea').focus(); updateSetorStatus(setor); return; } updateSetorStatus(setor); updateOverallStatus(); checkSetorCompletion(setor, item.dataset.id); }
         function setTombamentoStatus(button, status) { const tombEl = button.closest('.tombamento-container'); const item = button.closest('.item-conferencia'); const setor = button.closest('.setor'); const uid = `${item.dataset.id}-${tombEl.dataset.tomb}`; tombEl.querySelectorAll('.action-button').forEach(b => b.classList.remove('active')); button.classList.add('active'); tombEl.querySelector('.tombamento-obs-container').style.display = 'none'; tombEl.querySelector('.tombamento-descricao-salva').style.display = 'none'; const pb=tombEl.querySelector('.pendencia-alert-box'); if(pb)pb.style.display='none'; if (status === 'ok') { window.itemStatus[uid] = { status: 'S/A', obs: '' }; updateItemMainStatusDisplay(item); } else { tombEl.querySelector('.tombamento-obs-container').style.display = 'block'; window.itemStatus[uid] = { status: 'PENDING_CA', obs: '' }; tombEl.querySelector('textarea').focus(); updateItemMainStatusDisplay(item); return; } updateSetorStatus(setor); updateOverallStatus(); checkSetorCompletion(setor, item.dataset.id); }
         
-        // SALVAR ITEM (COM LÓGICA DE CONCATENAÇÃO COM SEPARADOR ESPECIAL PARA PDF)
+        // SALVAR ITEM (COM LÓGICA DE CONCATENAÇÃO)
         function salvarItem(button) { 
             const item = button.closest('.item-conferencia'); 
             const obs = item.querySelector('textarea').value.trim();
@@ -367,26 +388,25 @@
 
                 let updated = false;
                 
-                // 1. PERSISTÊNCIA DE LISTA (Atualiza Pendências)
+                // 1. PERSISTÊNCIA DE LISTA (Atualiza Pendências no DB)
+                const atualizarListaDB = (itemOuTomb, uid) => {
+                    const s = window.itemStatus[uid];
+                    if(!s) return;
+                    
+                    if(s.status === 'C/A') { 
+                        let old = itemOuTomb.pendencia || {};
+                        // Salva no banco com o separador cru para permitir novas edições futuras
+                        itemOuTomb.pendencia = { obs: s.obs, quem: conferente, data: firebase.firestore.Timestamp.now(), statusAdmin: clean(old.statusAdmin), adminObs: clean(old.adminObs) }; 
+                        updated=true; 
+                    } else if(s.status === 'S/A' && itemOuTomb.pendencia) { 
+                        delete itemOuTomb.pendencia; updated=true; 
+                    }
+                };
+
                 dadosConferencia.forEach(setor => {
                     setor.itens.forEach(item => {
-                        if(item.tipo === 'single') {
-                            const s = window.itemStatus[item.id];
-                            if(s.status === 'C/A') { 
-                                let old = item.pendencia || {};
-                                item.pendencia = { obs: s.obs, quem: conferente, data: firebase.firestore.Timestamp.now(), statusAdmin: clean(old.statusAdmin), adminObs: clean(old.adminObs) }; 
-                                updated=true; 
-                            } else if(s.status === 'S/A' && item.pendencia) { delete item.pendencia; updated=true; }
-                        } else if(item.tombamentos) {
-                            item.tombamentos.forEach(t => {
-                                const uid = `${item.id}-${t.tomb}`; const s = window.itemStatus[uid];
-                                if(s.status === 'C/A') { 
-                                    let old = t.pendencia || {};
-                                    t.pendencia = { obs: s.obs, quem: conferente, data: firebase.firestore.Timestamp.now(), statusAdmin: clean(old.statusAdmin), adminObs: clean(old.adminObs) }; 
-                                    updated=true; 
-                                } else if(s.status === 'S/A' && t.pendencia) { delete t.pendencia; updated=true; }
-                            });
-                        }
+                        if(item.tipo === 'single') atualizarListaDB(item, item.id);
+                        else if(item.tombamentos) item.tombamentos.forEach(t => atualizarListaDB(t, `${item.id}-${t.tomb}`));
                     });
                 });
                 
@@ -399,60 +419,66 @@
                     setor.itens.forEach(item => {
                         let itemsToProcess = [];
                         
-                        // Helper para processar lógica de exibição
+                        // Helper para processar lógica de exibição no PDF
                         const processItemData = (id, nome, originalPendencia, qtd) => {
                             const s = window.itemStatus[id];
                             if (s && s.status !== 'pending') {
-                                let finalObs = s.obs; // O texto cru do textarea
+                                let finalObs = s.obs; 
                                 let statusFinal = s.status;
-
-                                // LÓGICA DE FORMATAÇÃO LINDA PARA O PDF
                                 let pdfText = "";
 
-                                if (s.status === 'KEEP' && originalPendencia) {
-                                    // MANTIDO
+                                // === LÓGICA DE FORMATAÇÃO DO PDF ===
+                                
+                                // Função interna para formatar linha antiga
+                                const formatarLinhaAntiga = (txt) => {
+                                    // Tenta converter "Texto" (Por: X em Y) -> Por: X em Y: "Texto"
+                                    const regex = /^"(.*)" \(Por: (.*) em (.*)\)$/;
+                                    const m = txt.match(regex);
+                                    if(m) return `• Por: ${m[2]} em ${m[3]}: "${m[1]}"`;
+                                    return `• ${txt}`;
+                                };
+
+                                // Se o Status for MANTER (KEEP), usamos os dados originais
+                                if (statusFinal === 'KEEP' && originalPendencia) {
+                                    statusFinal = 'C/A'; 
                                     const dataStr = formatarDataSimples(originalPendencia.data);
                                     const autorOriginal = originalPendencia.quem || 'Anônimo';
-                                    statusFinal = 'C/A'; 
                                     
+                                    // 1. Admin
                                     if (originalPendencia.statusAdmin) {
-                                        pdfText += `• [${originalPendencia.statusAdmin.toUpperCase()}]: ${originalPendencia.adminObs} (Admin)\n`;
+                                        pdfText += `• [${originalPendencia.statusAdmin.toUpperCase()}] (Admin): ${originalPendencia.adminObs}\n`;
                                     }
-                                    // Texto do histórico
-                                    pdfText += `• "${originalPendencia.obs}" (Por: ${autorOriginal} em ${dataStr})`;
-
-                                } else if (s.status === 'C/A') {
-                                    // EDITADO / NOVO / ACRESCENTADO
-                                    // Verifica se tem o separador mágico | + NOVA:
+                                    // 2. Obs Original (Formatada)
+                                    pdfText += `• Por: ${autorOriginal} em ${dataStr}: "${originalPendencia.obs}"`;
+                                
+                                // Se for C/A (Editado ou Novo)
+                                } else if (statusFinal === 'C/A') {
+                                    // Verifica se tem separador | + NOVA:
                                     if (s.obs.includes('| + NOVA:')) {
                                         let parts = s.obs.split('| + NOVA:');
-                                        let historyPart = parts[0].trim(); // Já tem o "Por..." formatado do banco antigo se for o caso, ou é texto cru
+                                        let historyPart = parts[0].trim();
                                         let newPart = parts[1].trim();
 
-                                        // Se tiver admin status, poe no topo
+                                        // 1. Admin (se existia na pendencia original)
                                         if (originalPendencia && originalPendencia.statusAdmin) {
-                                             pdfText += `• [${originalPendencia.statusAdmin.toUpperCase()}]: ${originalPendencia.adminObs} (Admin)\n`;
+                                            pdfText += `• [${originalPendencia.statusAdmin.toUpperCase()}] (Admin): ${originalPendencia.adminObs}\n`;
                                         }
 
-                                        // Parte Histórica (Remove as aspas duplas extras se tiver)
-                                        pdfText += `• ${historyPart.replace(/^"|"$/g, '')}\n`;
+                                        // 2. Histórico Antigo (Formatado)
+                                        pdfText += formatarLinhaAntiga(historyPart) + "\n";
                                         
-                                        // Parte Nova (Assina agora!)
-                                        pdfText += `• "${newPart}" (Por: ${conferente} em ${dataHoraStr})`;
+                                        // 3. Nova Obs (Assinada Agora)
+                                        pdfText += `• Por ${conferente} em ${dataHoraStr}: "${newPart}"`;
                                         
-                                        // Atualiza o obs final pra salvar no banco limpo? Não, banco salva com separador pra permitir edição futura.
-                                        // Mas no PDF vai bonitinho.
                                     } else {
-                                        // É uma alteração nova pura, ou edição completa.
-                                        // Assina se for nova
+                                        // É apenas uma mensagem nova ou edição completa
                                         if (originalPendencia && originalPendencia.statusAdmin) {
-                                             pdfText += `• [${originalPendencia.statusAdmin.toUpperCase()}]: ${originalPendencia.adminObs} (Admin)\n`;
+                                            pdfText += `• [${originalPendencia.statusAdmin.toUpperCase()}] (Admin): ${originalPendencia.adminObs}\n`;
                                         }
-                                        pdfText += `• "${s.obs}" (Por: ${conferente} em ${dataHoraStr})`;
+                                        pdfText += `• Por ${conferente} em ${dataHoraStr}: "${s.obs}"`;
                                     }
                                 }
                                 
-                                // Se pdfText estiver vazio (caso de S/A), ignora.
                                 if(pdfText) finalObs = pdfText;
 
                                 itemsToProcess.push({ 
@@ -460,8 +486,7 @@
                                     status: statusFinal === 'KEEP' ? 'C/A' : statusFinal, 
                                     obs: finalObs, 
                                     quantidade: qtd, 
-                                    id: id, 
-                                    statusAdmin: clean(originalPendencia?.statusAdmin) 
+                                    id: id
                                 });
                             }
                         };
@@ -514,7 +539,7 @@
                 
                 doc.save(`Conferencia_${localNome.replace(/[^a-zA-Z0-9]/g,'')}_${new Date().toISOString().split('T')[0]}.pdf`);
                 alert("Salvo com sucesso!"); 
-                window.location.href = "index.html"; // REDIRECIONAMENTO CORRIGIDO
+                window.location.href = "index.html";
             } catch (e) { console.error(e); alert("Erro: " + e.message); btn.disabled = false; }
         }
         window.onload = carregarDadosRemotos;
