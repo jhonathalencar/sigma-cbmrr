@@ -13,14 +13,23 @@
         /* ESTILOS GERAIS */
         body { font-family: Arial, sans-serif; background-color: #f4f4f9; color: #333; margin: 0; display: flex; min-height: 100vh; padding-top: 50px; padding-bottom: 60px; box-sizing: border-box; overflow-x: hidden; }
         .main-header { position: fixed; top: 0; left: 0; width: 100%; height: 50px; background-color: #800020; box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2); z-index: 100; display: flex; align-items: center; padding: 0 15px; box-sizing: border-box; gap: 10px; }
-        .header-icon { height: 40px; width: auto; } .header-title-desktop, .header-title-mobile { font-weight: bold; font-size: 1.1em; line-height: 1.2; } .text-white { color: white; } .text-red { color: #FF3B3B; } .header-title-desktop { display: none; } .header-title-mobile { display: block; } @media (min-width: 768px) { .header-title-desktop { display: block; font-size: 1.2em; } .header-title-mobile { display: none; } }
+        .header-icon { height: 40px; width: auto; } .header-title-desktop, .header-title-mobile { font-weight: bold; font-size: 1.1em; line-height: 1.2; } .text-white { color: white; } .text-red { color: #FF3B3B; } .header-title-desktop { display: none; } .header-title-mobile { display: block; } 
+        
+        /* Botão Menu Mobile */
+        #menu-btn { display: none; background: none; border: none; color: white; font-size: 1.5em; cursor: pointer; padding: 0 5px; }
+
+        @media (min-width: 768px) { .header-title-desktop { display: block; font-size: 1.2em; } .header-title-mobile { display: none; } #menu-btn { display: none; } }
+        
         .footer-central { position: fixed; bottom: 0; left: 0; width: 100%; text-align: center; padding: 5px 0 5px; background-color: #f4f4f9; color: #555; font-size: 0.65em; line-height: 1.3; z-index: 100; box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.05); } .footer-central strong, .footer-autor { display: block; width: 100%; text-align: center; } .footer-central strong { font-weight: bold; } .footer-autor { margin-top: 10px; color: #888; font-size: 0.9em; }
         
         /* SIDEBAR */
-        .sidebar { width: 250px; background-color: #ffffff; color: #333; padding-top: 20px; box-shadow: 2px 0 5px rgba(0, 0, 0, 0.05); border-right: 1px solid #e0e0e0; position: fixed; top: 50px; left: 0; height: calc(100% - 50px); display: flex; flex-direction: column; z-index: 10; overflow-y: auto; } 
+        .sidebar { width: 250px; background-color: #ffffff; color: #333; padding-top: 20px; box-shadow: 2px 0 5px rgba(0, 0, 0, 0.05); border-right: 1px solid #e0e0e0; position: fixed; top: 50px; left: 0; height: calc(100% - 50px); display: flex; flex-direction: column; z-index: 110; overflow-y: auto; transition: left 0.3s ease; } 
         .sidebar-header { text-align: center; padding: 10px 0 20px 0; border-bottom: 1px solid #eee; margin-bottom: 10px; } .sidebar-header img { width: 50px; height: auto; margin-bottom: 5px; } .sidebar-header h2 { font-size: 1.1em; margin: 0; color: #800020; } 
         .sidebar a { padding: 15px 20px; text-decoration: none; font-size: 1em; color: #555; display: block; transition: all 0.3s ease; border-left: 4px solid transparent; cursor: pointer; } .sidebar a:hover { background-color: #fff5f5; color: #800020; } .sidebar a.active { background-color: #ffecec; color: #800020; font-weight: bold; border-left: 4px solid #d90f23; } .menu-label { padding: 15px 20px 5px; font-size: 0.85em; color: #999; text-transform: uppercase; font-weight: bold; }
         
+        /* Overlay para mobile */
+        .sidebar-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 105; }
+
         /* CONTENT */
         .content { margin-left: 250px; flex-grow: 1; padding: 20px; box-sizing: border-box; width: calc(100% - 250px); padding-bottom: 80px; } .view-section { display: none; } .view-section.active-view { display: block; }
 
@@ -64,10 +73,17 @@
         .btn-edit-list { background-color: #0277bd; color: white; border:none; padding:8px 12px; border-radius:4px; cursor:pointer; }
         .btn-link { background-color: #f57c00; color: white; border:none; padding:8px 12px; border-radius:4px; cursor:pointer; }
 
-        /* TABLE (C/A) & MODAIS - Mantidos */
+        /* TABLE (C/A) & MODAIS */
         .ca-table-container { overflow-x: auto; background-color: white; padding: 20px; border-radius: 8px; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); margin-top: 10px; border-top: 3px solid #d90f23; } 
-        .ca-table { width: 100%; border-collapse: collapse; font-size: 0.9em; } .ca-table th, .ca-table td { padding: 12px 15px; text-align: left; border-bottom: 1px solid #ddd; } .ca-table th { background-color: #f8f8f8; color: #800020; font-weight: bold; text-transform: uppercase; }
+        .ca-table { width: 100%; border-collapse: collapse; font-size: 0.9em; } .ca-table th, .ca-table td { padding: 12px 15px; text-align: left; border-bottom: 1px solid #ddd; vertical-align: top; } .ca-table th { background-color: #f8f8f8; color: #800020; font-weight: bold; text-transform: uppercase; }
         .row-amarelo { background-color: #fffde7 !important; } .row-laranja { background-color: #fff3e0 !important; } .status-badge { padding: 4px 8px; border-radius: 4px; font-size: 0.8em; font-weight: bold; } .badge-pendente { background-color: #ffebee; color: #d32f2f; } .badge-solucao { background-color: #fff9c4; color: #fbc02d; border: 1px solid #fbc02d; } .badge-cautela { background-color: #ffe0b2; color: #f57c00; border: 1px solid #f57c00; }
+        
+        /* ESTILOS DE LISTA DENTRO DA TABELA (NOVO) */
+        .obs-list { list-style: none; padding: 0; margin: 0; }
+        .obs-list li { margin-bottom: 4px; padding-bottom: 4px; border-bottom: 1px dotted #eee; }
+        .obs-list li:last-child { border-bottom: none; }
+        .texto-hist { color: #666; font-style: italic; font-size: 0.9em; }
+        .texto-atual { color: #d90f23; font-weight: bold; }
         
         /* ADMIN EDITOR */
         .admin-container { background-color: #fff; padding: 20px; border-radius: 10px; box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1); width: 100%; max-width: 900px; margin: 0 auto 20px auto; box-sizing: border-box; text-align: center; } .logo-admin { display: block; margin: 0 auto 15px auto; max-width: 80px; height: auto; } h1.page-title { color: #d90f23; margin-bottom: 15px; font-size: 1.8em; border-bottom: 2px solid #e0e0e0; padding-bottom: 10px; text-align: center; } .global-actions { display: flex; gap: 15px; margin-bottom: 25px; justify-content: flex-start; flex-wrap: wrap; padding: 15px; background-color: #fafafa; border-radius: 8px; border: 1px solid #eee; } 
@@ -76,13 +92,34 @@
         /* MODAIS */
         .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); display: none; align-items: center; justify-content: center; z-index: 2000; } .modal-content { background: #fff; padding: 25px; border-radius: 12px; width: 90%; max-width: 500px; position: relative; text-align: left; } .modal-content h2 { margin-top: 0; color: #800020; border-bottom: 1px solid #eee; padding-bottom: 10px; } .modal-content label { display: block; margin-top: 15px; font-weight: bold; color: #555; } .modal-content input, .modal-content select, .modal-content textarea { width: 100%; padding: 10px; margin-top: 5px; box-sizing: border-box; border: 1px solid #ccc; border-radius: 4px; } .modal-content textarea { height: 80px; resize: vertical; } .modal-buttons { display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px; } .close-btn { position: absolute; top: 10px; right: 15px; background: none; border: none; font-size: 20px; cursor: pointer; color: #d90f23; }
 
-        @media (max-width: 768px) { .sidebar { width: 100%; height: auto; position: relative; top: 0; border-right: none; border-bottom: 1px solid #ddd; } .sidebar a { display: inline-block; width: 50%; box-sizing: border-box; text-align: center; float: left; border-bottom: 3px solid transparent; } .sidebar a.active { border-left: none; border-bottom: 3px solid #d90f23; } .content { margin-left: 0; width: 100%; padding-top: 15px; } .sidebar-header, .menu-label { display: none; } }
+        /* MOBILE RESPONSIVE MENU (NOVO) */
+        @media (max-width: 768px) { 
+            #menu-btn { display: block; }
+            .sidebar { left: -260px; width: 260px; border-right: 1px solid #ddd; } /* Começa escondido */
+            .sidebar.mobile-active { left: 0; } /* Classe para mostrar */
+            .sidebar a { display: block; width: 100%; text-align: left; float: none; border-bottom: 1px solid #eee; } 
+            .sidebar-header, .menu-label { display: block; }
+            .content { margin-left: 0; width: 100%; padding-top: 15px; } 
+        }
     </style>
 </head>
 <body>
+    <div id="mobile-overlay" class="sidebar-overlay" onclick="toggleMenuMobile()"></div>
 
-    <header class="main-header"><img src="cbmrr.png" alt="CBM-RR" class="header-icon" onerror="this.onerror=null; this.src='https://placehold.co/40x40/ffffff/800020/fff?text=CBM'"><div class="header-title-desktop"><span class="text-white">CORPO DE BOMBEIROS MILITAR </span><span class="text-red">RORAIMA</span></div><div class="header-title-mobile"><span class="text-white">CBM</span><span class="text-red">RR</span></div></header>
-    <div class="sidebar"><div class="sidebar-header"><img src="cci.png" alt="Logo CCI" onerror="this.onerror=null; this.src='https://placehold.co/50x50/ffffff/800020/fff?text=S'"><h2>SIGMA Admin</h2></div><div class="menu-label">Principal</div><a onclick="switchView('dashboard')" id="link-dashboard" class="active"><i class="fas fa-chart-line"></i> Dashboard C/A</a><div class="menu-label">Gerenciamento</div><a onclick="switchView('locais')" id="link-locais"><i class="fas fa-map-marker-alt"></i> Locais & Listas</a></div>
+    <header class="main-header">
+        <button id="menu-btn" onclick="toggleMenuMobile()"><i class="fas fa-bars"></i></button>
+        <img src="cbmrr.png" alt="CBM-RR" class="header-icon" onerror="this.onerror=null; this.src='https://placehold.co/40x40/ffffff/800020/fff?text=CBM'">
+        <div class="header-title-desktop"><span class="text-white">CORPO DE BOMBEIROS MILITAR </span><span class="text-red">RORAIMA</span></div>
+        <div class="header-title-mobile"><span class="text-white">CBM</span><span class="text-red">RR</span></div>
+    </header>
+    
+    <div class="sidebar" id="main-sidebar">
+        <div class="sidebar-header"><img src="cci.png" alt="Logo CCI" onerror="this.onerror=null; this.src='https://placehold.co/50x50/ffffff/800020/fff?text=S'"><h2>SIGMA Admin</h2></div>
+        <div class="menu-label">Principal</div>
+        <a onclick="switchView('dashboard'); toggleMenuMobile()" id="link-dashboard" class="active"><i class="fas fa-chart-line"></i> Dashboard C/A</a>
+        <div class="menu-label">Gerenciamento</div>
+        <a onclick="switchView('locais'); toggleMenuMobile()" id="link-locais"><i class="fas fa-map-marker-alt"></i> Locais & Listas</a>
+    </div>
 
     <div class="content">
         <div id="view-dashboard" class="view-section active-view">
@@ -177,14 +214,26 @@
         
         // COLEÇÕES
         const COLECAO_RESULTADOS = 'resultados_conferencias';
-        const COLECAO_LISTAS = 'listas_conferencia'; // NOVA COLEÇÃO DE LISTAS
+        const COLECAO_LISTAS = 'listas_conferencia'; 
         const DOC_CONFIG_ROTAS = db.collection('config_geral').doc('rotas');
-        const DOC_CONFIG_POSTOS = db.collection('config_geral').doc('postos'); // NOVA CONFIG
+        const DOC_CONFIG_POSTOS = db.collection('config_geral').doc('postos'); 
         
         let dadosConferencia = [];
-        let currentEditingId = null; // Guarda qual ID estamos editando
+        let currentEditingId = null; 
 
-        // NAVEGAÇÃO
+        // NAVEGAÇÃO E MENU MOBILE
+        function toggleMenuMobile() {
+            const sidebar = document.getElementById('main-sidebar');
+            const overlay = document.getElementById('mobile-overlay');
+            if(sidebar.classList.contains('mobile-active')) {
+                sidebar.classList.remove('mobile-active');
+                overlay.style.display = 'none';
+            } else {
+                sidebar.classList.add('mobile-active');
+                overlay.style.display = 'block';
+            }
+        }
+
         function switchView(v) { 
             document.querySelectorAll('.view-section').forEach(e=>e.classList.remove('active-view')); 
             document.querySelectorAll('.sidebar a').forEach(e=>e.classList.remove('active')); 
@@ -197,10 +246,9 @@
                 document.getElementById('view-locais').classList.add('active-view'); 
                 document.getElementById('link-locais').classList.add('active'); 
                 carregarListaLocais();
-                carregarPostos(); // Carrega os postos no Select
+                carregarPostos(); 
             } else if (v === 'editor') {
                 document.getElementById('view-editor').classList.add('active-view');
-                // Mantém o menu 'Locais' ativo visualmente pois o editor é sub-tela
                 document.getElementById('link-locais').classList.add('active');
             }
         }
@@ -215,7 +263,6 @@
                 let lista = [];
                 
                 if (!doc.exists) {
-                    // Cria padrão se não existir
                     lista = ['ALFA', 'BRAVO', 'CHARLIE', 'CARACARAÍ', 'RORAINÓPOLIS', 'PACARAIMA'];
                     await DOC_CONFIG_POSTOS.set({ lista: lista });
                 } else {
@@ -246,9 +293,8 @@
                 });
                 alert("Posto adicionado!");
                 input.value = '';
-                carregarPostos(); // Recarrega o dropdown
+                carregarPostos(); 
             } catch (e) {
-                // Se o documento não existir (ex: primeira vez e falhou load), usa set
                 if (e.code === 'not-found') {
                     await DOC_CONFIG_POSTOS.set({ lista: [novo] });
                     carregarPostos();
@@ -271,9 +317,8 @@
                 const doc = await DOC_CONFIG_ROTAS.get();
                 if (doc.exists) {
                     const rotas = doc.data();
-                    // Itera sobre as chaves (ids) e valores (info)
                     Object.entries(rotas).forEach(([id, info]) => {
-                        if(info.ativo === false) return; // Pula inativos se houver lógica de exclusão lógica
+                        if(info.ativo === false) return; 
                         
                         const li = document.createElement('li');
                         li.className = 'local-item';
@@ -306,27 +351,23 @@
             const nome = document.getElementById('novo-local-nome').value.trim().toUpperCase();
             if(!posto || !nome) return alert("Preencha Posto e Nome.");
 
-            // Gera ID amigável: bravo_resgate
             const id = `${posto.toLowerCase()}_${nome.replace(/[^a-zA-Z0-9]/g, '').toLowerCase()}`;
 
             if(!confirm(`Criar novo local "${nome}" no posto "${posto}"?\nID gerado: ${id}`)) return;
 
             try {
-                // 1. Verifica se já existe na config
                 const docRotas = await DOC_CONFIG_ROTAS.get();
                 if(docRotas.exists && docRotas.data()[id]) {
                     return alert("Este local já existe! Use outro nome.");
                 }
 
-                // 2. Cria o documento vazio na coleção de listas
                 await db.collection(COLECAO_LISTAS).doc(id).set({
                     nome_local: nome,
                     posto: posto,
-                    list: [], // Lista vazia inicialmente
+                    list: [], 
                     updatedAt: firebase.firestore.Timestamp.now()
                 });
 
-                // 3. Atualiza o índice de rotas
                 await DOC_CONFIG_ROTAS.set({
                     [id]: { nome: nome, posto: posto, ativo: true }
                 }, { merge: true });
@@ -341,7 +382,6 @@
         }
 
         function copiarLink(id) {
-            // Gera link baseado na URL atual, trocando para conferencia_app.html
             const baseUrl = window.location.href.substring(0, window.location.href.lastIndexOf('/'));
             const link = `${baseUrl}/conferencia_app.html?id=${id}`;
             navigator.clipboard.writeText(link).then(() => alert("Link copiado!\n" + link));
@@ -352,7 +392,7 @@
             document.getElementById('editor-title').textContent = `Editando: ${nome}`;
             document.getElementById('editor-id-display').textContent = `ID: ${id}`;
             switchView('editor');
-            carregarDadosGerenciador(); // Carrega a lista específica
+            carregarDadosGerenciador(); 
         }
 
         function voltarParaLocais() {
@@ -361,14 +401,13 @@
         }
 
         // ========================
-        // LÓGICA EDITOR (Adaptação)
+        // LÓGICA EDITOR
         // ========================
         async function carregarDadosGerenciador(){ 
             if(!currentEditingId) return;
             const m=document.getElementById('loading-message-admin'), c=document.getElementById('main-admin-content'); 
             m.style.display='block'; c.style.display='none'; 
             try{
-                // AGORA LÊ DA NOVA COLEÇÃO USANDO O ID SELECIONADO
                 const d=await db.collection(COLECAO_LISTAS).doc(currentEditingId).get(); 
                 if(d.exists) dadosConferencia=d.data().list || []; else dadosConferencia=[]; 
                 m.style.display='none'; c.style.display='block'; renderizarLista();
@@ -378,7 +417,6 @@
         async function salvarDados(a=true){ 
             if(!currentEditingId) return;
             try{ 
-                // SALVA NO ID SELECIONADO
                 await db.collection(COLECAO_LISTAS).doc(currentEditingId).update({
                     list:dadosConferencia, 
                     updatedAt:firebase.firestore.FieldValue.serverTimestamp()
@@ -388,19 +426,21 @@
         }
 
         // ========================
-        // LÓGICA DASHBOARD C/A (Mantida)
+        // LÓGICA DASHBOARD C/A 
         // ========================
         async function loadCaaData() {
             const loading=document.getElementById('loading-message-dashboard'), cards=document.getElementById('cards-container'), wrapper=document.getElementById('ca-table-wrapper');
             loading.style.display='block'; cards.innerHTML=''; wrapper.style.display='none';
             try {
-                // Busca TODOS os resultados (pode filtrar depois se quiser)
                 const snap = await db.collection(COLECAO_RESULTADOS).orderBy('timestamp', 'desc').limit(50).get();
                 locationsMap = {};
                 snap.forEach(doc => {
                     const d = doc.data();
-                    // Usa o nome do local salvo no resultado
                     const loc = d.local || 'Desconhecido';
+                    
+                    // 1º FILTRO: Ignorar cards antigos especificados
+                    if (loc === 'ABT-17' || loc === 'ABT-18') return;
+
                     if (!locationsMap[loc]) {
                         locationsMap[loc] = { docId: doc.id, local: loc, conferente: d.conferente, date: d.timestamp ? new Date(d.timestamp.toDate()).toLocaleString('pt-BR') : 'N/D', items: [] };
                         if (Array.isArray(d.itensCaa)) {
@@ -430,6 +470,44 @@
             });
         }
 
+        // 2º FORMATAÇÃO VISUAL POR TÓPICOS (Igual ao App)
+        const formatarTextoDashboard = (textoBruto) => {
+            let html = '<ul class="obs-list">';
+            
+            // O dashboard recebe o texto já salvo, que pode ser linear.
+            // Separador usado no app: " | + NOVA: "
+            const separator = ' | + NOVA: ';
+            
+            if (textoBruto && textoBruto.includes(separator)) {
+                const partes = textoBruto.split(separator);
+                partes.forEach(parte => {
+                    parte = parte.trim();
+                    // Tenta extrair: "Texto" (Por: Autor em Data)
+                    const regex = /^"(.*)" \(Por: (.*) em (.*)\)$/;
+                    const match = parte.match(regex);
+
+                    if (match) {
+                        html += `<li class="texto-hist">Por: ${match[2]} em ${match[3]}: "${match[1]}"</li>`;
+                    } else {
+                        // Fallback se não casar com regex (ex: texto antigo ou mal formatado)
+                        html += `<li class="texto-atual">${parte}</li>`;
+                    }
+                });
+            } else {
+                // Texto único
+                const regex = /^"(.*)" \(Por: (.*) em (.*)\)$/;
+                const match = textoBruto.match(regex);
+                if (match) {
+                     html += `<li class="texto-atual">Por: ${match[2]} em ${match[3]}: "${match[1]}"</li>`;
+                } else {
+                     html += `<li class="texto-atual">${textoBruto}</li>`;
+                }
+            }
+
+            html += '</ul>';
+            return html;
+        };
+
         function mostrarTabela(data) {
             const wrapper = document.getElementById('ca-table-wrapper'), tbody = document.getElementById('ca-list-body'), noMsg = document.getElementById('no-issues-msg'), tableEl = wrapper.querySelector('table');
             document.getElementById('table-title').textContent = `Detalhes: ${data.local}`;
@@ -440,7 +518,11 @@
                     const tr = tbody.insertRow();
                     if(i.statusAdmin==='Em solução') tr.classList.add('row-amarelo');
                     if(i.statusAdmin==='Cautelado') tr.classList.add('row-laranja');
-                    tr.innerHTML = `<td><strong>${i.nomeCompleto}</strong></td><td><span class="status-badge ${i.statusAdmin==='Em solução'?'badge-solucao':i.statusAdmin==='Cautelado'?'badge-cautela':'badge-pendente'}">${i.statusAdmin||'Pendente'}</span></td><td>${i.obs || '-'}</td><td><small>${data.conferente}<br>${data.date}</small></td>`;
+                    
+                    // Formatação do texto da observação
+                    const obsFormatada = formatarTextoDashboard(i.obs || '-');
+
+                    tr.innerHTML = `<td><strong>${i.nomeCompleto}</strong></td><td><span class="status-badge ${i.statusAdmin==='Em solução'?'badge-solucao':i.statusAdmin==='Cautelado'?'badge-cautela':'badge-pendente'}">${i.statusAdmin||'Pendente'}</span></td><td>${obsFormatada}</td><td><small>${data.conferente}<br>${data.date}</small></td>`;
                     const tdAction = tr.insertCell(); const btn = document.createElement('button'); btn.className = 'btn-action btn-gerenciar'; btn.innerHTML = '<i class="fas fa-cog"></i> Gerenciar'; btn.onclick = () => abrirModalGestao(i); tdAction.appendChild(btn);
                 });
             }
@@ -460,24 +542,21 @@
                 // 1. Atualiza histórico do resultado
                 const ref=db.collection(COLECAO_RESULTADOS).doc(docId); const snap=await ref.get(); const resData=snap.data(); const items=resData.itensCaa; items[idx].statusAdmin=(status==='Remover'?'Solucionado':status); await ref.update({itensCaa:items});
                 
-                // 2. Descobre qual lista alterar (baseado no ID da lista salvo no resultado ou inferido)
-                // O Conferência App agora salva 'lista_id' no resultado. Se for antigo, pode dar erro, mas vamos assumir novo.
-                const listaIdAlvo = resData.lista_id; // Importante: App de conferencia deve salvar isso
+                // 2. Descobre qual lista alterar 
+                const listaIdAlvo = resData.lista_id; 
                 
                 if(listaIdAlvo) {
-                     const listRef = db.collection(COLECAO_LISTAS).doc(listaIdAlvo); 
-                     const listSnap = await listRef.get(); 
-                     if(listSnap.exists) {
-                         let lista = listSnap.data().list; let updated = false;
-                         lista.forEach(s => { s.itens.forEach(i => { 
+                      const listRef = db.collection(COLECAO_LISTAS).doc(listaIdAlvo); 
+                      const listSnap = await listRef.get(); 
+                      if(listSnap.exists) {
+                          let lista = listSnap.data().list; let updated = false;
+                          lista.forEach(s => { s.itens.forEach(i => { 
                              const updatePendency = (target) => { if (target.pendencia) { if (status === 'Solucionado' || status === 'Remover') { delete target.pendencia; } else { target.pendencia.statusAdmin = status; target.pendencia.adminObs = obs; } updated = true; } };
                              if(i.id === itemId && i.tipo === 'single') updatePendency(i);
                              if(i.tipo === 'multi' && i.tombamentos) { i.tombamentos.forEach(t => { if(`${i.id}-${t.tomb}` === itemId) updatePendency(t); }); }
-                         }); });
-                         if(updated) await listRef.update({list:lista});
-                     }
-                } else {
-                    console.warn("ID da lista não encontrado no registro de conferência. Status admin não refletido no inventário.");
+                          }); });
+                          if(updated) await listRef.update({list:lista});
+                      }
                 }
                 
                 alert("Atualizado!"); fecharModalGestao(); loadCaaData();
@@ -508,7 +587,6 @@
             document.querySelectorAll('.item-list-admin').forEach(el => { new Sortable(el, { group: 'items', animation: 150, onEnd: () => { updateOrdens(); salvarDados(false); } }); });
         }
 
-        // RESTANTE DAS FUNÇÕES CRUD (IDÊNTICAS AO ORIGINAL, APENAS PRESERVANDO)
         function adicionarSetor(n){ n=n.trim().toUpperCase(); if(!n)return; dadosConferencia.push({id:gerarNovoId(), nome:n, itens:[]}); document.getElementById('input-setor-nome').value=''; salvarDados(false); renderizarLista(); }
         function removerSetor(id){ if(confirm("Remover?")) { dadosConferencia=dadosConferencia.filter(x=>x.id!==id); salvarDados(false); renderizarLista(); } }
         function adicionarItemPorSetor(sid){ const n=document.getElementById('input-item-nome-'+sid).value.trim().toUpperCase(); const q=parseInt(document.getElementById('input-item-qtd-'+sid).value); const t=document.getElementById('select-item-tipo-'+sid).value; if(!n||q<1)return; const s=dadosConferencia.find(x=>x.id===sid); const novo={id:sid+'-'+gerarNovoId(), nome:n, quantidadeEsperada:q, tipo:t, tombamentos:[]}; if(t==='multi')for(let i=0;i<q;i++)novo.tombamentos.push({tomb:'NOVO-'+(i+1),status:'pending',obs:''}); s.itens.push(novo); salvarDados(false); renderizarLista(); document.getElementById('input-item-nome-'+sid).value=''; }
