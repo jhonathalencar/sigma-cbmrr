@@ -1,114 +1,390 @@
-<script>
-    const firebaseConfig = { apiKey: "AIzaSyCB0PH0UgghgsvH0BgPkG4AkKON6xSQ9mc", authDomain: "sigma-cbmrr.firebaseapp.com", projectId: "sigma-cbmrr", storageBucket: "sigma-cbmrr.firebasestorage.app", messagingSenderId: "378026276038", appId: "1:378026276038:web:620dd6ff57501b1a8313c7" };
-    if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
-    const db = firebase.firestore();
-    const COLECAO_RESULTADOS='resultados_conferencias', COLECAO_LISTA_MESTRA='lista_mestra', COLECAO_HISTORICO_ACOES='historico_acoes_ca', DOCUMENTO_LISTA_MESTRA_ID='lista_completa';
-    let dadosConferencia=[], allCaaDataGlobal=[];
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/png" href="logo_sigma.png" onerror="this.onerror=null; this.src='https://placehold.co/16x16/800020/ffffff?text=S'">
+    <title>SIGMA - Painel Administrativo</title>
+    
+    <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 
-    function switchView(v) { document.querySelectorAll('.view-section').forEach(e=>e.classList.remove('active-view')); document.querySelectorAll('.sidebar a').forEach(e=>e.classList.remove('active')); if(v==='dashboard'){ document.getElementById('view-dashboard').classList.add('active-view'); document.getElementById('link-dashboard').classList.add('active'); loadCaaData(); } else { document.getElementById('view-permanencia').classList.add('active-view'); document.getElementById('link-permanencia').classList.add('active'); carregarDadosGerenciador(); } }
+    <style>
+        /* =========================================
+           ESTILOS GERAIS
+           ========================================= */
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f9;
+            color: #333;
+            margin: 0;
+            display: flex;
+            min-height: 100vh;
+            padding-top: 50px; 
+            padding-bottom: 60px; 
+            box-sizing: border-box;
+            overflow-x: hidden;
+        }
 
-    async function loadCaaData() {
-        const loading=document.getElementById('loading-message-dashboard'), cards=document.getElementById('cards-container'), wrapper=document.getElementById('ca-table-wrapper');
-        loading.style.display='block'; cards.innerHTML=''; wrapper.style.display='none';
-        try {
-            const snap = await db.collection(COLECAO_RESULTADOS).get();
-            allCaaDataGlobal=[];
-            snap.forEach(doc=>{
-                const d=doc.data();
-                if(Array.isArray(d.itensCaa)) d.itensCaa.forEach((i,idx)=>{ if(i.statusAdmin!=='Solucionado') allCaaDataGlobal.push({...i, local:d.local||'N/D', conferente:d.conferente||'N/D', timestamp:d.timestamp?new Date(d.timestamp.toDate()).toLocaleString('pt-BR'):'N/D', docId:doc.id, originalIndex:idx}); });
-            });
-            loading.style.display='none';
-            if(allCaaDataGlobal.length===0) cards.innerHTML='<p style="padding:20px;color:green;">✅ Nenhuma alteração pendente.</p>'; else renderSectorCards(allCaaDataGlobal);
-        } catch(e){ console.error(e); loading.textContent="Erro ao carregar."; }
-    }
-    function renderSectorCards(items){ const c=document.getElementById('cards-container'), g={}; items.forEach(i=>{ if(!g[i.local])g[i.local]=[]; g[i.local].push(i); }); for(const l in g){ const div=document.createElement('div'); div.className='sector-card'; div.innerHTML=`<h3>${l}</h3><span class="count-value">${g[l].length}</span><span class="label-pendencias">itens c/ alteração</span>`; div.onclick=()=>{ document.querySelectorAll('.sector-card').forEach(x=>x.classList.remove('active-card')); div.classList.add('active-card'); mostrarTabelaPorSetor(l,g[l]); }; c.appendChild(div); } }
-    function mostrarTabelaPorSetor(local, items){ const t=document.getElementById('ca-list-body'); document.getElementById('table-title').textContent=`Detalhes: ${local}`; t.innerHTML=''; items.forEach(i=>{ const tr=t.insertRow(); if(i.statusAdmin==='Em solução')tr.classList.add('row-amarelo'); if(i.statusAdmin==='Cautelado')tr.classList.add('row-laranja'); tr.insertCell().innerHTML=`<strong>${i.nomeCompleto}</strong>`; tr.insertCell().innerHTML=`<span class="status-badge ${i.statusAdmin==='Em solução'?'badge-solucao':i.statusAdmin==='Cautelado'?'badge-cautela':'badge-pendente'}">${i.statusAdmin||'Pendente'}</span>`; tr.insertCell().textContent=i.obs||'-'; tr.insertCell().innerHTML=`<small>${i.conferente}<br>${i.timestamp}</small>`; const td=tr.insertCell(); const b=document.createElement('button'); b.className='btn-action btn-gerenciar'; b.innerHTML='<i class="fas fa-cog"></i> Gerenciar'; b.onclick=()=>abrirModalGestao(i); td.appendChild(b); }); document.getElementById('ca-table-wrapper').style.display='block'; document.getElementById('ca-table-wrapper').scrollIntoView({behavior:'smooth',block:'start'}); }
-    function fecharTabela(){ document.getElementById('ca-table-wrapper').style.display='none'; document.querySelectorAll('.sector-card').forEach(c=>c.classList.remove('active-card')); }
+        /* CABEÇALHO */
+        .main-header {
+            position: fixed; top: 0; left: 0; width: 100%; height: 50px; 
+            background-color: #800020; box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+            z-index: 100; display: flex; align-items: center; padding: 0 15px;
+            box-sizing: border-box; gap: 10px;
+        }
+        .header-icon { height: 40px; width: auto; }
+        .header-title-desktop, .header-title-mobile { font-weight: bold; font-size: 1.1em; line-height: 1.2; }
+        .text-white { color: white; } .text-red { color: #FF3B3B; }
+        .header-title-desktop { display: none; } .header-title-mobile { display: block; }
+        @media (min-width: 768px) { .header-title-desktop { display: block; font-size: 1.2em; } .header-title-mobile { display: none; } }
 
-    function abrirModalGestao(i){ document.getElementById('gestao-item-nome').textContent=i.nomeCompleto; document.getElementById('gestao-doc-id').value=i.docId; document.getElementById('gestao-item-index').value=i.originalIndex; document.getElementById('gestao-item-id-lista').value=i.id; document.getElementById('gestao-status').value=i.statusAdmin||'Solucionado'; document.getElementById('gestao-obs').value=''; document.getElementById('gestao-qtd').value='1'; toggleGestaoQtd(); document.getElementById('modal-gestao-ca').style.display='flex'; }
-    function fecharModalGestao(){ document.getElementById('modal-gestao-ca').style.display='none'; }
-    function toggleGestaoQtd(){ document.getElementById('div-gestao-qtd').style.display=(document.getElementById('gestao-status').value==='Remover'?'block':'none'); }
+        /* RODAPÉ */
+        .footer-central {
+            position: fixed; bottom: 0; left: 0; width: 100%; text-align: center;
+            padding: 5px 0 5px; background-color: #f4f4f9; color: #555;
+            font-size: 0.65em; line-height: 1.3; z-index: 100; 
+            box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.05); 
+        }
+        .footer-central strong, .footer-autor { display: block; width: 100%; text-align: center; }
+        .footer-central strong { font-weight: bold; }
+        .footer-autor { margin-top: 10px; color: #888; font-size: 0.9em; }
 
-    // --- ATUALIZAÇÃO DA LÓGICA DE ADMIN ---
-    async function salvarGestaoCa(){
-        const docId=document.getElementById('gestao-doc-id').value, idx=parseInt(document.getElementById('gestao-item-index').value), itemId=document.getElementById('gestao-item-id-lista').value, status=document.getElementById('gestao-status').value, obs=document.getElementById('gestao-obs').value.trim(), qtd=parseInt(document.getElementById('gestao-qtd').value);
-        if(!obs) return alert("Descreva o que foi feito ou dê um parecer.");
-        try {
-            // 1. Atualiza o Histórico local (Resultados)
-            const ref=db.collection(COLECAO_RESULTADOS).doc(docId);
-            const snap=await ref.get(); if(!snap.exists) throw new Error("Erro doc");
-            const items=snap.data().itensCaa; 
-            items[idx].statusAdmin=(status==='Remover'?'Solucionado':status); // Se remover, sai da lista de C/A
-            await ref.update({itensCaa:items});
+        /* SIDEBAR */
+        .sidebar {
+            width: 250px; background-color: #ffffff; color: #333; padding-top: 20px;
+            box-shadow: 2px 0 5px rgba(0, 0, 0, 0.05); border-right: 1px solid #e0e0e0;
+            position: fixed; top: 50px; left: 0; height: calc(100% - 50px); 
+            display: flex; flex-direction: column; z-index: 10; overflow-y: auto; 
+        }
+        .sidebar-header { text-align: center; padding: 10px 0 20px 0; border-bottom: 1px solid #eee; margin-bottom: 10px; }
+        .sidebar-header img { width: 50px; height: auto; margin-bottom: 5px; }
+        .sidebar-header h2 { font-size: 1.1em; margin: 0; color: #800020; }
+        .sidebar a { padding: 15px 20px; text-decoration: none; font-size: 1em; color: #555; display: block; transition: all 0.3s ease; border-left: 4px solid transparent; cursor: pointer; }
+        .sidebar a:hover { background-color: #fff5f5; color: #800020; }
+        .sidebar a.active { background-color: #ffecec; color: #800020; font-weight: bold; border-left: 4px solid #d90f23; }
+        .menu-label { padding: 15px 20px 5px; font-size: 0.85em; color: #999; text-transform: uppercase; font-weight: bold; }
 
-            // 2. ATUALIZAÇÃO DA LISTA MESTRA (O CÉREBRO DA OPERAÇÃO)
-            const listRef = db.collection(COLECAO_LISTA_MESTRA).doc(DOCUMENTO_LISTA_MESTRA_ID);
-            const listSnap = await listRef.get();
-            let lista = listSnap.data().list;
-            let updated = false;
+        /* CONTEÚDO */
+        .content { margin-left: 250px; flex-grow: 1; padding: 20px; box-sizing: border-box; width: calc(100% - 250px); padding-bottom: 80px; }
+        .view-section { display: none; }
+        .view-section.active-view { display: block; }
 
-            lista.forEach(s => {
-                s.itens.forEach(i => {
-                    // Função auxiliar para verificar e atualizar item
-                    const checkAndUpdate = (targetItem, targetId) => {
-                        // Lógica para Itens Normais ou Tombamentos Específicos
-                        // Se for Tombamento, o ID vem composto (ex: "ID-TOMB"), mas aqui varremos o objeto tombamento
-                        // Simplificando: Se acharmos a pendência, atualizamos ela.
-                        
-                        if (targetItem.pendencia) {
-                            // Se for Solucionado ou Remover, deletamos a pendência
-                            if (status === 'Solucionado' || status === 'Remover') {
-                                delete targetItem.pendencia;
-                                updated = true;
-                            } 
-                            // Se for "Em solução" ou "Cautelado", ATUALIZAMOS a pendência com o parecer do Admin
-                            else {
-                                targetItem.pendencia.statusAdmin = status;
-                                targetItem.pendencia.adminObs = obs;
-                                // Não mudamos 'quem' ou 'obs' original do usuário para manter o histórico visual
+        /* === ESTILOS DASHBOARD === */
+        .cards-grid { display: flex; flex-wrap: wrap; gap: 20px; margin-bottom: 30px; }
+        .sector-card {
+            background-color: white; padding: 20px; border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); border-left: 5px solid #d90f23;
+            width: 100%; max-width: 250px; cursor: pointer; transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .sector-card:hover { transform: translateY(-5px); box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15); background-color: #fff5f5; }
+        .sector-card.active-card { background-color: #ffecec; border: 1px solid #d90f23; border-left: 5px solid #d90f23; }
+        .sector-card h3 { margin-top: 0; font-size: 1em; color: #555; margin-bottom: 10px; min-height: 40px; }
+        .sector-card .count-value { font-size: 2.5em; font-weight: bold; color: #d90f23; display: block; text-align: right; }
+        .sector-card .label-pendencias { font-size: 0.8em; color: #999; display: block; text-align: right; }
+
+        .ca-table-container { overflow-x: auto; background-color: white; padding: 20px; border-radius: 8px; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); margin-top: 10px; border-top: 3px solid #d90f23; animation: fadeIn 0.5s; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .ca-table { width: 100%; border-collapse: collapse; font-size: 0.9em; }
+        .ca-table th, .ca-table td { padding: 12px 15px; text-align: left; border-bottom: 1px solid #ddd; }
+        .ca-table th { background-color: #f8f8f8; color: #800020; font-weight: bold; text-transform: uppercase; }
+        
+        /* CORES DE STATUS DA TABELA */
+        .row-amarelo { background-color: #fffde7 !important; } 
+        .row-laranja { background-color: #fff3e0 !important; } 
+        .status-badge { padding: 4px 8px; border-radius: 4px; font-size: 0.8em; font-weight: bold; }
+        .badge-pendente { background-color: #ffebee; color: #d32f2f; }
+        .badge-solucao { background-color: #fff9c4; color: #fbc02d; border: 1px solid #fbc02d; }
+        .badge-cautela { background-color: #ffe0b2; color: #f57c00; border: 1px solid #f57c00; }
+
+        /* === ESTILOS ADMIN === */
+        .admin-container { background-color: #fff; padding: 20px; border-radius: 10px; box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1); width: 100%; max-width: 900px; margin: 0 auto 20px auto; box-sizing: border-box; text-align: center; }
+        .logo-admin { display: block; margin: 0 auto 15px auto; max-width: 80px; height: auto; }
+        h1.page-title { color: #d90f23; margin-bottom: 15px; font-size: 1.8em; border-bottom: 2px solid #e0e0e0; padding-bottom: 10px; text-align: center; }
+        .global-actions { display: flex; gap: 10px; margin-bottom: 20px; justify-content: flex-start; flex-wrap: wrap; }
+        .btn-action { padding: 6px 12px; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; color: white; font-size: 0.9em; }
+        .btn-sync { background-color: #1b8a3e; } .btn-admin-config { background-color: #6c757d; } .btn-gerenciar { background-color: #0277bd; }
+        .btn-add { background-color: #800020; color: white; border: none; padding: 8px 15px; border-radius: 4px; cursor: pointer; }
+        .lista-setores { padding: 0; list-style: none; text-align: left; }
+        .setor-item { margin-bottom: 15px; border: 1px solid #800020; border-radius: 6px; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); background: #fff; }
+        .setor-header-admin { background-color: #800020; color: white; padding: 10px 15px; display: flex; justify-content: space-between; align-items: center; font-weight: bold; cursor: grab; }
+        .setor-content-admin { transition: max-height 0.4s ease-out; overflow: hidden; max-height: 2000px; padding: 10px; }
+        .setor-content-admin.collapsed { max-height: 0; padding: 0 !important; }
+        .item-conferencia-admin { display: flex; justify-content: space-between; align-items: flex-start; padding: 10px 0; border-bottom: 1px solid #eee; cursor: move; }
+        .add-setor-form, .add-item-form-setor { display: flex; gap: 5px; margin-bottom: 10px; }
+        .add-setor-form input, .add-item-form-setor input, .add-item-form-setor select { flex-grow: 1; padding: 8px; border: 1px solid #ccc; border-radius: 4px; }
+        .btn-remover { background-color: #d90f23; } .btn-edit-alt { background-color: #7f8c8d; }
+        .item-actions-admin { display: flex; gap: 5px; }
+        .tombamento-container-wrapper { margin-top: 5px; padding-left: 20px; background: #f9f9f9; border-left: 3px solid #ccc; }
+        .tombamento-list li { display: flex; justify-content: space-between; padding: 5px 0; border-bottom: 1px dotted #eee; }
+        
+        /* MODAL */
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); display: none; align-items: center; justify-content: center; z-index: 2000; }
+        .modal-content { background: #fff; padding: 25px; border-radius: 12px; width: 90%; max-width: 500px; position: relative; text-align: left; }
+        .modal-content h2 { margin-top: 0; color: #800020; border-bottom: 1px solid #eee; padding-bottom: 10px; }
+        .modal-content label { display: block; margin-top: 15px; font-weight: bold; color: #555; }
+        .modal-content input, .modal-content select, .modal-content textarea { width: 100%; padding: 10px; margin-top: 5px; box-sizing: border-box; border: 1px solid #ccc; border-radius: 4px; }
+        .modal-content textarea { height: 80px; resize: vertical; }
+        .modal-buttons { display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px; }
+        .close-btn { position: absolute; top: 10px; right: 15px; background: none; border: none; font-size: 20px; cursor: pointer; color: #d90f23; }
+
+        @media (max-width: 768px) {
+            .sidebar { width: 100%; height: auto; position: relative; top: 0; border-right: none; border-bottom: 1px solid #ddd; }
+            .sidebar a { display: inline-block; width: 50%; box-sizing: border-box; text-align: center; float: left; border-bottom: 3px solid transparent; }
+            .sidebar a.active { border-left: none; border-bottom: 3px solid #d90f23; }
+            .content { margin-left: 0; width: 100%; padding-top: 15px; }
+            .sidebar-header, .menu-label { display: none; }
+        }
+    </style>
+</head>
+<body>
+
+    <header class="main-header">
+        <img src="cbmrr.png" alt="Ícone CBM-RR" class="header-icon" onerror="this.onerror=null; this.src='https://placehold.co/40x40/ffffff/800020/fff?text=CBM'">
+        <div class="header-title-desktop"><span class="text-white">CORPO DE BOMBEIROS MILITAR </span><span class="text-red">RORAIMA</span></div>
+        <div class="header-title-mobile"><span class="text-white">CBM</span><span class="text-red">RR</span></div>
+    </header>
+
+    <div class="sidebar">
+        <div class="sidebar-header">
+            <img src="cci.png" alt="Logo CCI" onerror="this.onerror=null; this.src='https://placehold.co/50x50/ffffff/800020/fff?text=S'">
+            <h2>SIGMA Admin</h2>
+        </div>
+        <div class="menu-label">Principal</div>
+        <a onclick="switchView('dashboard')" id="link-dashboard" class="active"><i class="fas fa-chart-line"></i> Dashboard C/A</a>
+        <div class="menu-label">Gerenciamento</div>
+        <a onclick="switchView('permanencia')" id="link-permanencia"><i class="fas fa-clipboard-list"></i> Permanência</a>
+    </div>
+
+    <div class="content">
+        
+        <div id="view-dashboard" class="view-section active-view">
+            <h1>Dashboard - Não Conformidades (C/A)</h1>
+            <div id="loading-message-dashboard">Carregando alterações...</div>
+            
+            <div id="cards-container" class="cards-grid"></div>
+
+            <div id="ca-table-wrapper" class="ca-table-container" style="display: none;">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
+                    <h2 id="table-title" style="margin:0; color:#800020;">Detalhes das Alterações</h2>
+                    <button onclick="fecharTabela()" class="btn-action btn-edit-alt" style="padding:5px 10px;">Fechar</button>
+                </div>
+                
+                <table class="ca-table">
+                    <thead>
+                        <tr>
+                            <th>Material</th>
+                            <th>Status</th>
+                            <th>Alteração</th>
+                            <th>Conferente/Data</th>
+                            <th>Ação</th>
+                        </tr>
+                    </thead>
+                    <tbody id="ca-list-body"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <div id="view-permanencia" class="view-section">
+            <div class="admin-container">
+                <img src="logo_sigma.png" alt="Logo SIGMA" class="logo-admin" onerror="this.onerror=null; this.src='https://placehold.co/50x50/d90f23/ffffff?text=S'">
+                <h1 class="page-title">Permanência Bravo 🏢</h1>
+                <p id="loading-message-admin">Carregando Lista Mestra...</p>
+                <div id="main-admin-content" style="display: none;">
+                    <div class="global-actions">
+                        <button class="btn-sync" onclick="salvarDados()">Salvar e Sincronizar</button>
+                        <button class="btn-admin-config" onclick="fazerBackupLocal()">Backup (JSON)</button>
+                        <input type="file" id="import-json" style="display: none;" onchange="importarBackupLocal(event)">
+                        <button class="btn-admin-config" onclick="document.getElementById('import-json').click()">Importar</button>
+                    </div>
+                    <div class="add-setor-form">
+                        <input type="text" id="input-setor-nome" placeholder="Nome do Novo Setor">
+                        <button class="btn-add" onclick="adicionarSetor(document.getElementById('input-setor-nome').value)">+ Setor</button>
+                    </div>
+                    <ul id="lista-setores-container" class="lista-setores"></ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="footer-central">
+        <strong>GOVERNO DE RORAIMA</strong>
+        <strong>CORPO DE BOMBEIROS MILITAR DE RORAIMA</strong>
+        <em>“Amazônia: patrimônio dos brasileiros”</em><br>
+        <span class="footer-autor">Elaborado por: 3º SGT QPCBM JHONATH</span>
+    </div>
+
+    <div id="modal-gestao-ca" class="modal-overlay">
+        <div class="modal-content">
+            <button class="close-btn" onclick="fecharModalGestao()"><i class="fas fa-times"></i></button>
+            <h2>Gerenciar Alteração</h2>
+            <p style="font-size:0.9em; color:#666;">Item: <strong id="gestao-item-nome">...</strong></p>
+            
+            <input type="hidden" id="gestao-doc-id">
+            <input type="hidden" id="gestao-item-index">
+            <input type="hidden" id="gestao-item-id-lista"> 
+
+            <label for="gestao-status">Ação / Status:</label>
+            <select id="gestao-status" onchange="toggleGestaoQtd()">
+                <option value="Solucionado">Solucionado (Finalizar)</option>
+                <option value="Em solução">Em solução (Marcar Amarelo)</option>
+                <option value="Cautelado">Cautelado (Marcar Laranja)</option>
+                <option value="Remover">Remover da Conferência (Admin)</option>
+            </select>
+
+            <div id="div-gestao-qtd" style="display:none;">
+                <label for="gestao-qtd" style="color:#d90f23;">Quantidade a Remover:</label>
+                <input type="number" id="gestao-qtd" min="1" value="1">
+                <small style="color:#888;">Isso irá subtrair do inventário oficial.</small>
+            </div>
+
+            <label for="gestao-obs">Descrição do que foi feito:</label>
+            <textarea id="gestao-obs" placeholder="Descreva a solução, parecer técnico ou motivo da cautela..."></textarea>
+
+            <div class="modal-buttons">
+                <button class="btn-action btn-edit-alt" onclick="fecharModalGestao()">Cancelar</button>
+                <button class="btn-action btn-sync" onclick="salvarGestaoCa()">Confirmar</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="modal-edicao" class="modal-overlay">
+        <div class="modal-content">
+            <button class="close-btn" onclick="fecharModal()"><i class="fas fa-times"></i></button>
+            <h2>Editar Item (Admin)</h2>
+            <input type="hidden" id="edit-setor-id"><input type="hidden" id="edit-item-original-id">
+            <label for="edit-item-nome">Nome:</label><input type="text" id="edit-item-nome">
+            <label for="edit-item-setor">Mover para Setor:</label><select id="edit-item-setor"></select>
+            <label for="edit-item-qtd">Quantidade:</label><input type="number" id="edit-item-qtd" min="1">
+            <label for="edit-item-tipo">Tipo:</label><select id="edit-item-tipo" disabled style="background-color: #eee;"><option value="single">Item Único</option><option value="multi">Item com Tombamento</option></select>
+            <div class="modal-buttons"><button class="btn-action btn-remover" onclick="fecharModal()">Cancelar</button><button class="btn-action btn-sync" onclick="salvarEdicaoItem()">Salvar</button></div>
+        </div>
+    </div>
+
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+
+    <script>
+        // 1. FIREBASE
+        const firebaseConfig = {
+            apiKey: "AIzaSyCB0PH0UgghgsvH0BgPkG4AkKON6xSQ9mc",
+            authDomain: "sigma-cbmrr.firebaseapp.com",
+            projectId: "sigma-cbmrr",
+            storageBucket: "sigma-cbmrr.firebasestorage.app",
+            messagingSenderId: "378026276038",
+            appId: "1:378026276038:web:620dd6ff57501b1a8313c7"
+        };
+        if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+
+        const COLECAO_RESULTADOS = 'resultados_conferencias';
+        const COLECAO_LISTA_MESTRA = 'lista_mestra';
+        const COLECAO_HISTORICO_ACOES = 'historico_acoes_ca';
+        const DOCUMENTO_LISTA_MESTRA_ID = 'lista_completa';
+
+        let dadosConferencia = [], allCaaDataGlobal = [];
+
+        // 2. ROTEAMENTO
+        function switchView(v) { document.querySelectorAll('.view-section').forEach(e=>e.classList.remove('active-view')); document.querySelectorAll('.sidebar a').forEach(e=>e.classList.remove('active')); if(v==='dashboard'){ document.getElementById('view-dashboard').classList.add('active-view'); document.getElementById('link-dashboard').classList.add('active'); loadCaaData(); } else { document.getElementById('view-permanencia').classList.add('active-view'); document.getElementById('link-permanencia').classList.add('active'); carregarDadosGerenciador(); } }
+
+        // 3. DASHBOARD LOGIC
+        async function loadCaaData() {
+            const loading=document.getElementById('loading-message-dashboard'), cards=document.getElementById('cards-container'), wrapper=document.getElementById('ca-table-wrapper');
+            loading.style.display='block'; cards.innerHTML=''; wrapper.style.display='none';
+            try {
+                const snap = await db.collection(COLECAO_RESULTADOS).get();
+                allCaaDataGlobal=[];
+                snap.forEach(doc=>{
+                    const d=doc.data();
+                    if(Array.isArray(d.itensCaa)) d.itensCaa.forEach((i,idx)=>{ if(i.statusAdmin!=='Solucionado') allCaaDataGlobal.push({...i, local:d.local||'N/D', conferente:d.conferente||'N/D', timestamp:d.timestamp?new Date(d.timestamp.toDate()).toLocaleString('pt-BR'):'N/D', docId:doc.id, originalIndex:idx}); });
+                });
+                loading.style.display='none';
+                if(allCaaDataGlobal.length===0) cards.innerHTML='<p style="padding:20px;color:green;">✅ Nenhuma alteração pendente.</p>'; else renderSectorCards(allCaaDataGlobal);
+            } catch(e){ console.error(e); loading.textContent="Erro ao carregar."; }
+        }
+
+        function renderSectorCards(items){ const c=document.getElementById('cards-container'), g={}; items.forEach(i=>{ if(!g[i.local])g[i.local]=[]; g[i.local].push(i); }); for(const l in g){ const div=document.createElement('div'); div.className='sector-card'; div.innerHTML=`<h3>${l}</h3><span class="count-value">${g[l].length}</span><span class="label-pendencias">itens c/ alteração</span>`; div.onclick=()=>{ document.querySelectorAll('.sector-card').forEach(x=>x.classList.remove('active-card')); div.classList.add('active-card'); mostrarTabelaPorSetor(l,g[l]); }; c.appendChild(div); } }
+
+        function mostrarTabelaPorSetor(local, items){ const t=document.getElementById('ca-list-body'); document.getElementById('table-title').textContent=`Detalhes: ${local}`; t.innerHTML=''; items.forEach(i=>{ const tr=t.insertRow(); if(i.statusAdmin==='Em solução')tr.classList.add('row-amarelo'); if(i.statusAdmin==='Cautelado')tr.classList.add('row-laranja'); tr.insertCell().innerHTML=`<strong>${i.nomeCompleto}</strong>`; tr.insertCell().innerHTML=`<span class="status-badge ${i.statusAdmin==='Em solução'?'badge-solucao':i.statusAdmin==='Cautelado'?'badge-cautela':'badge-pendente'}">${i.statusAdmin||'Pendente'}</span>`; tr.insertCell().textContent=i.obs||'-'; tr.insertCell().innerHTML=`<small>${i.conferente}<br>${i.timestamp}</small>`; const td=tr.insertCell(); const b=document.createElement('button'); b.className='btn-action btn-gerenciar'; b.innerHTML='<i class="fas fa-cog"></i> Gerenciar'; b.onclick=()=>abrirModalGestao(i); td.appendChild(b); }); document.getElementById('ca-table-wrapper').style.display='block'; document.getElementById('ca-table-wrapper').scrollIntoView({behavior:'smooth',block:'start'}); }
+        function fecharTabela(){ document.getElementById('ca-table-wrapper').style.display='none'; document.querySelectorAll('.sector-card').forEach(c=>c.classList.remove('active-card')); }
+
+        // 4. GESTÃO ADMIN - ATUALIZADO PARA ATUALIZAR PENDENCIA NA LISTA MESTRA
+        function abrirModalGestao(i){ document.getElementById('gestao-item-nome').textContent=i.nomeCompleto; document.getElementById('gestao-doc-id').value=i.docId; document.getElementById('gestao-item-index').value=i.originalIndex; document.getElementById('gestao-item-id-lista').value=i.id; document.getElementById('gestao-status').value=i.statusAdmin||'Solucionado'; document.getElementById('gestao-obs').value=''; document.getElementById('gestao-qtd').value='1'; toggleGestaoQtd(); document.getElementById('modal-gestao-ca').style.display='flex'; }
+        function fecharModalGestao(){ document.getElementById('modal-gestao-ca').style.display='none'; }
+        function toggleGestaoQtd(){ document.getElementById('div-gestao-qtd').style.display=(document.getElementById('gestao-status').value==='Remover'?'block':'none'); }
+
+        async function salvarGestaoCa(){
+            const docId=document.getElementById('gestao-doc-id').value, idx=parseInt(document.getElementById('gestao-item-index').value), itemId=document.getElementById('gestao-item-id-lista').value, status=document.getElementById('gestao-status').value, obs=document.getElementById('gestao-obs').value.trim(), qtd=parseInt(document.getElementById('gestao-qtd').value);
+            if(!obs) return alert("Descreva o que foi feito ou o parecer.");
+            
+            try {
+                // 1. Atualiza Histórico local (Resultados Conferência)
+                const ref=db.collection(COLECAO_RESULTADOS).doc(docId);
+                const snap=await ref.get(); if(!snap.exists) throw new Error("Doc não existe");
+                const items=snap.data().itensCaa; 
+                items[idx].statusAdmin=(status==='Remover'?'Solucionado':status);
+                await ref.update({itensCaa:items});
+
+                // 2. Atualiza LISTA MESTRA (Persistência para o próximo usuário)
+                const listRef = db.collection(COLECAO_LISTA_MESTRA).doc(DOCUMENTO_LISTA_MESTRA_ID);
+                const listSnap = await listRef.get();
+                let lista = listSnap.data().list;
+                let updated = false;
+
+                lista.forEach(s => {
+                    s.itens.forEach(i => {
+                        const updatePendency = (target) => {
+                            if (target.pendencia) {
+                                if (status === 'Solucionado' || status === 'Remover') {
+                                    delete target.pendencia; // Apaga se resolvido
+                                } else {
+                                    // Atualiza com o parecer do Admin
+                                    target.pendencia.statusAdmin = status;
+                                    target.pendencia.adminObs = obs;
+                                }
                                 updated = true;
                             }
+                        };
+
+                        if(i.id === itemId && i.tipo === 'single') updatePendency(i);
+                        if(i.tipo === 'multi' && i.tombamentos) {
+                            i.tombamentos.forEach(t => {
+                                if(`${i.id}-${t.tomb}` === itemId) updatePendency(t);
+                            });
                         }
-                    };
-
-                    // Verifica Item Single
-                    if(i.id === itemId && i.tipo === 'single') checkAndUpdate(i, itemId);
-                    
-                    // Verifica Multi
-                    if(i.tipo === 'multi' && i.tombamentos) {
-                        i.tombamentos.forEach(t => {
-                            // O itemId vindo do modal para multi é "ID_ITEM-TOMBAMENTO"
-                            if(`${i.id}-${t.tomb}` === itemId) checkAndUpdate(t, itemId);
-                        });
-                    }
+                    });
                 });
-            });
 
-            if(updated) await listRef.update({list:lista});
-            if(status==='Remover') await removerItemDaListaMestra(itemId, qtd); // Função auxiliar existente abaixo
+                if(updated) await listRef.update({list:lista});
+                if(status==='Remover') await removerItemDaListaMestra(itemId, qtd);
 
-            // Log
-            await db.collection(COLECAO_HISTORICO_ACOES).add({data:firebase.firestore.FieldValue.serverTimestamp(), item:document.getElementById('gestao-item-nome').textContent, acao:status, observacao:obs, qtdRemovida:(status==='Remover'?qtd:0), usuario:'Admin'});
-            alert("Status atualizado com sucesso!"); fecharModalGestao(); loadCaaData();
-        } catch(e){ console.error(e); alert("Erro ao salvar"); }
-    }
+                // Log
+                await db.collection(COLECAO_HISTORICO_ACOES).add({data:firebase.firestore.FieldValue.serverTimestamp(), item:document.getElementById('gestao-item-nome').textContent, acao:status, observacao:obs, qtdRemovida:(status==='Remover'?qtd:0), usuario:'Admin'});
+                
+                alert("Atualizado!"); fecharModalGestao(); loadCaaData();
 
-    async function removerItemDaListaMestra(itemId, qtd){ const ref=db.collection(COLECAO_LISTA_MESTRA).doc(DOCUMENTO_LISTA_MESTRA_ID); const s=await ref.get(); if(!s.exists)return; let l=s.data().list; let f=false; for(const st of l){ const idx=st.itens.findIndex(i=>i.id===itemId); if(idx!==-1){ const i=st.itens[idx]; i.quantidadeEsperada-=qtd; if(i.quantidadeEsperada<=0)st.itens.splice(idx,1); f=true; break; } } if(f) await ref.update({list:l, updatedAt:firebase.firestore.FieldValue.serverTimestamp()}); }
+            } catch(e){ console.error(e); alert("Erro ao salvar"); }
+        }
 
-    // ADMIN PADRÃO
-    async function carregarDadosGerenciador(){ const m=document.getElementById('loading-message-admin'), c=document.getElementById('main-admin-content'); m.style.display='block'; c.style.display='none'; try{const d=await db.collection(COLECAO_LISTA_MESTRA).doc(DOCUMENTO_LISTA_MESTRA_ID).get(); if(d.exists)dadosConferencia=d.data().list; else dadosConferencia=[]; m.style.display='none'; c.style.display='block'; renderizarLista();}catch(e){console.error(e);m.textContent="Erro.";}}
-    async function salvarDados(a=true){ try{ await db.collection(COLECAO_LISTA_MESTRA).doc(DOCUMENTO_LISTA_MESTRA_ID).set({list:dadosConferencia, updatedAt:firebase.firestore.FieldValue.serverTimestamp()}); if(a)alert("Salvo!"); }catch(e){alert("Erro");} }
-    function gerarNovoId(){ return Date.now().toString().slice(-6)+Math.floor(Math.random()*100).toString().padStart(2,'0'); }
-    function adicionarSetor(n){ n=n.trim().toUpperCase(); if(!n)return; dadosConferencia.push({id:gerarNovoId(), nome:n, itens:[]}); document.getElementById('input-setor-nome').value=''; salvarDados(false); renderizarLista(); }
-    function removerSetor(id){ if(confirm("Remover setor?")) { dadosConferencia=dadosConferencia.filter(x=>x.id!==id); salvarDados(false); renderizarLista(); } }
-    function adicionarItemPorSetor(sid){ const n=document.getElementById('input-item-nome-'+sid).value.trim().toUpperCase(); const q=parseInt(document.getElementById('input-item-qtd-'+sid).value); const t=document.getElementById('select-item-tipo-'+sid).value; if(!n||q<1)return; const s=dadosConferencia.find(x=>x.id===sid); const novo={id:sid+'-'+gerarNovoId(), nome:n, quantidadeEsperada:q, tipo:t, tombamentos:[]}; if(t==='multi')for(let i=0;i<q;i++)novo.tombamentos.push({tomb:'NOVO-'+(i+1),status:'pending',obs:''}); s.itens.push(novo); salvarDados(false); renderizarLista(); document.getElementById('input-item-nome-'+sid).value=''; }
-    function removerItem(sid,iid){ if(confirm("Remover item?")){ const s=dadosConferencia.find(x=>x.id===sid); s.itens=s.itens.filter(i=>i.id!==iid); salvarDados(false); renderizarLista(); } }
-    function renderizarLista(){ const c=document.getElementById('lista-setores-container'); c.innerHTML=''; dadosConferencia.forEach(s=>{ let ih=''; s.itens.forEach(i=>{ ih+=`<li class="item-conferencia-admin"><div style="width:100%"><div style="display:flex;justify-content:space-between;"><div><strong>${i.nome}</strong><small> Qtd: ${i.quantidadeEsperada}</small></div><div class="item-actions-admin"><button class="btn-action btn-edit-alt" onclick="abrirModalEdicao('${s.id}','${i.id}')"><i class="fas fa-edit"></i></button><button class="btn-action btn-remover" onclick="removerItem('${s.id}','${i.id}')"><i class="fas fa-trash"></i></button></div></div></div></li>`; }); c.innerHTML+=`<li class="setor-item"><div class="setor-header-admin" onclick="this.nextElementSibling.classList.toggle('collapsed')"><span>${s.nome}</span><button class="btn-action btn-remover" onclick="event.stopPropagation();removerSetor('${s.id}')">X</button></div><div class="setor-content-admin"><div class="add-item-form-setor"><input type="text" id="input-item-nome-${s.id}" placeholder="Item"><input type="number" id="input-item-qtd-${s.id}" value="1" style="width:50px"><select id="select-item-tipo-${s.id}"><option value="single">Único</option><option value="multi">Tombamento</option></select><button class="btn-add" onclick="adicionarItemPorSetor('${s.id}')">+</button></div><ul class="lista-setores item-list-admin">${ih}</ul></div></li>`; }); }
-    function abrirModalEdicao(sid, iid){ const s=dadosConferencia.find(x=>x.id===sid); const i=s.itens.find(x=>x.id===iid); document.getElementById('edit-setor-id').value=sid; document.getElementById('edit-item-original-id').value=iid; document.getElementById('edit-item-nome').value=i.nome; document.getElementById('edit-item-qtd').value=i.quantidadeEsperada; document.getElementById('edit-item-qtd').disabled=(i.tipo==='multi'); document.getElementById('edit-item-tipo').value=i.tipo; const sl=document.getElementById('edit-item-setor'); sl.innerHTML=''; dadosConferencia.forEach(d=>{const o=document.createElement('option'); o.value=d.id; o.text=d.nome; if(d.id===sid)o.selected=true; sl.appendChild(o);}); document.getElementById('modal-edicao').style.display='flex'; }
-    function salvarEdicaoItem(){ const osid=document.getElementById('edit-setor-id').value; const iid=document.getElementById('edit-item-original-id').value; const n=document.getElementById('edit-item-nome').value.trim().toUpperCase(); const nsid=document.getElementById('edit-item-setor').value; const q=parseInt(document.getElementById('edit-item-qtd').value); const os=dadosConferencia.find(x=>x.id===osid); const ns=dadosConferencia.find(x=>x.id===nsid); const i=os.itens.find(x=>x.id===iid); i.nome=n; if(i.tipo==='single')i.quantidadeEsperada=q; if(osid!==nsid){ os.itens=os.itens.filter(x=>x.id!==iid); i.id=nsid+'-'+gerarNovoId(); ns.itens.push(i); } salvarDados(false); renderizarLista(); fecharModal(); }
-    function fecharModal(){document.getElementById('modal-edicao').style.display='none';}
-    function fazerBackupLocal(){ const b=new Blob([JSON.stringify(dadosConferencia,null,2)],{type:"application/json"}); const u=URL.createObjectURL(b); const a=document.createElement('a'); a.href=u; a.download='backup.json'; a.click(); }
-    function importarBackupLocal(e){ const f=e.target.files[0]; if(!f)return; const r=new FileReader(); r.onload=function(ev){if(confirm("Substituir?")){try{dadosConferencia=JSON.parse(ev.target.result);salvarDados();renderizarLista();}catch(err){alert("Erro JSON");}}}; r.readAsText(f); }
+        async function removerItemDaListaMestra(itemId, qtd){ const ref=db.collection(COLECAO_LISTA_MESTRA).doc(DOCUMENTO_LISTA_MESTRA_ID); const s=await ref.get(); if(!s.exists)return; let l=s.data().list; let f=false; for(const st of l){ const idx=st.itens.findIndex(i=>i.id===itemId); if(idx!==-1){ const i=st.itens[idx]; i.quantidadeEsperada-=qtd; if(i.quantidadeEsperada<=0)st.itens.splice(idx,1); f=true; break; } } if(f) await ref.update({list:l, updatedAt:firebase.firestore.FieldValue.serverTimestamp()}); }
 
-    document.addEventListener('DOMContentLoaded', () => { loadCaaData(); });
-</script>
+        // 5. GERENCIADOR
+        async function carregarDadosGerenciador(){ const m=document.getElementById('loading-message-admin'), c=document.getElementById('main-admin-content'); m.style.display='block'; c.style.display='none'; try{const d=await db.collection(COLECAO_LISTA_MESTRA).doc(DOCUMENTO_LISTA_MESTRA_ID).get(); if(d.exists)dadosConferencia=d.data().list; else dadosConferencia=[]; m.style.display='none'; c.style.display='block'; renderizarLista();}catch(e){console.error(e);m.textContent="Erro.";}}
+        async function salvarDados(a=true){ try{ await db.collection(COLECAO_LISTA_MESTRA).doc(DOCUMENTO_LISTA_MESTRA_ID).set({list:dadosConferencia, updatedAt:firebase.firestore.FieldValue.serverTimestamp()}); if(a)alert("Salvo!"); }catch(e){alert("Erro");} }
+        function gerarNovoId(){ return Date.now().toString().slice(-6)+Math.floor(Math.random()*100).toString().padStart(2,'0'); }
+        function adicionarSetor(n){ n=n.trim().toUpperCase(); if(!n)return; dadosConferencia.push({id:gerarNovoId(), nome:n, itens:[]}); document.getElementById('input-setor-nome').value=''; salvarDados(false); renderizarLista(); }
+        function removerSetor(id){ if(confirm("Remover?")) { dadosConferencia=dadosConferencia.filter(x=>x.id!==id); salvarDados(false); renderizarLista(); } }
+        function adicionarItemPorSetor(sid){ const n=document.getElementById('input-item-nome-'+sid).value.trim().toUpperCase(); const q=parseInt(document.getElementById('input-item-qtd-'+sid).value); const t=document.getElementById('select-item-tipo-'+sid).value; if(!n||q<1)return; const s=dadosConferencia.find(x=>x.id===sid); const novo={id:sid+'-'+gerarNovoId(), nome:n, quantidadeEsperada:q, tipo:t, tombamentos:[]}; if(t==='multi')for(let i=0;i<q;i++)novo.tombamentos.push({tomb:'NOVO-'+(i+1),status:'pending',obs:''}); s.itens.push(novo); salvarDados(false); renderizarLista(); document.getElementById('input-item-nome-'+sid).value=''; }
+        function removerItem(sid,iid){ if(confirm("Remover?")){ const s=dadosConferencia.find(x=>x.id===sid); s.itens=s.itens.filter(i=>i.id!==iid); salvarDados(false); renderizarLista(); } }
+        function renderizarLista(){ const c=document.getElementById('lista-setores-container'); c.innerHTML=''; dadosConferencia.forEach(s=>{ let ih=''; s.itens.forEach(i=>{ ih+=`<li class="item-conferencia-admin"><div style="width:100%"><div style="display:flex;justify-content:space-between;"><div><strong>${i.nome}</strong><small> Qtd: ${i.quantidadeEsperada}</small></div><div class="item-actions-admin"><button class="btn-action btn-edit-alt" onclick="abrirModalEdicao('${s.id}','${i.id}')"><i class="fas fa-edit"></i></button><button class="btn-action btn-remover" onclick="removerItem('${s.id}','${i.id}')"><i class="fas fa-trash"></i></button></div></div></div></li>`; }); c.innerHTML+=`<li class="setor-item"><div class="setor-header-admin" onclick="this.nextElementSibling.classList.toggle('collapsed')"><span>${s.nome}</span><button class="btn-action btn-remover" onclick="event.stopPropagation();removerSetor('${s.id}')">X</button></div><div class="setor-content-admin"><div class="add-item-form-setor"><input type="text" id="input-item-nome-${s.id}" placeholder="Item"><input type="number" id="input-item-qtd-${s.id}" value="1" style="width:50px"><select id="select-item-tipo-${s.id}"><option value="single">Único</option><option value="multi">Tombamento</option></select><button class="btn-add" onclick="adicionarItemPorSetor('${s.id}')">+</button></div><ul class="lista-setores item-list-admin">${ih}</ul></div></li>`; }); }
+        function abrirModalEdicao(sid, iid){ const s=dadosConferencia.find(x=>x.id===sid); const i=s.itens.find(x=>x.id===iid); document.getElementById('edit-setor-id').value=sid; document.getElementById('edit-item-original-id').value=iid; document.getElementById('edit-item-nome').value=i.nome; document.getElementById('edit-item-qtd').value=i.quantidadeEsperada; document.getElementById('edit-item-qtd').disabled=(i.tipo==='multi'); document.getElementById('edit-item-tipo').value=i.tipo; const sl=document.getElementById('edit-item-setor'); sl.innerHTML=''; dadosConferencia.forEach(d=>{const o=document.createElement('option'); o.value=d.id; o.text=d.nome; if(d.id===sid)o.selected=true; sl.appendChild(o);}); document.getElementById('modal-edicao').style.display='flex'; }
+        function salvarEdicaoItem(){ const osid=document.getElementById('edit-setor-id').value; const iid=document.getElementById('edit-item-original-id').value; const n=document.getElementById('edit-item-nome').value.trim().toUpperCase(); const nsid=document.getElementById('edit-item-setor').value; const q=parseInt(document.getElementById('edit-item-qtd').value); const os=dadosConferencia.find(x=>x.id===osid); const ns=dadosConferencia.find(x=>x.id===nsid); const i=os.itens.find(x=>x.id===iid); i.nome=n; if(i.tipo==='single')i.quantidadeEsperada=q; if(osid!==nsid){ os.itens=os.itens.filter(x=>x.id!==iid); i.id=nsid+'-'+gerarNovoId(); ns.itens.push(i); } salvarDados(false); renderizarLista(); fecharModal(); }
+        function fecharModal(){document.getElementById('modal-edicao').style.display='none';}
+        function fazerBackupLocal(){ const b=new Blob([JSON.stringify(dadosConferencia,null,2)],{type:"application/json"}); const u=URL.createObjectURL(b); const a=document.createElement('a'); a.href=u; a.download='backup.json'; a.click(); }
+        function importarBackupLocal(e){ const f=e.target.files[0]; if(!f)return; const r=new FileReader(); r.onload=function(ev){if(confirm("Substituir?")){try{dadosConferencia=JSON.parse(ev.target.result);salvarDados();renderizarLista();}catch(err){alert("Erro JSON");}}}; r.readAsText(f); }
+
+        document.addEventListener('DOMContentLoaded', () => { loadCaaData(); });
+    </script>
+</body>
+</html>
