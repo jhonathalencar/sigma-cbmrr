@@ -179,7 +179,9 @@
             btn.textContent = "Salvando..."; btn.disabled = true;
             try {
                 const p = userInfo; const conferente = `${p.postoGraduacao} ${p.quadro} ${p.nomeGuerra}`;
-                const localNome = infoLocal.nome; const dataHora = new Date();
+                // CORREÇÃO 2: Local com formato "POSTO - LOCAL"
+                const localNome = `${infoLocal.posto} - ${infoLocal.nome}`; 
+                const dataHora = new Date();
                 
                 // Função auxiliar para evitar 'undefined'
                 const clean = (val) => val === undefined ? null : val;
@@ -191,7 +193,6 @@
                             const s = window.itemStatus[item.id];
                             if(s.status === 'C/A') { 
                                 let old = item.pendencia || {};
-                                // CORREÇÃO APLICADA AQUI: clean()
                                 item.pendencia = { obs: s.obs, quem: conferente, data: firebase.firestore.Timestamp.now(), statusAdmin: clean(old.statusAdmin), adminObs: clean(old.adminObs) }; 
                                 updated=true; 
                             } else if(s.status === 'S/A' && item.pendencia) { delete item.pendencia; updated=true; }
@@ -200,7 +201,6 @@
                                 const uid = `${item.id}-${t.tomb}`; const s = window.itemStatus[uid];
                                 if(s.status === 'C/A') { 
                                     let old = t.pendencia || {};
-                                    // CORREÇÃO APLICADA AQUI: clean()
                                     t.pendencia = { obs: s.obs, quem: conferente, data: firebase.firestore.Timestamp.now(), statusAdmin: clean(old.statusAdmin), adminObs: clean(old.adminObs) }; 
                                     updated=true; 
                                 } else if(s.status === 'S/A' && t.pendencia) { delete t.pendencia; updated=true; }
@@ -241,14 +241,57 @@
                 
                 await db.collection('resultados_conferencias').add({ local: localNome, lista_id: LISTA_ID, conferente, timestamp: firebase.firestore.Timestamp.now(), totalItensConferidos: itemsCount, totalCaa: cA_count, itensCaa });
 
+                // === PDF GERADOR (ATUALIZADO) ===
                 const { jsPDF } = window.jspdf; const doc = new jsPDF('p', 'mm', 'a4');
                 const MARGIN=14, PG_W=210, LOGO_S=15; 
                 const logoDraw = (id, x) => { const el = document.getElementById(id) || document.querySelector(`img[src*="${id}"]`); if(el && el.src) { try { const c = document.createElement('canvas'); c.width=160; c.height=160; c.getContext('2d').drawImage(el,0,0,160,160); doc.addImage(c.toDataURL('image/png'), 'PNG', x, 10, LOGO_S, LOGO_S); } catch(e){} } };
                 logoDraw('cbmrr', MARGIN); logoDraw('logo-sigma', PG_W-MARGIN-LOGO_S);
 
                 doc.setFontSize(10); doc.setTextColor(51); doc.setFont('helvetica','bold'); doc.text('GOVERNO DE RORAIMA', PG_W/2, 15, {align:'center'}); doc.setTextColor(217,15,35); doc.text('CORPO DE BOMBEIROS MILITAR DE RORAIMA', PG_W/2, 20, {align:'center'}); doc.setTextColor(51); doc.setFont('helvetica','italic'); doc.text('"Amazônia: patrimônio dos brasileiros"', PG_W/2, 25, {align:'center'});
-                let y = 40; const VAL_X = MARGIN + 45; doc.setFont('helvetica','bold'); doc.text('Local:', MARGIN, y); doc.setFont('helvetica','normal'); doc.text(localNome, VAL_X, y); y+=5; doc.setFont('helvetica','bold'); doc.text('Conferente:', MARGIN, y); doc.setFont('helvetica','normal'); doc.text(conferente, VAL_X, y); y+=5; doc.setFont('helvetica','bold'); doc.text('Data/Hora:', MARGIN, y); doc.setFont('helvetica','normal'); doc.text(dataHora.toLocaleString(), VAL_X, y); y+=10; doc.setFont('helvetica','bold'); doc.text(`TOTAL: ${itemsCount} | C/A: ${cA_count}`, MARGIN, y); y+=5;
-                doc.autoTable({ startY: y, head: [['Material', 'QTD', 'Status', 'Obs']], body: tableData, theme: 'striped', styles: { fontSize: 8, halign: 'left', textColor: 51, cellPadding: 1.5 }, headStyles: { fillColor: [128, 0, 32], textColor: 255, fontStyle: 'bold' }, columnStyles: { 0:{cellWidth:70}, 1:{cellWidth:20,halign:'center'}, 2:{cellWidth:20,halign:'center'} }, didDrawPage: (d) => { doc.setFontSize(8); doc.setTextColor(150); doc.text('SIGMA - Sistema Integrado', MARGIN, doc.internal.pageSize.height-10); doc.text(`Pág ${d.pageNumber}`, PG_W-MARGIN, doc.internal.pageSize.height-10, {align:'right'}); } });
+                
+                // CORREÇÃO 1: Título em destaque
+                doc.setFontSize(14); doc.setTextColor(0); doc.setFont('helvetica','bold'); 
+                doc.text("CONFERÊNCIA DE MATERIAIS", PG_W/2, 35, {align:'center'});
+
+                // CORREÇÃO 4: Box de Destaque para Informações
+                doc.setFillColor(240, 240, 240); // Cinza bem claro
+                doc.setDrawColor(200, 200, 200); // Borda cinza
+                doc.roundedRect(MARGIN, 40, PG_W - (MARGIN*2), 25, 2, 2, 'FD');
+
+                doc.setFontSize(10); doc.setTextColor(50);
+                let y = 46; const X_LABEL = MARGIN + 5; const X_VAL = MARGIN + 30;
+                
+                doc.setFont('helvetica','bold'); doc.text('Local:', X_LABEL, y); 
+                doc.setFont('helvetica','normal'); doc.text(localNome, X_VAL, y); // CORREÇÃO 2 (Local Formatado)
+                
+                y+=6; 
+                doc.setFont('helvetica','bold'); doc.text('Conferente:', X_LABEL, y); 
+                doc.setFont('helvetica','normal'); doc.text(conferente, X_VAL, y); 
+                
+                y+=6; 
+                doc.setFont('helvetica','bold'); doc.text('Data/Hora:', X_LABEL, y); 
+                doc.setFont('helvetica','normal'); doc.text(dataHora.toLocaleString(), X_VAL, y);
+
+                // Resumo C/A no canto do box
+                doc.setFont('helvetica','bold'); doc.setTextColor(128, 0, 32);
+                doc.text(`TOTAL: ${itemsCount} | C/A: ${cA_count}`, PG_W - MARGIN - 5, 46, {align:'right'});
+
+                // CORREÇÃO 5: Cabeçalho da Tabela em Cinza Escuro
+                doc.autoTable({ 
+                    startY: 70, 
+                    head: [['Material', 'QTD', 'Status', 'Obs']], 
+                    body: tableData, 
+                    theme: 'striped', 
+                    styles: { fontSize: 8, halign: 'left', textColor: 51, cellPadding: 1.5 }, 
+                    headStyles: { fillColor: [60, 60, 60], textColor: 255, fontStyle: 'bold' }, // Cinza escuro
+                    columnStyles: { 0:{cellWidth:70}, 1:{cellWidth:20,halign:'center'}, 2:{cellWidth:20,halign:'center'} }, 
+                    didDrawPage: (d) => { 
+                        doc.setFontSize(8); doc.setTextColor(150); 
+                        // CORREÇÃO 3: Rodapé Texto Completo
+                        doc.text('SIGMA - Sistema Integrado de Gestão de Materiais', MARGIN, doc.internal.pageSize.height-10); 
+                        doc.text(`Pág ${d.pageNumber}`, PG_W-MARGIN, doc.internal.pageSize.height-10, {align:'right'}); 
+                    } 
+                });
                 
                 doc.save(`Conferencia_${localNome.replace(/[^a-zA-Z0-9]/g,'')}_${new Date().toISOString().split('T')[0]}.pdf`);
                 alert("Salvo com sucesso!"); location.reload();
