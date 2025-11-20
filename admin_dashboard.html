@@ -5,8 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="icon" type="image/png" href="logo_sigma.png" onerror="this.onerror=null; this.src='https://placehold.co/16x16/800020/ffffff?text=S'">
     <title>SIGMA - Painel Administrativo</title>
+    
     <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+
     <style>
         /* ESTILOS MANTIDOS (CABEÇALHO, SIDEBAR, ETC...) */
         body { font-family: Arial, sans-serif; background-color: #f4f4f9; color: #333; margin: 0; display: flex; min-height: 100vh; padding-top: 50px; padding-bottom: 60px; box-sizing: border-box; overflow-x: hidden; }
@@ -83,18 +85,17 @@
         function fecharModalGestao(){ document.getElementById('modal-gestao-ca').style.display='none'; }
         function toggleGestaoQtd(){ document.getElementById('div-gestao-qtd').style.display=(document.getElementById('gestao-status').value==='Remover'?'block':'none'); }
 
-        // LÓGICA DE ATUALIZAÇÃO NO BANCO (CORRIGIDA)
+        // ATUALIZAÇÃO NO BANCO
         async function salvarGestaoCa(){
             const docId=document.getElementById('gestao-doc-id').value, idx=parseInt(document.getElementById('gestao-item-index').value), itemId=document.getElementById('gestao-item-id-lista').value, status=document.getElementById('gestao-status').value, obs=document.getElementById('gestao-obs').value.trim(), qtd=parseInt(document.getElementById('gestao-qtd').value);
             if(!obs) return alert("Descreva o que foi feito.");
             try {
-                // 1. Atualiza Histórico (Resultados)
                 const ref=db.collection(COLECAO_RESULTADOS).doc(docId);
                 const snap=await ref.get(); if(!snap.exists) throw new Error("Erro doc");
                 const items=snap.data().itensCaa; items[idx].statusAdmin=(status==='Remover'?'Solucionado':status);
                 await ref.update({itensCaa:items});
 
-                // 2. Atualiza Lista Mestra
+                // Lógica precisa: encontrar item pelo ID explicito
                 const listRef = db.collection(COLECAO_LISTA_MESTRA).doc(DOCUMENTO_LISTA_MESTRA_ID);
                 const listSnap = await listRef.get();
                 let lista = listSnap.data().list;
@@ -102,8 +103,6 @@
 
                 lista.forEach(s => {
                     s.itens.forEach(i => {
-                        // ID recebido é o ID original da lista
-                        // Se for item simples:
                         if(i.id === itemId && i.tipo === 'single') {
                              if(i.pendencia) {
                                  if(status==='Solucionado'||status==='Remover') delete i.pendencia; 
@@ -111,18 +110,12 @@
                                  updated = true;
                              }
                         }
-                        // Se for Multi, itemId pode ser "ID_ITEM-TOMB" (vinda do carregamento do histórico)
-                        // Precisamos bater com o tombamento
                         if(i.tipo === 'multi' && i.tombamentos) {
                             i.tombamentos.forEach(t => {
-                                // O 'id' salvo no histórico para itens multi é "ID_ITEM-TOMB_NAME"
-                                // Verifica se o itemId recebido bate com a composição
-                                if(`${i.id}-${t.tomb}` === itemId) {
-                                    if(t.pendencia) {
-                                        if(status==='Solucionado'||status==='Remover') delete t.pendencia; 
-                                        else { t.pendencia.statusAdmin = status; t.pendencia.adminObs = obs; }
-                                        updated = true;
-                                    }
+                                if(`${i.id}-${t.tomb}` === itemId && t.pendencia) {
+                                    if(status==='Solucionado'||status==='Remover') delete t.pendencia; 
+                                    else { t.pendencia.statusAdmin = status; t.pendencia.adminObs = obs; }
+                                    updated = true;
                                 }
                             });
                         }
@@ -136,9 +129,9 @@
             } catch(e){ console.error(e); alert("Erro ao salvar"); }
         }
 
-        async function removerItemDaListaMestra(itemId, qtd){ /* Lógica de remover mantida igual */ }
+        async function removerItemDaListaMestra(itemId, qtd){ const ref=db.collection(COLECAO_LISTA_MESTRA).doc(DOCUMENTO_LISTA_MESTRA_ID); const s=await ref.get(); if(!s.exists)return; let l=s.data().list; let f=false; for(const st of l){ const idx=st.itens.findIndex(i=>i.id===itemId); if(idx!==-1){ const i=st.itens[idx]; i.quantidadeEsperada-=qtd; if(i.quantidadeEsperada<=0)st.itens.splice(idx,1); f=true; break; } } if(f) await ref.update({list:l, updatedAt:firebase.firestore.FieldValue.serverTimestamp()}); }
 
-        // ... (Restante das funções de Admin - carregarDadosGerenciador, salvarDados, etc - mantidas do código anterior)
+        // ADMIN PADRÃO
         async function carregarDadosGerenciador(){ const m=document.getElementById('loading-message-admin'), c=document.getElementById('main-admin-content'); m.style.display='block'; c.style.display='none'; try{const d=await db.collection(COLECAO_LISTA_MESTRA).doc(DOCUMENTO_LISTA_MESTRA_ID).get(); if(d.exists)dadosConferencia=d.data().list; else dadosConferencia=[]; m.style.display='none'; c.style.display='block'; renderizarLista();}catch(e){console.error(e);m.textContent="Erro.";}}
         async function salvarDados(a=true){ try{ await db.collection(COLECAO_LISTA_MESTRA).doc(DOCUMENTO_LISTA_MESTRA_ID).set({list:dadosConferencia, updatedAt:firebase.firestore.FieldValue.serverTimestamp()}); if(a)alert("Salvo!"); }catch(e){alert("Erro");} }
         function gerarNovoId(){ return Date.now().toString().slice(-6)+Math.floor(Math.random()*100).toString().padStart(2,'0'); }
