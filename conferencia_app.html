@@ -55,9 +55,9 @@
         
         .texto-admin { font-weight: bold; color: #0d47a1; }
         
-        .linha-historico { color: #333; }
-        .linha-destaque { font-weight: bold; color: #d90f23; }
-
+        /* Estilo das linhas da lista */
+        .linha-obs { color: #333; font-weight: 500; }
+        
         .pendencia-actions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 10px; border-top: 1px dotted #ccc; padding-top: 5px; }
         .btn-manter { background-color: #e0e0e0; border: 1px solid #ccc; color: #333; font-size: 0.8em; padding: 5px 10px; cursor: pointer; border-radius: 4px; } .btn-manter:hover { background-color: #1b8a3e; color: white; }
         .btn-acrescentar { background-color: #e0e0e0; border: 1px solid #ccc; color: #333; font-size: 0.8em; padding: 5px 10px; cursor: pointer; border-radius: 4px; } .btn-acrescentar:hover { background-color: #d90f23; color: white; }
@@ -135,30 +135,63 @@
             return date.toLocaleDateString('pt-BR'); 
         }
 
-        const formatarTextoVisual = (textoBruto, autorAtual, dataAtual, adminStatus, adminObs) => {
-            let html = '<ul class="lista-pendencias">';
-            
-            if (adminStatus) html += `<li><span class="texto-admin">⚠️ ${adminStatus} (Admin):</span> Resp: ${adminObs}</li>`;
+        // --- FUNÇÃO DE FORMATAÇÃO UNIFICADA (PARA HTML E PDF) ---
+        // Retorna um array de linhas formatadas: "Por: AUTOR em DATA: "TEXTO""
+        const gerarLinhasFormatadas = (textoBruto, autorAtual, dataAtual, adminStatus, adminObs) => {
+            const linhas = [];
+            if (adminStatus) {
+                linhas.push(`[${adminStatus.toUpperCase()}] (Admin): ${adminObs}`);
+            }
 
             const separator = ' | + NOVA: ';
-            const partes = textoBruto.split(separator);
-
-            partes.forEach((parte, index) => {
-                parte = parte.trim();
-                const regex = /^"(.*)" \(Por: (.*) em (.*)\)$/;
-                const match = parte.match(regex);
-
+            if (textoBruto.includes(separator)) {
+                const partes = textoBruto.split(separator);
+                partes.forEach(p => {
+                    p = p.trim();
+                    const regex = /^"(.*)" \(Por: (.*) em (.*)\)$/; // Regex formato antigo banco
+                    const match = p.match(regex);
+                    if (match) {
+                        // Já estava assinado
+                        linhas.push(`Por: ${match[2]} em ${match[3]}: "${match[1]}"`);
+                    } else {
+                        // Texto novo/cru, usa assinatura atual
+                        linhas.push(`Por: ${autorAtual} em ${dataAtual}: "${p}"`);
+                    }
+                });
+            } else {
+                // Item único
+                const p = textoBruto.trim();
+                const regex = /^"(.*)" \(Por: (.*) em (.*)\)$/; 
+                const match = p.match(regex);
                 if (match) {
-                    html += `<li class="linha-historico">Por: ${match[2]} em ${match[3]}: "${match[1]}"</li>`;
+                     linhas.push(`Por: ${match[2]} em ${match[3]}: "${match[1]}"`);
                 } else {
-                    html += `<li class="linha-destaque">Por: ${autorAtual} em ${dataAtual}: "${parte}"</li>`;
+                     // Texto cru, usa assinatura atual
+                     linhas.push(`Por: ${autorAtual} em ${dataAtual}: "${p}"`);
+                }
+            }
+            return linhas;
+        };
+
+        // --- GERADOR DE HTML VISUAL ---
+        const gerarHtmlVisual = (textoBruto, autorAtual, dataAtual, adminStatus, adminObs) => {
+            const linhas = gerarLinhasFormatadas(textoBruto, autorAtual, dataAtual, adminStatus, adminObs);
+            let html = '<ul class="lista-pendencias">';
+            linhas.forEach(l => {
+                // Se for linha de admin, estilo diferente
+                if (l.includes('(Admin):')) {
+                    // Separa o [STATUS] (Admin): do texto
+                    const parts = l.split('): ');
+                    html += `<li><span class="texto-admin">⚠️ ${parts[0]}):</span> Resp: ${parts[1]}</li>`;
+                } else {
+                    html += `<li class="linha-obs">• ${l}</li>`;
                 }
             });
-
             html += '</ul>';
             return html;
         };
 
+        // --- LÓGICA DE MONTAGEM NO BANCO (PRESERVA O FORMATO ANINHADO INTERNO) ---
         const montarHistoricoLinear = (obsAnterior, novoTexto, autorAnterior, dataAnterior) => {
             const separator = ' | + NOVA: ';
             let novoHistorico = "";
@@ -167,6 +200,7 @@
                 let partes = obsAnterior.split(separator);
                 let ultimaParte = partes.pop(); 
                 let resto = partes.join(separator); 
+                // Assina a última parte que era crua
                 let ultimaAssinada = `"${ultimaParte}" (Por: ${autorAnterior} em ${dataAnterior})`;
                 novoHistorico = `${resto}${separator}${ultimaAssinada}${separator}${novoTexto}`;
             } else {
@@ -198,7 +232,8 @@
                         const dadosHistorico = JSON.stringify({ obs: obs, autor: quem, data: dataPend });
                         const safeHistorico = encodeURIComponent(dadosHistorico);
 
-                        const htmlFormatado = formatarTextoVisual(obs, quem, dataPend, pendenciaObj.statusAdmin, pendenciaObj.adminObs);
+                        // GERA HTML NA CARGA INICIAL
+                        const htmlFormatado = gerarHtmlVisual(obs, quem, dataPend, pendenciaObj.statusAdmin, pendenciaObj.adminObs);
                         let classAdmin = pendenciaObj.statusAdmin ? "admin-reply" : "";
 
                         return `
@@ -319,7 +354,9 @@
             const d = item.querySelector('.descricao-salva'); 
             const conferente = `${userInfo.postoGraduacao} ${userInfo.quadro} ${userInfo.nomeGuerra}`;
             const dataAgora = formatarDataSimples(new Date());
-            d.innerHTML = formatarTextoVisual(obsFinal, conferente, dataAgora, null, null);
+            
+            // Exibe na tela visualmente bonito
+            d.innerHTML = gerarHtmlVisual(obsFinal, conferente, dataAgora, null, null);
             d.style.display = 'block'; 
             updateSetorStatus(button.closest('.setor')); updateOverallStatus(); checkSetorCompletion(button.closest('.setor'), item.dataset.id); 
         }
@@ -342,7 +379,9 @@
             const d = tombEl.querySelector('.tombamento-descricao-salva'); 
             const conferente = `${userInfo.postoGraduacao} ${userInfo.quadro} ${userInfo.nomeGuerra}`;
             const dataAgora = formatarDataSimples(new Date());
-            d.innerHTML = formatarTextoVisual(obsFinal, conferente, dataAgora, null, null);
+            
+            // Exibe na tela visualmente bonito
+            d.innerHTML = gerarHtmlVisual(obsFinal, conferente, dataAgora, null, null);
             d.style.display = 'block'; 
             updateItemMainStatusDisplay(item); updateSetorStatus(button.closest('.setor')); updateOverallStatus(); checkSetorCompletion(button.closest('.setor'), item.dataset.id); 
         }
@@ -354,7 +393,6 @@
         async function finalizarConferencia() {
             const dataHora = new Date();
             const dataHoraStr = dataHora.toLocaleString('pt-BR');
-
             const btn = document.getElementById('btn-finalizar'); if (btn.disabled) return;
             btn.textContent = "Salvando..."; btn.disabled = true;
             try {
@@ -397,46 +435,28 @@
                             if (s && s.status !== 'pending') {
                                 let finalObs = s.obs; 
                                 let statusFinal = s.status;
-                                let pdfText = "";
-
+                                
+                                // --- CORREÇÃO CRUCIAL PARA O PDF ---
+                                // Gera as linhas formatadas usando a mesma lógica da tela
+                                // Se for 'KEEP' (Manter), usa os dados originais.
+                                // Se for 'C/A' (Novo/Editado), usa os dados atuais para assinar o que falta.
+                                
+                                let linhas = [];
                                 if (statusFinal === 'KEEP' && originalPendencia) {
                                     statusFinal = 'C/A'; 
-                                    const formatarParaPDF = (txt) => {
-                                        let out = "";
-                                        if(originalPendencia.statusAdmin) out += `[${originalPendencia.statusAdmin.toUpperCase()}] (Admin): ${originalPendencia.adminObs}\n`;
-                                        const separator = ' | + NOVA: ';
-                                        const partes = txt.split(separator);
-                                        partes.forEach(p => {
-                                            p=p.trim();
-                                            const r = /^"(.*)" \(Por: (.*) em (.*)\)$/;
-                                            const m = p.match(r);
-                                            if(m) out += `• Por: ${m[2]} em ${m[3]}: "${m[1]}"\n`;
-                                            else out += `• ${p}\n`; 
-                                        });
-                                        return out.trim();
-                                    };
-                                    finalObs = formatarParaPDF(originalPendencia.obs);
-                                
+                                    const dataStr = formatarDataSimples(originalPendencia.data);
+                                    const autor = originalPendencia.quem || 'Anônimo';
+                                    linhas = gerarLinhasFormatadas(originalPendencia.obs, autor, dataStr, originalPendencia.statusAdmin, originalPendencia.adminObs);
                                 } else if (statusFinal === 'C/A') {
-                                    let txtCompleto = s.obs;
-                                    let out = "";
-                                    if(originalPendencia && originalPendencia.statusAdmin) out += `[${originalPendencia.statusAdmin.toUpperCase()}] (Admin): ${originalPendencia.adminObs}\n`;
-                                    
-                                    const separator = ' | + NOVA: ';
-                                    const partes = txtCompleto.split(separator);
-                                    partes.forEach((p, idx) => {
-                                        p=p.trim();
-                                        const r = /^"(.*)" \(Por: (.*) em (.*)\)$/;
-                                        const m = p.match(r);
-                                        if(m) {
-                                            out += `• Por: ${m[2]} em ${m[3]}: "${m[1]}"\n`;
-                                        } else {
-                                            const dataH = new Date().toLocaleDateString('pt-BR');
-                                            out += `• Por: ${conferente} em ${dataH}: "${p}"\n`;
-                                        }
-                                    });
-                                    finalObs = out.trim();
+                                    // Usa o texto atual (s.obs) e assina com o usuário atual
+                                    linhas = gerarLinhasFormatadas(s.obs, conferente, dataHoraStr, originalPendencia ? originalPendencia.statusAdmin : null, originalPendencia ? originalPendencia.adminObs : null);
                                 }
+                                
+                                // Converte o array de linhas em texto com quebras de linha e bullets para o PDF
+                                if (linhas.length > 0) {
+                                    finalObs = linhas.map(l => `• ${l}`).join('\n');
+                                }
+
                                 itemsToProcess.push({ nomeCompleto: nome, status: statusFinal === 'KEEP' ? 'C/A' : statusFinal, obs: finalObs, quantidade: qtd, id: id });
                             }
                         };
@@ -456,6 +476,8 @@
                 });
 
                 if(updated) await db.collection(COLECAO_LISTAS).doc(LISTA_ID).update({ list: dadosConferencia });
+                
+                // Salva 'lista_id' para o Dashboard saber onde mexer
                 await db.collection('resultados_conferencias').add({ local: localNome, lista_id: LISTA_ID, conferente, timestamp: firebase.firestore.Timestamp.now(), totalItensConferidos: itemsCount, totalCaa: cA_count, itensCaa });
 
                 const { jsPDF } = window.jspdf; const doc = new jsPDF('p', 'mm', 'a4');
