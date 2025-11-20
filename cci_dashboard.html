@@ -74,7 +74,7 @@
         .ca-table { width: 100%; border-collapse: collapse; font-size: 0.9em; } .ca-table th, .ca-table td { padding: 12px 15px; text-align: left; border-bottom: 1px solid #ddd; vertical-align: top; } .ca-table th { background-color: #f8f8f8; color: #800020; font-weight: bold; text-transform: uppercase; }
         
         /* CORES DE LINHA */
-        .row-amarelo { background-color: #fff9c4 !important; } /* Amarelo mais visível */
+        .row-amarelo { background-color: #fff9c4 !important; } 
         .row-laranja { background-color: #ffe0b2 !important; } 
         
         .status-badge { padding: 4px 8px; border-radius: 4px; font-size: 0.8em; font-weight: bold; } 
@@ -247,7 +247,9 @@
         </div>
     </div>
 
-    <div id="modal-edicao" class="modal-overlay"><div class="modal-content"><button class="close-btn" onclick="fecharModal()"><i class="fas fa-times"></i></button><h2>Editar Item</h2><input type="hidden" id="edit-setor-id"><input type="hidden" id="edit-item-original-id"><label for="edit-item-nome">Nome:</label><input type="text" id="edit-item-nome"><label for="edit-item-setor">Mover para Setor:</label><select id="edit-item-setor"></select><label for="edit-item-qtd">Quantidade:</label><input type="number" id="edit-item-qtd" min="1"><label for="edit-item-tipo">Tipo:</label><select id="edit-item-tipo" disabled style="background-color: #eee;"><option value="single">Item Único</option><option value="multi">Item com Tombamento</option></select><div class="modal-buttons"><button class="btn-action btn-remover" onclick="fecharModal()">Cancelar</button><button class="btn-action btn-sync" onclick="salvarEdicaoItem()">Salvar</button></div></div></div>
+    <div id="modal-edicao" class="modal-overlay"><div class="modal-content"><button class="close-btn" onclick="fecharModal()"><i class="fas fa-times"></i></button><h2>Editar Item</h2><input type="hidden" id="edit-setor-id"><input type="hidden" id="edit-item-original-id"><label for="edit-item-nome">Nome:</label><input type="text" id="edit-item-nome"><label for="edit-item-setor">Mover para Setor:</label><select id="edit-item-setor"></select><label for="edit-item-qtd">Quantidade:</label><input type="number" id="edit-item-qtd" min="1"><label for="edit-item-tipo">Tipo:</label><select id="edit-item-tipo" disabled style="background-color: #eee;"><option value="single">Item Único</option><option value="multi">Item com Tombamento</option></select><div class="modal-buttons">
+        <button class="btn-modern-action btn-backup" onclick="fecharModal()">Cancelar</button>
+        <button class="btn-modern-action btn-sync" onclick="salvarEdicaoItem()">Salvar</button></div></div></div>
 
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script><script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script><script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
     <script>
@@ -300,7 +302,7 @@
             }
         }
 
-        // [FUNÇÕES DE POSTO E CRUD LOCAIS MANTIDAS IGUAIS AO ANTERIOR]
+        // [FUNÇÕES DE POSTO E CRUD LOCAIS MANTIDAS]
         async function carregarPostos() {
             const select = document.getElementById('novo-local-posto');
             try {
@@ -368,7 +370,10 @@
                 snap.forEach(doc => {
                     const d = doc.data();
                     const loc = d.local || 'Desconhecido';
-                    if (loc === 'ABT-17' || loc === 'ABT-18') return; // Filtro
+                    
+                    // FILTRO DE CARDS OBSOLETOS
+                    if (loc === 'ABT-17' || loc === 'ABT-18' || loc === 'PERMANÊNCIA - BRAVO 5') return; 
+                    
                     if (!map[loc]) {
                         map[loc] = { docId: doc.id, local: loc, conferente: d.conferente, date: d.timestamp ? new Date(d.timestamp.toDate()).toLocaleString('pt-BR') : 'N/D', items: [] };
                         if (Array.isArray(d.itensCaa)) {
@@ -449,10 +454,8 @@
                     if(i.statusAdmin==='Em solução') tr.classList.add('row-amarelo');
                     if(i.statusAdmin==='Cautelado') tr.classList.add('row-laranja');
                     
-                    // Passamos apenas o texto bruto, sem tentar adivinhar autor
                     const obsFormatada = formatarTextoDashboard(i.obs || '-');
                     
-                    // CORREÇÃO AQUI: INCLUINDO O ADMIN HTML (CAIXA AMARELA/LARANJA)
                     let adminHtml = '';
                     if(i.statusAdmin && i.statusAdmin !== 'Pendente' && i.statusAdmin !== 'Solucionado') {
                          const corFundo = i.statusAdmin === 'Em solução' ? '#fff9c4' : '#ffe0b2'; 
