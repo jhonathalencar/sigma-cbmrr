@@ -51,6 +51,9 @@
         .form-group label { display: block; margin-bottom: 5px; font-weight: bold; color: #555; }
         .form-group input, .form-group select { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; }
         
+        /* NOVA SEÇÃO: ADD POSTO */
+        .add-posto-wrapper { width: 100%; margin-bottom: 15px; padding-bottom: 15px; border-bottom: 1px dashed #ccc; display: flex; align-items: flex-end; gap: 10px; }
+        
         /* Botões Modernos */
         .btn-modern-action { display: inline-flex; align-items: center; gap: 8px; padding: 10px 20px; border: none; border-radius: 6px; font-size: 0.95em; font-weight: bold; cursor: pointer; color: white; box-shadow: 0 2px 5px rgba(0,0,0,0.15); transition: all 0.3s ease; text-transform: uppercase; }
         .btn-modern-action:hover { transform: translateY(-2px); box-shadow: 0 5px 12px rgba(0,0,0,0.2); }
@@ -102,23 +105,27 @@
             
             <div class="new-local-section">
                 <h3><i class="fas fa-plus-circle"></i> Criar Novo Local de Conferência</h3>
+                
+                <div class="add-posto-wrapper">
+                    <div class="form-group">
+                        <label>Novo Posto de Serviço</label>
+                        <input type="text" id="novo-posto-input" placeholder="Nome do Posto (ex: DELTA)">
+                    </div>
+                    <button class="btn-add" onclick="adicionarPosto()">+</button>
+                </div>
+
                 <div class="new-local-form">
                     <div class="form-group">
-                        <label>Posto de Serviço</label>
+                        <label>Selecione o Posto</label>
                         <select id="novo-local-posto">
-                            <option value="ALFA">ALFA</option>
-                            <option value="BRAVO">BRAVO</option>
-                            <option value="CHARLIE">CHARLIE</option>
-                            <option value="CARACARAÍ">CARACARAÍ</option>
-                            <option value="RORAINÓPOLIS">RORAINÓPOLIS</option>
-                            <option value="PACARAIMA">PACARAIMA</option>
+                            <option disabled selected>Carregando postos...</option>
                         </select>
                     </div>
                     <div class="form-group">
                         <label>Nome do Local (Ex: RESGATE, ABT-18)</label>
                         <input type="text" id="novo-local-nome" placeholder="Digite o nome...">
                     </div>
-                    <button class="btn-modern-action btn-create" onclick="criarNovoLocal()">CRIAR</button>
+                    <button class="btn-modern-action btn-create" onclick="criarNovoLocal()">CRIAR LOCAL</button>
                 </div>
             </div>
 
@@ -172,6 +179,7 @@
         const COLECAO_RESULTADOS = 'resultados_conferencias';
         const COLECAO_LISTAS = 'listas_conferencia'; // NOVA COLEÇÃO DE LISTAS
         const DOC_CONFIG_ROTAS = db.collection('config_geral').doc('rotas');
+        const DOC_CONFIG_POSTOS = db.collection('config_geral').doc('postos'); // NOVA CONFIG
         
         let dadosConferencia = [];
         let currentEditingId = null; // Guarda qual ID estamos editando
@@ -189,10 +197,64 @@
                 document.getElementById('view-locais').classList.add('active-view'); 
                 document.getElementById('link-locais').classList.add('active'); 
                 carregarListaLocais();
+                carregarPostos(); // Carrega os postos no Select
             } else if (v === 'editor') {
                 document.getElementById('view-editor').classList.add('active-view');
                 // Mantém o menu 'Locais' ativo visualmente pois o editor é sub-tela
                 document.getElementById('link-locais').classList.add('active');
+            }
+        }
+
+        // ========================
+        // GESTÃO DE POSTOS (NOVO)
+        // ========================
+        async function carregarPostos() {
+            const select = document.getElementById('novo-local-posto');
+            try {
+                const doc = await DOC_CONFIG_POSTOS.get();
+                let lista = [];
+                
+                if (!doc.exists) {
+                    // Cria padrão se não existir
+                    lista = ['ALFA', 'BRAVO', 'CHARLIE', 'CARACARAÍ', 'RORAINÓPOLIS', 'PACARAIMA'];
+                    await DOC_CONFIG_POSTOS.set({ lista: lista });
+                } else {
+                    lista = doc.data().lista || [];
+                }
+                
+                select.innerHTML = '<option value="" disabled selected>Selecione um Posto</option>';
+                lista.sort().forEach(p => {
+                    const opt = document.createElement('option');
+                    opt.value = p;
+                    opt.textContent = p;
+                    select.appendChild(opt);
+                });
+            } catch (e) {
+                console.error("Erro postos", e);
+                select.innerHTML = '<option>Erro ao carregar</option>';
+            }
+        }
+
+        async function adicionarPosto() {
+            const input = document.getElementById('novo-posto-input');
+            const novo = input.value.trim().toUpperCase();
+            if(!novo) return alert("Digite o nome do posto.");
+            
+            try {
+                await DOC_CONFIG_POSTOS.update({
+                    lista: firebase.firestore.FieldValue.arrayUnion(novo)
+                });
+                alert("Posto adicionado!");
+                input.value = '';
+                carregarPostos(); // Recarrega o dropdown
+            } catch (e) {
+                // Se o documento não existir (ex: primeira vez e falhou load), usa set
+                if (e.code === 'not-found') {
+                    await DOC_CONFIG_POSTOS.set({ lista: [novo] });
+                    carregarPostos();
+                } else {
+                    alert("Erro: " + e.message);
+                }
             }
         }
 
@@ -242,7 +304,7 @@
         async function criarNovoLocal() {
             const posto = document.getElementById('novo-local-posto').value;
             const nome = document.getElementById('novo-local-nome').value.trim().toUpperCase();
-            if(!nome) return alert("Digite o nome do local.");
+            if(!posto || !nome) return alert("Preencha Posto e Nome.");
 
             // Gera ID amigável: bravo_resgate
             const id = `${posto.toLowerCase()}_${nome.replace(/[^a-zA-Z0-9]/g, '').toLowerCase()}`;
