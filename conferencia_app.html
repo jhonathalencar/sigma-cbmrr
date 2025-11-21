@@ -129,8 +129,21 @@
             return date.toLocaleDateString('pt-BR'); 
         }
 
+        // FUNÇÃO QUE FALTAVA: UPDATE HEADER
         function updateHeaderInfo() { 
             document.getElementById('militar-info').innerHTML = `<strong>Conferente:</strong> ${userInfo.postoGraduacao} ${userInfo.quadro} ${userInfo.nomeGuerra}<br><strong>Data/Hora:</strong> ${new Date().toLocaleString()}`; 
+        }
+
+        // FUNÇÃO QUE FALTAVA: UPDATE OVERALL STATUS
+        function updateOverallStatus() { 
+            let total = 0, completed = 0; 
+            document.querySelectorAll('.setor').forEach(s => { 
+                total += parseInt(s.dataset.totalItems); 
+                completed += parseInt(s.querySelector('.setor-status').dataset.completed); 
+            }); 
+            const btn = document.getElementById('btn-finalizar'); 
+            btn.textContent = `FINALIZAR CONFERÊNCIA (${completed}/${total} ITENS)`; 
+            btn.disabled = (completed !== total); 
         }
 
         // --- 2. LÓGICA DO RASCUNHO (LOCAL STORAGE) ---
@@ -305,13 +318,8 @@
                 document.getElementById('local-posto-info').innerHTML = `<span style="color:blue;font-weight:bold">${infoLocal.posto} - ${infoLocal.nome}</span>`;
                 document.title = `Conferência - ${infoLocal.posto} ${infoLocal.nome}`;
                 
-                // Renderiza a conferência
                 renderizarConferencia();
-                
-                // Atualiza info do bombeiro
                 updateHeaderInfo();
-                
-                // Restaura rascunho se houver
                 restaurarRascunho();
 
                 document.getElementById('loading-message').style.display='none'; 
@@ -481,7 +489,6 @@
 
         function updateItemMainStatusDisplay(item) { if (item.dataset.type === 'single') return; const tombs = item.querySelectorAll('.tombamento-container'); let conf = 0, alt = 0; tombs.forEach(t => { const s = window.itemStatus[`${item.dataset.id}-${t.dataset.tomb}`]?.status; if (s === 'S/A' || s === 'C/A' || s === 'KEEP') { conf++; if (s === 'C/A' || s === 'KEEP') alt++; } }); const icon = item.querySelector('.status-icon'); item.className = 'item-conferencia item-has-tombamentos'; icon.className = 'status-icon'; if (conf === tombs.length) { if (alt > 0) { icon.classList.add('alert'); item.classList.add('status-alert'); } else { icon.classList.add('ok'); item.classList.add('status-ok'); } } }
         function updateSetorStatus(setor) { const items = setor.querySelectorAll('.item-conferencia'); let completed = 0, altered = 0, total = 0; items.forEach(item => { if (item.dataset.type === 'single') { total++; const s = window.itemStatus[item.dataset.id]?.status; if (s === 'S/A') completed++; else if (s === 'C/A' || s === 'KEEP') { completed++; altered++; } } else { const tombs = item.querySelectorAll('.tombamento-container'); tombs.forEach(t => { total++; const s = window.itemStatus[`${item.dataset.id}-${t.dataset.tomb}`]?.status; if (s === 'S/A') completed++; else if (s === 'C/A' || s === 'KEEP') { completed++; altered++; } }); } }); setor.dataset.totalItems = total; const st = setor.querySelector('.setor-status'); st.dataset.completed = completed; if (completed === total && altered === 0) { st.textContent = 'S/A'; st.classList.add('ok'); } else if (altered > 0) { st.textContent = `${altered} C/A`; st.classList.remove('ok'); } else { st.textContent = `${completed}/${total}`; st.classList.remove('ok'); } }
-        function updateOverallStatus() { let total = 0, completed = 0; document.querySelectorAll('.setor').forEach(s => { total += parseInt(s.dataset.totalItems); completed += parseInt(s.querySelector('.setor-status').dataset.completed); }); const btn = document.getElementById('btn-finalizar'); btn.textContent = `FINALIZAR CONFERÊNCIA (${completed}/${total} ITENS)`; btn.disabled = (completed !== total); }
 
         async function finalizarConferencia() {
             const dataHora = new Date();
