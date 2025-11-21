@@ -54,7 +54,6 @@
         .lista-pendencias li:last-child { border-bottom: none; }
         
         .texto-admin { font-weight: bold; color: #0d47a1; }
-        
         .linha-obs { color: #333; font-weight: 500; }
         
         .pendencia-actions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 10px; border-top: 1px dotted #ccc; padding-top: 5px; }
@@ -119,7 +118,6 @@
         const userInfo = { postoGraduacao: getUrlParameter('posto_grad') || "ND", quadro: getUrlParameter('quadro_mil') || "ND", nomeGuerra: getUrlParameter('nome_guerra') || "ND" };
         
         function getStorageKey() {
-            // Chave única por Lista e por Usuário
             return `sigma_draft_${LISTA_ID}_${userInfo.nomeGuerra}`;
         }
 
@@ -140,120 +138,13 @@
             } catch (e) { console.error("Erro ao limpar rascunho", e); }
         }
 
-        // Restaurar estado visual
-        function restaurarRascunho() {
-            const key = getStorageKey();
-            const saved = localStorage.getItem(key);
-            if (!saved) return;
-
-            try {
-                const parsed = JSON.parse(saved);
-                window.itemStatus = parsed.status;
-                document.getElementById('draft-message').style.display = 'block';
-
-                Object.keys(window.itemStatus).forEach(uid => {
-                    const st = window.itemStatus[uid];
-                    
-                    let container;
-                    let isTombamento = false;
-                    
-                    // Busca Item ou Tombamento
-                    container = document.querySelector(`.item-conferencia[data-id="${uid}"]`);
-                    if (!container) {
-                        const allTombs = document.querySelectorAll('.tombamento-container');
-                        for (let t of allTombs) {
-                             const pItem = t.closest('.item-conferencia');
-                             const checkId = `${pItem.dataset.id}-${t.dataset.tomb}`;
-                             if (checkId === uid) {
-                                 container = t;
-                                 isTombamento = true;
-                                 break;
-                             }
-                        }
-                    }
-
-                    if (container) {
-                        const btnSA = container.querySelector('.sa-ok');
-                        const btnCA = container.querySelector('.ca-alert');
-                        const descEl = container.querySelector('.descricao-salva') || container.querySelector('.tombamento-descricao-salva');
-                        
-                        if(btnSA) btnSA.classList.remove('active');
-                        if(btnCA) btnCA.classList.remove('active');
-
-                        if (st.status === 'S/A') {
-                            if(btnSA) btnSA.classList.add('active');
-                            if(!isTombamento) {
-                                container.className = 'item-conferencia status-ok';
-                                container.querySelector('.status-icon').className = 'status-icon ok';
-                            } else {
-                                updateItemMainStatusDisplay(container.closest('.item-conferencia'));
-                            }
-                        } 
-                        else if (st.status === 'C/A' || st.status === 'KEEP') {
-                            if(btnCA) btnCA.classList.add('active');
-                            if(!isTombamento) {
-                                container.className = 'item-conferencia status-alert';
-                                container.querySelector('.status-icon').className = 'status-icon alert';
-                            }
-                            
-                            if(descEl) {
-                                const dataAgora = new Date().toLocaleDateString('pt-BR'); 
-                                const conferente = `${userInfo.postoGraduacao} ${userInfo.quadro} ${userInfo.nomeGuerra}`;
-                                
-                                if (st.status === 'C/A') {
-                                    descEl.innerHTML = gerarHtmlVisual(st.obs, conferente, dataAgora, null, null); 
-                                    descEl.style.display = 'block';
-                                    const pendBox = container.querySelector('.pendencia-alert-box');
-                                    if(pendBox) pendBox.style.display = 'none';
-                                } else if (st.status === 'KEEP') {
-                                    const pendBox = container.querySelector('.pendencia-alert-box');
-                                    if(pendBox) {
-                                        pendBox.classList.add('kept');
-                                        const actions = pendBox.querySelector('.pendencia-actions');
-                                        if(actions) actions.style.display = 'none';
-                                        if(!pendBox.innerHTML.includes('✔ Mantido')) {
-                                            pendBox.insertAdjacentHTML('beforeend', '<div style="color:#1b8a3e; font-weight:bold; font-size:0.9em; margin-top:5px; border-top:1px dashed #ccc; padding-top:3px;">✔ Mantido</div>');
-                                        }
-                                    }
-                                }
-                            }
-                            if(isTombamento) updateItemMainStatusDisplay(container.closest('.item-conferencia'));
-                        }
-                        else if (st.status === 'PENDING_CA') {
-                             const editArea = container.querySelector('.tombamento-obs-container') || container.querySelector('.alteracao-container');
-                             if(editArea) editArea.style.display = 'block';
-                             if(btnCA) btnCA.classList.add('active');
-                        }
-                    }
-                });
-                const setores = document.querySelectorAll('.setor');
-                setores.forEach(s => updateSetorStatus(s));
-                updateOverallStatus();
-            } catch (e) { console.error("Erro restore", e); }
-        }
-
-        async function carregarDadosRemotos() {
-            if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
-            db = firebase.firestore();
-            if (!LISTA_ID) { document.getElementById('loading-message').innerHTML = "<span style='color:red'>Erro: Nenhum local especificado no link.<br>Volte ao menu principal.</span>"; return; }
-            try {
-                const doc = await db.collection(COLECAO_LISTAS).doc(LISTA_ID).get();
-                if (!doc.exists) throw new Error("Lista não encontrada.");
-                const data = doc.data();
-                dadosConferencia = data.list || [];
-                infoLocal = { nome: data.nome_local || "DESCONHECIDO", posto: data.posto || "Geral" };
-                document.getElementById('local-posto-info').innerHTML = `<span style="color:blue;font-weight:bold">${infoLocal.posto} - ${infoLocal.nome}</span>`;
-                document.title = `Conferência - ${infoLocal.posto} ${infoLocal.nome}`;
-                renderizarConferencia();
-                restaurarRascunho();
-                document.getElementById('loading-message').style.display='none'; 
-                document.getElementById('main-content').style.display='block';
-            } catch (e) { document.getElementById('loading-message').innerHTML = "Erro ao carregar: " + e.message; }
-        }
-
         function getUrlParameter(n) { return (new URLSearchParams(window.location.search)).get(n) || ''; }
         function formatarDataSimples(timestamp) { if (!timestamp) return ""; const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp); return date.toLocaleDateString('pt-BR'); }
-        function updateHeaderInfo() { document.getElementById('militar-info').innerHTML = `<strong>Conferente:</strong> ${userInfo.postoGraduacao} ${userInfo.quadro} ${userInfo.nomeGuerra}<br><strong>Data/Hora:</strong> ${new Date().toLocaleString()}`; }
+        
+        // --- FUNÇÃO CORRIGIDA QUE FALTAVA ---
+        function updateHeaderInfo() { 
+            document.getElementById('militar-info').innerHTML = `<strong>Conferente:</strong> ${userInfo.postoGraduacao} ${userInfo.quadro} ${userInfo.nomeGuerra}<br><strong>Data/Hora:</strong> ${new Date().toLocaleString()}`; 
+        }
 
         const gerarLinhasFormatadas = (textoBruto, autorAtual, dataAtual, adminStatus, adminObs) => {
             const linhas = [];
@@ -309,15 +200,112 @@
             return novoHistorico;
         };
 
+        function restaurarRascunho() {
+            const key = getStorageKey();
+            const saved = localStorage.getItem(key);
+            if (!saved) return;
+
+            try {
+                const parsed = JSON.parse(saved);
+                window.itemStatus = parsed.status;
+                document.getElementById('draft-message').style.display = 'block';
+
+                Object.keys(window.itemStatus).forEach(uid => {
+                    const st = window.itemStatus[uid];
+                    let container;
+                    let isTombamento = false;
+                    
+                    container = document.querySelector(`.item-conferencia[data-id="${uid}"]`);
+                    if (!container) {
+                        const allTombs = document.querySelectorAll('.tombamento-container');
+                        for (let t of allTombs) {
+                             const pItem = t.closest('.item-conferencia');
+                             const checkId = `${pItem.dataset.id}-${t.dataset.tomb}`;
+                             if (checkId === uid) { container = t; isTombamento = true; break; }
+                        }
+                    }
+
+                    if (container) {
+                        const btnSA = container.querySelector('.sa-ok');
+                        const btnCA = container.querySelector('.ca-alert');
+                        const descEl = container.querySelector('.descricao-salva') || container.querySelector('.tombamento-descricao-salva');
+                        
+                        if(btnSA) btnSA.classList.remove('active');
+                        if(btnCA) btnCA.classList.remove('active');
+
+                        if (st.status === 'S/A') {
+                            if(btnSA) btnSA.classList.add('active');
+                            if(!isTombamento) { container.className = 'item-conferencia status-ok'; container.querySelector('.status-icon').className = 'status-icon ok'; } 
+                            else { updateItemMainStatusDisplay(container.closest('.item-conferencia')); }
+                        } 
+                        else if (st.status === 'C/A' || st.status === 'KEEP') {
+                            if(btnCA) btnCA.classList.add('active');
+                            if(!isTombamento) { container.className = 'item-conferencia status-alert'; container.querySelector('.status-icon').className = 'status-icon alert'; }
+                            
+                            if(descEl) {
+                                const dataAgora = new Date().toLocaleDateString('pt-BR'); 
+                                const conferente = `${userInfo.postoGraduacao} ${userInfo.quadro} ${userInfo.nomeGuerra}`;
+                                
+                                if (st.status === 'C/A') {
+                                    descEl.innerHTML = gerarHtmlVisual(st.obs, conferente, dataAgora, null, null); 
+                                    descEl.style.display = 'block';
+                                    const pendBox = container.querySelector('.pendencia-alert-box');
+                                    if(pendBox) pendBox.style.display = 'none';
+                                } else if (st.status === 'KEEP') {
+                                    const pendBox = container.querySelector('.pendencia-alert-box');
+                                    if(pendBox) {
+                                        pendBox.classList.add('kept');
+                                        const actions = pendBox.querySelector('.pendencia-actions');
+                                        if(actions) actions.style.display = 'none';
+                                        if(!pendBox.innerHTML.includes('✔ Mantido')) { pendBox.insertAdjacentHTML('beforeend', '<div style="color:#1b8a3e; font-weight:bold; font-size:0.9em; margin-top:5px; border-top:1px dashed #ccc; padding-top:3px;">✔ Mantido</div>'); }
+                                    }
+                                }
+                            }
+                            if(isTombamento) updateItemMainStatusDisplay(container.closest('.item-conferencia'));
+                        }
+                        else if (st.status === 'PENDING_CA') {
+                             const editArea = container.querySelector('.tombamento-obs-container') || container.querySelector('.alteracao-container');
+                             if(editArea) editArea.style.display = 'block';
+                             if(btnCA) btnCA.classList.add('active');
+                        }
+                    }
+                });
+                const setores = document.querySelectorAll('.setor');
+                setores.forEach(s => updateSetorStatus(s));
+                updateOverallStatus();
+            } catch (e) { console.error("Erro restore", e); }
+        }
+
+        async function carregarDadosRemotos() {
+            if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+            db = firebase.firestore();
+            if (!LISTA_ID) { document.getElementById('loading-message').innerHTML = "<span style='color:red'>Erro: Nenhum local especificado no link.<br>Volte ao menu principal.</span>"; return; }
+            try {
+                const doc = await db.collection(COLECAO_LISTAS).doc(LISTA_ID).get();
+                if (!doc.exists) throw new Error("Lista não encontrada.");
+                const data = doc.data();
+                dadosConferencia = data.list || [];
+                infoLocal = { nome: data.nome_local || "DESCONHECIDO", posto: data.posto || "Geral" };
+                document.getElementById('local-posto-info').innerHTML = `<span style="color:blue;font-weight:bold">${infoLocal.posto} - ${infoLocal.nome}</span>`;
+                document.title = `Conferência - ${infoLocal.posto} ${infoLocal.nome}`;
+                renderizarConferencia();
+                restaurarRascunho();
+                document.getElementById('loading-message').style.display='none'; 
+                document.getElementById('main-content').style.display='block';
+            } catch (e) { document.getElementById('loading-message').innerHTML = "Erro ao carregar: " + e.message; }
+        }
+
         function renderizarConferencia() {
             const mainContent = document.getElementById('main-content');
             let htmlSetores = '';
             const setorIds = [];
             dadosConferencia.forEach(s => setorIds.push(s.id));
             window.setorIds = setorIds;
+
             dadosConferencia.forEach(setor => {
                 let htmlItens = ''; let totalItensNoSetor = 0;
                 const isFirstSetor = setor.id === setorIds[0];
+                
                 setor.itens.forEach(item => {
                     const montarPendenciaHtml = (uid, pendenciaObj) => {
                         if (!pendenciaObj) return '';
@@ -371,6 +359,7 @@
                 if(actions) actions.style.display = 'none'; 
                 box.classList.add('kept'); 
                 box.insertAdjacentHTML('beforeend', '<div style="color:#1b8a3e; font-weight:bold; font-size:0.9em; margin-top:5px; border-top:1px dashed #ccc; padding-top:3px;">✔ Mantido</div>');
+
                 window.itemStatus[uid] = { status: 'KEEP', obs: '' };
                 salvarRascunho();
                 
@@ -573,7 +562,7 @@
                 
                 doc.save(`Conferencia_${localNome.replace(/[^a-zA-Z0-9]/g,'')}_${new Date().toISOString().split('T')[0]}.pdf`);
                 
-                limparRascunho(); // Limpa se deu sucesso
+                limparRascunho(); 
                 alert("Salvo com sucesso!"); 
                 window.location.href = "index.html";
             } catch (e) { console.error(e); alert("Erro: " + e.message); btn.disabled = false; }
