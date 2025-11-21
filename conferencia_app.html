@@ -119,8 +119,7 @@
         const userInfo = { postoGraduacao: getUrlParameter('posto_grad') || "ND", quadro: getUrlParameter('quadro_mil') || "ND", nomeGuerra: getUrlParameter('nome_guerra') || "ND" };
         
         function getStorageKey() {
-            // Chave única por Lista e por Usuário (Guerra)
-            // Ex: sigma_draft_abt_18_JHONATH
+            // Chave única por Lista e por Usuário
             return `sigma_draft_${LISTA_ID}_${userInfo.nomeGuerra}`;
         }
 
@@ -132,7 +131,6 @@
                     status: window.itemStatus
                 });
                 localStorage.setItem(key, data);
-                // console.log("Rascunho salvo", key);
             } catch (e) { console.error("Erro ao salvar rascunho", e); }
         }
 
@@ -142,23 +140,7 @@
             } catch (e) { console.error("Erro ao limpar rascunho", e); }
         }
 
-        // Função auxiliar para formatar visualmente (reutilizada da lógica de salvar)
-        const gerarHtmlVisual = (textoBruto, autorAtual, dataAtual, adminStatus, adminObs) => {
-            const linhas = gerarLinhasFormatadas(textoBruto, autorAtual, dataAtual, adminStatus, adminObs);
-            let html = '<ul class="lista-pendencias">';
-            linhas.forEach(l => {
-                if (l.includes('(Admin):')) {
-                    const parts = l.split('): ');
-                    html += `<li><span class="texto-admin">⚠️ ${parts[0]}):</span> Resp: ${parts[1]}</li>`;
-                } else {
-                    html += `<li class="linha-obs">• ${l}</li>`;
-                }
-            });
-            html += '</ul>';
-            return html;
-        };
-
-        // Função para restaurar estado visual com base no itemStatus salvo
+        // Restaurar estado visual
         function restaurarRascunho() {
             const key = getStorageKey();
             const saved = localStorage.getItem(key);
@@ -166,30 +148,18 @@
 
             try {
                 const parsed = JSON.parse(saved);
-                // Verifica validade (ex: rascunho de max 24h) - opcional
-                // if (Date.now() - parsed.timestamp > 86400000) return; 
-
                 window.itemStatus = parsed.status;
                 document.getElementById('draft-message').style.display = 'block';
 
-                // Percorre o status recuperado e atualiza o DOM
                 Object.keys(window.itemStatus).forEach(uid => {
                     const st = window.itemStatus[uid];
-                    // uid pode ser 'item-id' ou 'item-id-tomb'
                     
-                    // Tenta achar o container (item ou tombamento)
                     let container;
                     let isTombamento = false;
                     
-                    // Se for tombamento, o uid tem formato complexo, tentamos achar pelo data-tomb
-                    // Mas o seletor mais seguro é pelo atributo data-id ou lógica composta
-                    
-                    // Tentativa 1: Item Single
+                    // Busca Item ou Tombamento
                     container = document.querySelector(`.item-conferencia[data-id="${uid}"]`);
-                    
-                    // Tentativa 2: Tombamento (uid = itemId-tomb)
                     if (!container) {
-                        // Precisamos varrer para achar, pois o ID do tombamento é composto
                         const allTombs = document.querySelectorAll('.tombamento-container');
                         for (let t of allTombs) {
                              const pItem = t.closest('.item-conferencia');
@@ -207,7 +177,6 @@
                         const btnCA = container.querySelector('.ca-alert');
                         const descEl = container.querySelector('.descricao-salva') || container.querySelector('.tombamento-descricao-salva');
                         
-                        // Limpa ativos anteriores
                         if(btnSA) btnSA.classList.remove('active');
                         if(btnCA) btnCA.classList.remove('active');
 
@@ -215,42 +184,28 @@
                             if(btnSA) btnSA.classList.add('active');
                             if(!isTombamento) {
                                 container.className = 'item-conferencia status-ok';
-                                const icon = container.querySelector('.status-icon');
-                                if(icon) icon.className = 'status-icon ok';
+                                container.querySelector('.status-icon').className = 'status-icon ok';
                             } else {
-                                // Para tombamento, atualiza o pai
                                 updateItemMainStatusDisplay(container.closest('.item-conferencia'));
                             }
                         } 
                         else if (st.status === 'C/A' || st.status === 'KEEP') {
                             if(btnCA) btnCA.classList.add('active');
-                            
                             if(!isTombamento) {
                                 container.className = 'item-conferencia status-alert';
-                                const icon = container.querySelector('.status-icon');
-                                if(icon) icon.className = 'status-icon alert';
+                                container.querySelector('.status-icon').className = 'status-icon alert';
                             }
                             
-                            // Restaura o texto visual
                             if(descEl) {
-                                const dataAgora = new Date().toLocaleDateString('pt-BR'); // Data aproximada visual
+                                const dataAgora = new Date().toLocaleDateString('pt-BR'); 
                                 const conferente = `${userInfo.postoGraduacao} ${userInfo.quadro} ${userInfo.nomeGuerra}`;
                                 
-                                // Precisamos dos dados da pendencia original para saber se tem Admin msg
-                                // O itemStatus tem apenas o texto novo (se for C/A) ou vazio (se for KEEP)
-                                // A visualização perfeita dependeria dos dados do banco, mas vamos tentar reconstruir
-                                // Se st.status == KEEP, o texto original já está no HTML da pendencia-alert-box
-                                
                                 if (st.status === 'C/A') {
-                                    // Se editou, mostra o texto salvo
-                                    descEl.innerHTML = gerarHtmlVisual(st.obs, conferente, dataAgora, null, null); // Admin status perde-se aqui visualmente se não recarregar, mas ok para rascunho
+                                    descEl.innerHTML = gerarHtmlVisual(st.obs, conferente, dataAgora, null, null); 
                                     descEl.style.display = 'block';
-                                    
-                                    // Esconde pendencia original box se houver
                                     const pendBox = container.querySelector('.pendencia-alert-box');
                                     if(pendBox) pendBox.style.display = 'none';
                                 } else if (st.status === 'KEEP') {
-                                    // Se manteve, marca visualmente
                                     const pendBox = container.querySelector('.pendencia-alert-box');
                                     if(pendBox) {
                                         pendBox.classList.add('kept');
@@ -265,23 +220,17 @@
                             if(isTombamento) updateItemMainStatusDisplay(container.closest('.item-conferencia'));
                         }
                         else if (st.status === 'PENDING_CA') {
-                             // Estava digitando... abre a caixa
                              const editArea = container.querySelector('.tombamento-obs-container') || container.querySelector('.alteracao-container');
                              if(editArea) editArea.style.display = 'block';
                              if(btnCA) btnCA.classList.add('active');
                         }
                     }
                 });
-
-                // Atualiza barra de status global
                 const setores = document.querySelectorAll('.setor');
                 setores.forEach(s => updateSetorStatus(s));
                 updateOverallStatus();
-
             } catch (e) { console.error("Erro restore", e); }
         }
-        // --- FIM LÓGICA RASCUNHO ---
-
 
         async function carregarDadosRemotos() {
             if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
@@ -296,29 +245,19 @@
                 document.getElementById('local-posto-info').innerHTML = `<span style="color:blue;font-weight:bold">${infoLocal.posto} - ${infoLocal.nome}</span>`;
                 document.title = `Conferência - ${infoLocal.posto} ${infoLocal.nome}`;
                 renderizarConferencia();
-                
-                // TENTA RESTAURAR RASCUNHO APÓS RENDERIZAR
                 restaurarRascunho();
-
                 document.getElementById('loading-message').style.display='none'; 
                 document.getElementById('main-content').style.display='block';
             } catch (e) { document.getElementById('loading-message').innerHTML = "Erro ao carregar: " + e.message; }
         }
 
         function getUrlParameter(n) { return (new URLSearchParams(window.location.search)).get(n) || ''; }
-
-        function formatarDataSimples(timestamp) {
-            if (!timestamp) return "";
-            const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
-            return date.toLocaleDateString('pt-BR'); 
-        }
+        function formatarDataSimples(timestamp) { if (!timestamp) return ""; const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp); return date.toLocaleDateString('pt-BR'); }
+        function updateHeaderInfo() { document.getElementById('militar-info').innerHTML = `<strong>Conferente:</strong> ${userInfo.postoGraduacao} ${userInfo.quadro} ${userInfo.nomeGuerra}<br><strong>Data/Hora:</strong> ${new Date().toLocaleString()}`; }
 
         const gerarLinhasFormatadas = (textoBruto, autorAtual, dataAtual, adminStatus, adminObs) => {
             const linhas = [];
-            if (adminStatus) {
-                linhas.push(`[${adminStatus.toUpperCase()}] (Admin): ${adminObs}`);
-            }
-
+            if (adminStatus) linhas.push(`[${adminStatus.toUpperCase()}] (Admin): ${adminObs}`);
             const separator = ' | + NOVA: ';
             if (textoBruto.includes(separator)) {
                 const partes = textoBruto.split(separator);
@@ -326,23 +265,48 @@
                     p = p.trim();
                     const regex = /^"(.*)" \(Por: (.*) em (.*)\)$/; 
                     const match = p.match(regex);
-                    if (match) {
-                        linhas.push(`Por: ${match[2]} em ${match[3]}: "${match[1]}"`);
-                    } else {
-                        linhas.push(`Por: ${autorAtual} em ${dataAtual}: "${p}"`);
-                    }
+                    if (match) linhas.push(`Por: ${match[2]} em ${match[3]}: "${match[1]}"`);
+                    else linhas.push(`Por: ${autorAtual} em ${dataAtual}: "${p}"`);
                 });
             } else {
                 const p = textoBruto.trim();
                 const regex = /^"(.*)" \(Por: (.*) em (.*)\)$/; 
                 const match = p.match(regex);
-                if (match) {
-                     linhas.push(`Por: ${match[2]} em ${match[3]}: "${match[1]}"`);
-                } else {
-                     linhas.push(`Por: ${autorAtual} em ${dataAtual}: "${p}"`);
-                }
+                if (match) linhas.push(`Por: ${match[2]} em ${match[3]}: "${match[1]}"`);
+                else linhas.push(`Por: ${autorAtual} em ${dataAtual}: "${p}"`);
             }
             return linhas;
+        };
+
+        const gerarHtmlVisual = (textoBruto, autorAtual, dataAtual, adminStatus, adminObs) => {
+            const linhas = gerarLinhasFormatadas(textoBruto, autorAtual, dataAtual, adminStatus, adminObs);
+            let html = '<ul class="lista-pendencias">';
+            linhas.forEach(l => {
+                if (l.includes('(Admin):')) {
+                    const parts = l.split('): ');
+                    html += `<li><span class="texto-admin">⚠️ ${parts[0]}):</span> Resp: ${parts[1]}</li>`;
+                } else {
+                    html += `<li class="linha-obs">• ${l}</li>`;
+                }
+            });
+            html += '</ul>';
+            return html;
+        };
+        
+        const montarHistoricoLinear = (obsAnterior, novoTexto, autorAnterior, dataAnterior) => {
+            const separator = ' | + NOVA: ';
+            let novoHistorico = "";
+            if (obsAnterior.includes(separator)) {
+                let partes = obsAnterior.split(separator);
+                let ultimaParte = partes.pop(); 
+                let resto = partes.join(separator); 
+                let ultimaAssinada = `"${ultimaParte}" (Por: ${autorAnterior} em ${dataAnterior})`;
+                novoHistorico = `${resto}${separator}${ultimaAssinada}${separator}${novoTexto}`;
+            } else {
+                let anteriorAssinado = `"${obsAnterior}" (Por: ${autorAnterior} em ${dataAnterior})`;
+                novoHistorico = `${anteriorAssinado}${separator}${novoTexto}`;
+            }
+            return novoHistorico;
         };
 
         function renderizarConferencia() {
@@ -351,35 +315,21 @@
             const setorIds = [];
             dadosConferencia.forEach(s => setorIds.push(s.id));
             window.setorIds = setorIds;
-
             dadosConferencia.forEach(setor => {
                 let htmlItens = ''; let totalItensNoSetor = 0;
                 const isFirstSetor = setor.id === setorIds[0];
-                
                 setor.itens.forEach(item => {
                     const montarPendenciaHtml = (uid, pendenciaObj) => {
                         if (!pendenciaObj) return '';
-                        
                         const obs = pendenciaObj.obs ? pendenciaObj.obs.replace(/'/g, "\\'") : '';
                         const quem = pendenciaObj.quem || 'Anônimo';
                         const dataPend = formatarDataSimples(pendenciaObj.data);
-                        
                         const dadosHistorico = JSON.stringify({ obs: obs, autor: quem, data: dataPend });
                         const safeHistorico = encodeURIComponent(dadosHistorico);
-
                         const htmlFormatado = gerarHtmlVisual(obs, quem, dataPend, pendenciaObj.statusAdmin, pendenciaObj.adminObs);
                         let classAdmin = pendenciaObj.statusAdmin ? "admin-reply" : "";
-
-                        return `
-                        <div class="pendencia-alert-box ${classAdmin}">
-                            ${htmlFormatado}
-                            <div class="pendencia-actions">
-                                <button class="btn-manter" onclick="manterPendencia(this, '${uid}')">✅ Concordo (Manter)</button>
-                                <button class="btn-acrescentar" onclick="acrescentarPendencia(this, '${uid}', '${safeHistorico}')">➕ Acrescentar</button>
-                            </div>
-                        </div>`;
+                        return `<div class="pendencia-alert-box ${classAdmin}">${htmlFormatado}<div class="pendencia-actions"><button class="btn-manter" onclick="manterPendencia(this, '${uid}')">✅ Concordo (Manter)</button><button class="btn-acrescentar" onclick="acrescentarPendencia(this, '${uid}', '${safeHistorico}')">➕ Acrescentar</button></div></div>`;
                     };
-
                     if (item.tipo === 'multi' && item.tombamentos) {
                         let htmlTombamentos = '';
                         item.tombamentos.forEach(tomb => {
@@ -421,9 +371,7 @@
                 if(actions) actions.style.display = 'none'; 
                 box.classList.add('kept'); 
                 box.insertAdjacentHTML('beforeend', '<div style="color:#1b8a3e; font-weight:bold; font-size:0.9em; margin-top:5px; border-top:1px dashed #ccc; padding-top:3px;">✔ Mantido</div>');
-
                 window.itemStatus[uid] = { status: 'KEEP', obs: '' };
-                // SALVA RASCUNHO
                 salvarRascunho();
                 
                 const container = box.closest('.tombamento-container') || box.closest('.item-conferencia');
@@ -439,10 +387,7 @@
         function acrescentarPendencia(btnElement, uid, encodedData) {
             let container; 
             const alertBox = btnElement.closest('.pendencia-alert-box');
-            if(alertBox) {
-                container = alertBox.closest('.tombamento-container') || alertBox.closest('.item-conferencia');
-                alertBox.style.display = 'none'; 
-            }
+            if(alertBox) { container = alertBox.closest('.tombamento-container') || alertBox.closest('.item-conferencia'); alertBox.style.display = 'none'; }
             if (container) {
                 const btnCA = container.querySelector('.ca-alert');
                 if(btnCA) { btnCA.classList.add('active'); const btnSA = container.querySelector('.sa-ok'); if(btnSA) btnSA.classList.remove('active'); }
@@ -453,9 +398,7 @@
                     if(histDiv) { histDiv.dataset.meta = encodedData; histDiv.style.display = 'none'; }
                     const textarea = editArea.querySelector('textarea');
                     if(textarea) { textarea.value = ""; textarea.placeholder = "Digite APENAS o acréscimo aqui..."; textarea.focus(); }
-                    
                     window.itemStatus[uid] = { status: 'PENDING_CA', obs: '' }; 
-                    // SALVA RASCUNHO
                     salvarRascunho();
                 }
             }
@@ -463,31 +406,15 @@
 
         function setItemStatus(button, status) { 
             const item = button.closest('.item-conferencia'); const setor = button.closest('.setor'); item.querySelectorAll('.item-options .action-button').forEach(b => b.classList.remove('active')); button.classList.add('active'); item.querySelector('.descricao-salva').style.display = 'none'; item.querySelector('.alteracao-container').style.display = 'none'; const pb=item.querySelector('.pendencia-alert-box'); if(pb)pb.style.display='none'; 
-            
-            if (status === 'ok') { 
-                item.className = 'item-conferencia status-ok'; item.querySelector('.status-icon').className = 'status-icon ok'; window.itemStatus[item.dataset.id] = { status: 'S/A', obs: '' }; 
-            } else { 
-                item.className = 'item-conferencia status-alert'; item.querySelector('.status-icon').className = 'status-icon alert'; item.querySelector('.alteracao-container').style.display = 'block'; window.itemStatus[item.dataset.id] = { status: 'PENDING_CA', obs: '' }; item.querySelector('textarea').focus(); 
-            } 
-            
-            // SALVA RASCUNHO
+            if (status === 'ok') { item.className = 'item-conferencia status-ok'; item.querySelector('.status-icon').className = 'status-icon ok'; window.itemStatus[item.dataset.id] = { status: 'S/A', obs: '' }; } else { item.className = 'item-conferencia status-alert'; item.querySelector('.status-icon').className = 'status-icon alert'; item.querySelector('.alteracao-container').style.display = 'block'; window.itemStatus[item.dataset.id] = { status: 'PENDING_CA', obs: '' }; item.querySelector('textarea').focus(); } 
             salvarRascunho();
-
             updateSetorStatus(setor); updateOverallStatus(); if(status === 'ok') checkSetorCompletion(setor, item.dataset.id); 
         }
 
         function setTombamentoStatus(button, status) { 
             const tombEl = button.closest('.tombamento-container'); const item = button.closest('.item-conferencia'); const setor = button.closest('.setor'); const uid = `${item.dataset.id}-${tombEl.dataset.tomb}`; tombEl.querySelectorAll('.action-button').forEach(b => b.classList.remove('active')); button.classList.add('active'); tombEl.querySelector('.tombamento-obs-container').style.display = 'none'; tombEl.querySelector('.tombamento-descricao-salva').style.display = 'none'; const pb=tombEl.querySelector('.pendencia-alert-box'); if(pb)pb.style.display='none'; 
-            
-            if (status === 'ok') { 
-                window.itemStatus[uid] = { status: 'S/A', obs: '' }; updateItemMainStatusDisplay(item); 
-            } else { 
-                tombEl.querySelector('.tombamento-obs-container').style.display = 'block'; window.itemStatus[uid] = { status: 'PENDING_CA', obs: '' }; tombEl.querySelector('textarea').focus(); updateItemMainStatusDisplay(item); 
-            } 
-            
-            // SALVA RASCUNHO
+            if (status === 'ok') { window.itemStatus[uid] = { status: 'S/A', obs: '' }; updateItemMainStatusDisplay(item); } else { tombEl.querySelector('.tombamento-obs-container').style.display = 'block'; window.itemStatus[uid] = { status: 'PENDING_CA', obs: '' }; tombEl.querySelector('textarea').focus(); updateItemMainStatusDisplay(item); } 
             salvarRascunho();
-
             updateSetorStatus(setor); updateOverallStatus(); if(status === 'ok') checkSetorCompletion(setor, item.dataset.id); 
         }
         
@@ -510,10 +437,7 @@
             const dataAgora = formatarDataSimples(new Date());
             d.innerHTML = gerarHtmlVisual(obsFinal, conferente, dataAgora, null, null);
             d.style.display = 'block'; 
-            
-            // SALVA RASCUNHO
             salvarRascunho();
-
             updateSetorStatus(button.closest('.setor')); updateOverallStatus(); checkSetorCompletion(button.closest('.setor'), item.dataset.id); 
         }
 
@@ -537,10 +461,7 @@
             const dataAgora = formatarDataSimples(new Date());
             d.innerHTML = gerarHtmlVisual(obsFinal, conferente, dataAgora, null, null);
             d.style.display = 'block'; 
-            
-            // SALVA RASCUNHO
             salvarRascunho();
-
             updateItemMainStatusDisplay(item); updateSetorStatus(button.closest('.setor')); updateOverallStatus(); checkSetorCompletion(button.closest('.setor'), item.dataset.id); 
         }
 
@@ -652,8 +573,7 @@
                 
                 doc.save(`Conferencia_${localNome.replace(/[^a-zA-Z0-9]/g,'')}_${new Date().toISOString().split('T')[0]}.pdf`);
                 
-                // LIMPA RASCUNHO APÓS SUCESSO
-                limparRascunho();
+                limparRascunho(); // Limpa se deu sucesso
                 alert("Salvo com sucesso!"); 
                 window.location.href = "index.html";
             } catch (e) { console.error(e); alert("Erro: " + e.message); btn.disabled = false; }
